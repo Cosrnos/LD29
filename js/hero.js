@@ -2,23 +2,74 @@ var Hero = function () {
 
 	var currentRoom = null;
 	var items = [];
+	var totalExp = 0;
+	var nextLevelExp = 100;
+
+	Object.defineProperty(this, "Experience", {
+		get: function () {
+			return totalExp;
+		},
+		set: function (pValue) {
+			totalExp += pValue;
+			if (totalExp >= nextLevelExp) {
+				this.totalExp -= nextLevelExp;
+				nextLevelExp = nextLevelExp * 1.5;
+				this.Level++;
+				this.LevelUp();
+			}
+		}
+	});
 
 	this.Id = 0;
 	this.Name = "";
 	this.Class = HeroClass.WARRIOR;
 	this.Level = 1;
-	this.Experience = 0;
 	this.Gold = 100;
+
 	this.Health = 20;
 	this.HealthDelta = 0;
 	this.Mana = 10;
 	this.ManaDelta = 0;
+	this.BaseAttack = 1;
+	this.BaseDefense = 1;
+	this.BaseMagic = 1;
 	this.ActionPoints = 3;
+
 	this.Equipment = {
 		Weapon: "Sword",
 		Armor: "Chain",
 		Accessory: "Severed human hand"
 	};
+
+	//Start AI
+
+	this.Think = function () {
+		//AI Logic goes here.
+		this.Idle();
+	};
+
+	this.Idle = function () {};
+
+	this.Attack = function (pTarget) {};
+
+	this.Run = function () {};
+
+	this.LevelUp = function () {
+		this.Health += 2;
+		this.BaseAttack += 1;
+		Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
+	};
+
+	this.TakeDamage = function (pDamage, pAttacker) {
+		//TODO: Fix Defense algorithm
+		var realHit = Math.floor(pDamage - this.BaseDefense);
+		this.HealthDelta += realHit;
+		if (this.HealthDelta >= this.Health) {
+			this.Kill();
+		}
+	};
+
+	//End AI
 
 	this.GiveItem = function (pItem, pQuantity) {
 		for (var i = 0; i < pQuantity; i++) {

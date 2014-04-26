@@ -24,16 +24,18 @@ Game = {
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function () {},
+	SetupScene: function () {
+		Lynx.Start();
+	},
 	Ready: function () {
 		var john = new Hero();
 		john.Name = "John";
 		var hugo = new Trog();
 		hugo.Name = "Hugo";
 		john.GiveItem(new HP10Potion(), 1);
+		john.Experience += 99;
 		john.UseItem("HP 10 Potion");
 
-		john.Kill();
-		hugo.Kill();
+		hugo.TakeDamage(50, john);
 	}
 };
