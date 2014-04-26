@@ -34,10 +34,15 @@ Game = {
 
 		var john = new Warrior("John");
 		john.EquipItem(new WoodenSword());
-		var hugo = new Trog();
+		john.BaseDefense = 10;
+		var hugo = new GiantSpider();
+		hugo.Name = "Giant Spider"
 		john.CurrentTarget = hugo;
+
+		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
 			john.Think();
+			hugo.Think();
 		});
 	}
 };

@@ -8,11 +8,20 @@ var Warrior = function (pName) {
 	this.GiveAction("Heavy Attack");
 
 	this.Brain = function () {
-		if (this.CurrentTarget !== null) {
-			if (!this.OnCooldown("Attack")) {
-				Lynx.Log(this.Name + " is attacking!");
-				this.Attack(this.CurrentTarget);
+		var thinking = true;
+		while (thinking) {
+			if (this.CurrentTarget !== null) {
+				if (!this.OnCooldown("Attack")) {
+					this.UseAction("Attack", this.CurrentTarget);
+					continue;
+				}
+
+				if (!this.OnCooldown("Heavy Attack")) {
+					this.UseAction("Heavy Attack", this.CurrentTarget);
+					continue;
+				}
 			}
+			thinking = false;
 		}
 	};
 };

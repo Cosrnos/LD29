@@ -34,10 +34,15 @@ Game = {
 
 		var john = new Warrior("John");
 		john.EquipItem(new WoodenSword());
-		var hugo = new Trog();
+		john.BaseDefense = 10;
+		var hugo = new GiantSpider();
+		hugo.Name = "Giant Spider"
 		john.CurrentTarget = hugo;
+
+		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
 			john.Think();
+			hugo.Think();
 		});
 	}
 };
@@ -92,9 +97,10 @@ var Entity = function () {
 
 	var currentRoom = null;
 	var items = [];
-	var actions = [AttackAction];
+	var att = (Object.create(AttackAction));
+	var actions = [att];
 	var cooldowns = [];
-	var available = [AttackAction];
+	var available = [att];
 
 	this.Id = 0;
 	this.Name = "";
@@ -112,6 +118,7 @@ var Entity = function () {
 	this.BaseAttack = 1;
 	this.BaseDefense = 1;
 	this.BaseMagic = 1;
+	this.BaseSpeed = 1;
 	this.ActionPoints = 1;
 
 	this.Equipment = {};
@@ -131,6 +138,9 @@ var Entity = function () {
 
 	this.Think = function () {
 		//See what's on cooldown and when we can use it next
+		if (!this.Alive)
+			return false;
+
 		__updateCooldowns();
 		this.Brain.call(this);
 	};
@@ -156,10 +166,6 @@ var Entity = function () {
 
 	this.Idle = function () {};
 
-	this.Attack = function (pTarget) {
-		this.UseAction("Attack", pTarget);
-	};
-
 	this.Run = function () {};
 
 	this.OnCooldown = function (pName) {
@@ -181,7 +187,7 @@ var Entity = function () {
 			return false;
 
 		actionObject.Use(this, pTarget);
-		actionObject.CanUseAt = Date.now() + actionObject.Cooldown;
+		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
 		available.splice(available.indexOf(actionObject), 1);
 		cooldowns.push(actionObject);
@@ -321,8 +327,6 @@ var Entity = function () {
 		Lynx.Log("Entity " + this.Name + " has been killed!");
 		World.Entities.splice(World.Entities.indexOf(this), 1);
 	};
-
-	World.Entities.push(this);
 };
 
 // Entity Definitions
@@ -332,13 +336,42 @@ var AttackAction = new Action("Attack", 500);
 AttackAction.Use = function (pEntity, pTarget) {
 	pTarget.TakeDamage(pEntity.BaseAttack, pEntity);
 };
+var BiteAction = new Action("Bite", 1500);
+BiteAction.Use = function (pEntity, pTarget) {
+	pTarget.TakeDamage(pEntity.BaseAttack * 1.2, pEntity);
+};
+var FireblastAction = new Action("Fireblast", 2000);
+
+FireblastAction.Use = function (pEntity, pTarget) {
+	pTarget.TakeDamage(pEntity.BaseMagic * 1.5, pEntity);
+};
 var HeavyAttackAction = new Action("Heavy Attack", 1000);
 
 HeavyAttackAction.Use = function (pEntity, pTarget) {
-	Lynx.Log(pEntity.Name + " used Heavy Attack!!");
-	pTarget.TakeDamage(pEntity.BaseAttack * 2, pEntity);
+	pTarget.TakeDamage(pEntity.BaseAttack * 1.5, pEntity);
 };
 var Enemy = function () {
+	var originalTakeDamage = this.TakeDamage;
+
+	this.TakeDamage = function (pAmount, pAttacker) {
+		originalTakeDamage.call(this, pAmount, pAttacker);
+		this.CurrentTarget = pAttacker;
+	}
+
+	this.Brain = function () {
+		var thinking = true;
+		while (thinking) {
+			if (this.CurrentTarget !== null) {
+				if (!this.OnCooldown("Attack")) {
+					this.Attack(this.CurrentTarget);
+					continue;
+				}
+			}
+
+			thinking = false;
+		}
+	}
+
 	this.Kill = function () {
 		Lynx.Log("Enemy " + this.Name + " has been killed!");
 	};
@@ -360,6 +393,80 @@ var Trog = function () {
 
 Trog.prototype = new Enemy();
 Trog.prototype.constructor = Trog;
+
+var Spider = function () {
+	this.Species = "Spider";
+	this.Level = 3;
+	this.Experience = 70;
+	this.BaseAttack = 2;
+	this.Gold = 25;
+	this.Health = 7;
+	this.Mana = 0;
+};
+
+Spider.prototype = new Enemy();
+Spider.prototype.constructor = Spider;
+
+var Bat = function () {
+	this.Species = "Bat";
+	this.Level = 5;
+	this.Experience = 90;
+	this.Gold = 25;
+	this.BaseAttack = 3;
+	this.Health = 10;
+	this.Mana = 0;
+};
+
+Bat.prototype = new Enemy();
+Bat.prototype.constructor = Bat;
+
+//Level 6-10
+var Goblin = function () {
+	this.Species = "Goblin";
+	this.Level = 7;
+	this.Experience = 150;
+	this.Gold = 25;
+	this.BaseAttack = 3;
+	this.BaseDefense = 2;
+	this.Health = 15;
+	this.Mana = 0;
+};
+
+Goblin.prototype = new Enemy();
+Goblin.prototype.constructor = Goblin;
+
+var GiantSpider = function () {
+	this.Species = "Giant Spider";
+	this.Level = 10;
+	this.BaseAttack = 5;
+	this.BaseDefense = 3;
+	this.Experience = 200;
+	this.Health = 20;
+
+	this.Brain = function () {
+		var thinking = true;
+		while (thinking) {
+			if (this.CurrentTarget !== null) {
+				if (!this.OnCooldown("Attack")) {
+					this.UseAction("Attack", this.CurrentTarget);
+					continue;
+				}
+
+				if (!this.OnCooldown("Bite")) {
+					this.UseAction("Bite", this.CurrentTarget);
+					continue;
+				}
+			}
+
+			thinking = false;
+		}
+	}
+
+	this.GiveAction("Bite");
+};
+
+GiantSpider.prototype = new Spider();
+GiantSpider.prototype.constructor = GiantSpider;
 var HeroClass = {
 	SCRUB: 0,
 	WARRIOR: 1,
@@ -413,6 +520,36 @@ Hero.prototype.constructor = Hero;
 
 // Hero Definitions
 //----------------------------
+// Mage
+//--------------------------
+
+var Mage = function (pName) {
+	this.Class = HeroClass.Mage;
+	this.Name = pName || "Mage";
+
+	this.GiveAction("Fireblast");
+
+	this.Brain = function () {
+		while (true) {
+			if (this.CurrentTarget !== null) {
+				if (!this.OnCooldown("Attack")) {
+					Lynx.Log(this.Name + " is attacking!");
+					this.UseAction("Attack", this.CurrentTarget);
+					continue;
+				}
+
+				if (!this.OnCooldown("Fireblast")) {
+					this.UseAction("Fireblast", this.CurrentTarget);
+					continue;
+				};
+			}
+			break;
+		}
+	};
+};
+
+Mage.prototype = new Hero();
+Mage.prototype.constructor = Mage;
 // Warrior
 //--------------------------
 
@@ -423,11 +560,20 @@ var Warrior = function (pName) {
 	this.GiveAction("Heavy Attack");
 
 	this.Brain = function () {
-		if (this.CurrentTarget !== null) {
-			if (!this.OnCooldown("Attack")) {
-				Lynx.Log(this.Name + " is attacking!");
-				this.Attack(this.CurrentTarget);
+		var thinking = true;
+		while (thinking) {
+			if (this.CurrentTarget !== null) {
+				if (!this.OnCooldown("Attack")) {
+					this.UseAction("Attack", this.CurrentTarget);
+					continue;
+				}
+
+				if (!this.OnCooldown("Heavy Attack")) {
+					this.UseAction("Heavy Attack", this.CurrentTarget);
+					continue;
+				}
 			}
+			thinking = false;
 		}
 	};
 };
