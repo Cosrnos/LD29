@@ -68,6 +68,7 @@ Lynx.Renderer = function (pCanvas) {
 					Y: 0
 				};
 			}
+			var lastAlpha = 1;
 
 			for (var i = 0; i < pObject.length; i++) {
 				if (pObject[i].FBRender) {
@@ -82,6 +83,12 @@ Lynx.Renderer = function (pCanvas) {
 					}
 
 					lastFillColor = pObject[i].Color;
+				}
+
+				if (lastAlpha != pObject[i].Alpha) {
+					ctx.globalAlpha = pObject[i].Alpha;
+
+					lastAlpha = pObject[i].Alpha;
 				}
 
 				pObject[i].Draw(ctx, pCamera);
@@ -178,6 +185,9 @@ Lynx.Renderer = function (pCanvas) {
 					gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 					gl.enableVertexAttribArray(vertexShader.GetVariable("position", "attribute").Location);
 					gl.vertexAttribPointer(vertexShader.GetVariable("position", "attribute").Location, 2, gl.FLOAT, false, 0, 0);
+
+					gl.enable(gl.BLEND);
+					gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 					Lynx.Log("Finished loading shaders...");
 				});
@@ -312,6 +322,7 @@ Lynx.Renderer = function (pCanvas) {
 
 			var lastLayer = 0;
 			var lastTexture = null;
+			var lastAlpha = 1.0;
 
 			for (var i = 0; i < pObjects.length; i++) {
 				var o = pObjects[i];
@@ -368,13 +379,13 @@ Lynx.Renderer = function (pCanvas) {
 					}
 				}
 
-				if (o.Color.Hex != lastShaderColor) {
+				if (o.Color.Hex != lastShaderColor || o.Alpha != lastAlpha) {
 					renderBatch(buildArray);
 					buildArray = [];
 
 					if (o.Color.Hex != -1) {
 						var c = o.Color;
-						gl.uniform4f(fragmentShader.GetVariable("color", "uniform").Location, c.R, c.G, c.B, 1.0);
+						gl.uniform4f(fragmentShader.GetVariable("color", "uniform").Location, c.R, c.G, c.B, o.Alpha);
 						if (lastShaderColor == -1) {
 							gl.bindTexture(gl.TEXTURE_2D, blankTexture);
 							gl.disableVertexAttribArray(vertexShader.GetVariable("texCoord", "attribute").Location);

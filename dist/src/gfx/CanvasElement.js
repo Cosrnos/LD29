@@ -31,6 +31,8 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 	that.Height = pHeight;
 	that.Type = pElementType;
 	that.Layer = 0;
+	that.Static = false;
+	that.Alpha = 1.0;
 
 	/**
 	 * Description: Translates the element to the given coordinates
@@ -140,6 +142,12 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 	 * @param {HTMLCanvasElement} <pBuffer> Canvas buffer to draw upon
 	 */
 	that.Draw = (function (context, pC) {
+		if (this.Static) {
+			pC = {
+				X: 0,
+				Y: 0
+			};
+		}
 		if (objectTexture !== null) {
 			context.drawImage(this.Texture, this.X - pC.X, this.Y - pC.Y, this.Width, this.Height);
 		} else {
@@ -156,6 +164,12 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 	 * @param {HTMLCanvasElement} <pBuffer> Canvas buffer to draw upon
 	 */
 	that.GetVertices = (function (pBuildArray, pC) {
+		if (this.Static) {
+			pC = {
+				X: 0,
+				Y: 0
+			};
+		}
 		var x1 = this.X - pC.X;
 		var y1 = this.Y - pC.Y;
 		var x2 = this.X + this.Width - pC.X;
