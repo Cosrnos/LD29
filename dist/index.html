@@ -102,7 +102,6 @@
 	</style>
 	<script type="text/javascript" src="js/vendor.js"></script>
 	<script src="src/Lynx.js"></script>
-	<script src="js/main.js"></script>
 	<script type="text/javascript">
 		window.addEventListener("load", function load(event) {
 			Lynx.LogTarget = "console";
@@ -111,7 +110,13 @@
 			Lynx.Load(function() {
 				Viewport = new Lynx.Viewport("viewport-container");
 				Viewport.ClearColor = 0x000000;
-				Game.Start();
+				var gameSource = document.createElement("script");
+				gameSource.onload = function() {
+					Game.Start();
+				};
+				gameSource.async = false;
+				gameSource.src = "js/main.js";
+				document.body.appendChild(gameSource);
 			});
 		}, false);
 	</script>

@@ -1,8 +1,14 @@
+var World = World || {};
+
+World.Entities = [];
+
 var Entity = function () {
 
 	var currentRoom = null;
 	var items = [];
 	var actions = [AttackAction];
+	var cooldowns = [];
+	var available = [AttackAction];
 
 	this.Id = 0;
 	this.Name = "";
@@ -11,6 +17,7 @@ var Entity = function () {
 	this.Gold = 0;
 	this.Exp = 1; //Exp to be awarded to the attacker on kill
 	this.InCombat = false;
+	this.CurrentTarget = null;
 
 	this.Health = 10;
 	this.HealthDelta = 0;
@@ -37,9 +44,29 @@ var Entity = function () {
 	//Start AI
 
 	this.Think = function () {
-		//AI Logic goes here.
-		this.Idle();
+		//See what's on cooldown and when we can use it next
+		__updateCooldowns();
+		this.Brain.call(this);
 	};
+
+	this.Brain = function () {
+		//Individual AI Logic goes here.
+	};
+
+	function __updateCooldowns() {
+		var makeAvailable = [];
+		var now = Date.now();
+		for (var i = 0; i < cooldowns.length; i++) {
+			if (cooldowns[i].CanUseAt <= now) {
+				makeAvailable.push(cooldowns[i]);
+			}
+		}
+
+		for (var x = 0; x < makeAvailable.length; x++) {
+			cooldowns.splice(cooldowns.indexOf(makeAvailable[x]), 1);
+			available.push(makeAvailable[x]);
+		}
+	}
 
 	this.Idle = function () {};
 
@@ -49,8 +76,14 @@ var Entity = function () {
 
 	this.Run = function () {};
 
+	this.OnCooldown = function (pName) {
+		return (typeof _.find(cooldowns, {
+			Name: pName
+		}) !== 'undefined');
+	};
+
 	this.UseAction = function (pName, pTarget) {
-		if (!this.Alive) {
+		if (!this.Alive || this.OnCooldown(pName)) {
 			return false;
 		}
 
@@ -61,10 +94,11 @@ var Entity = function () {
 		if (typeof actionObject === 'undefined')
 			return false;
 
-		if (this.ActionPoints >= actionObject.Cost) {
-			this.ActionPoints -= actionObject.Cost;
-			actionObject.Use(this, pTarget);
-		}
+		actionObject.Use(this, pTarget);
+		actionObject.CanUseAt = Date.now() + actionObject.Cooldown;
+
+		available.splice(available.indexOf(actionObject), 1);
+		cooldowns.push(actionObject);
 
 		return false;
 	};
@@ -77,7 +111,7 @@ var Entity = function () {
 			});
 			if (typeof ta !== 'undefined') {
 				//We have anaction with that name so we'll use it
-				pAction = ta;
+				pAction = Object.create(ta);
 			}
 		}
 
@@ -94,10 +128,15 @@ var Entity = function () {
 	//End AI
 	this.TakeDamage = function (pDamage, pAttacker) {
 		//TODO: Fix Defense algorithm
+		if (!this.Alive) {
+			return;
+		}
+
 		var realHit = Math.floor(pDamage - this.BaseDefense);
 		this.HealthDelta += realHit;
 		if (this.HealthDelta >= this.Health) {
 			this.Kill();
+			pAttacker.CurrentTarget = null;
 			pAttacker.NotifyKill(this);
 		}
 	};
@@ -194,7 +233,10 @@ var Entity = function () {
 
 	this.Kill = function () {
 		Lynx.Log("Entity " + this.Name + " has been killed!");
+		World.Entities.splice(World.Entities.indexOf(this), 1);
 	};
+
+	World.Entities.push(this);
 };
 
 // Entity Definitions

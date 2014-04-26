@@ -1,8 +1,9 @@
 Actions = [];
 
-var Action = function (pName, pCost) {
+var Action = function (pName, pCooldown) {
 	this.Name = pName || "";
-	this.Cost = pCost || 1;
+	this.Cooldown = pCooldown || 500;
+	this.CanUseAt = 0;
 	this.Use = function (pEntity) {};
 
 	Actions.push(this);

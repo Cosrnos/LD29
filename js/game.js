@@ -31,17 +31,12 @@ Game = {
 		World.Rooms.push(new Room(400, 250));
 		walk(World.Rooms.content[0], 5, 0);
 
-		var john = new Hero();
-		john.Name = "John";
-		var hugo = new Trog();
-		hugo.Name = "Hugo";
-		john.GiveItem(new HP10Potion(), 1);
-		john.Experience += 99;
-		john.UseItem("HP 10 Potion");
-		john.GiveAction("Heavy Attack");
+		var john = new Warrior("John");
 		john.EquipItem(new WoodenSword());
-		while (hugo.HealthDelta < hugo.Health) {
-			john.UseAction("Heavy Attack", hugo);
-		}
+		var hugo = new Trog();
+		john.CurrentTarget = hugo;
+		Lynx.Scene.On("Update", function () {
+			john.Think();
+		});
 	}
 };

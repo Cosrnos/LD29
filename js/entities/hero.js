@@ -4,12 +4,12 @@ var HeroClass = {
 };
 
 //Basic Hero
-var Hero = function () {
+var Hero = function (pName) {
 
 	var totalExp = 0;
 	var nextLevelExp = 100;
 
-	Entity.call(this);
+	this.Name = pName || "";
 
 	Object.defineProperty(this, "Experience", {
 		get: function () {
@@ -45,6 +45,9 @@ var Hero = function () {
 		Lynx.Log("Hero " + this.Name + " has been killed!");
 	};
 };
+
+Hero.prototype = new Entity();
+Hero.prototype.constructor = Hero;
 
 // Hero Definitions
 //----------------------------
