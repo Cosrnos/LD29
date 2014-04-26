@@ -6,9 +6,10 @@ var Entity = function () {
 
 	var currentRoom = null;
 	var items = [];
-	var actions = [AttackAction];
+	var att = (Object.create(AttackAction));
+	var actions = [att];
 	var cooldowns = [];
-	var available = [AttackAction];
+	var available = [att];
 
 	this.Id = 0;
 	this.Name = "";
@@ -26,6 +27,7 @@ var Entity = function () {
 	this.BaseAttack = 1;
 	this.BaseDefense = 1;
 	this.BaseMagic = 1;
+	this.BaseSpeed = 1;
 	this.ActionPoints = 1;
 
 	this.Equipment = {};
@@ -45,6 +47,9 @@ var Entity = function () {
 
 	this.Think = function () {
 		//See what's on cooldown and when we can use it next
+		if (!this.Alive)
+			return false;
+
 		__updateCooldowns();
 		this.Brain.call(this);
 	};
@@ -70,10 +75,6 @@ var Entity = function () {
 
 	this.Idle = function () {};
 
-	this.Attack = function (pTarget) {
-		this.UseAction("Attack", pTarget);
-	};
-
 	this.Run = function () {};
 
 	this.OnCooldown = function (pName) {
@@ -95,7 +96,7 @@ var Entity = function () {
 			return false;
 
 		actionObject.Use(this, pTarget);
-		actionObject.CanUseAt = Date.now() + actionObject.Cooldown;
+		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
 		available.splice(available.indexOf(actionObject), 1);
 		cooldowns.push(actionObject);
@@ -235,8 +236,6 @@ var Entity = function () {
 		Lynx.Log("Entity " + this.Name + " has been killed!");
 		World.Entities.splice(World.Entities.indexOf(this), 1);
 	};
-
-	World.Entities.push(this);
 };
 
 // Entity Definitions
