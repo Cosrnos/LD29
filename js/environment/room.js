@@ -3,15 +3,24 @@ var World = World || {};
 World.Rooms = {
 
 	content: [], //Array that contains all the rooms.
+	hashMap: {},
+	roomSize: 50,
 
 	//Add a room to the room array
-	push: function (room) {
+	push: function(room) {
+		var x = room.x * this.roomSize;
+		var y = room.y * this.roomSize;
+
+		if (!this.hashMap[room.x]) {
+			this.hashMap[room.x] = {};
+		}
+		this.hashMap[room.x][room.y] = room;
 		this.content.push(room);
 	},
 
 	//Finds a room whose origin cooridinates match [x,y]
-	findRoom: function (x, y) {
-		foundRoom = _.find(this.content, function (room) {
+	findRoom: function(x, y) {
+		foundRoom = _.find(this.content, function(room) {
 			if (room.x === x && room.y === y) {
 				return true;
 			}
@@ -20,7 +29,7 @@ World.Rooms = {
 	}
 }
 
-var Room = function (x, y) {
+var Room = function(x, y) {
 
 	this.id = 0;
 	//position of this room.
@@ -37,35 +46,36 @@ var Room = function (x, y) {
 	this.type = {}; //The type of room this is.
 	this.mobs = []; //A list of creatures in the room.
 
-	this.entity = new Lynx.Entity(x, y, 40, 40);
+	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, 40, 40);
 	this.entity.Color = 0xDEADBE;
 	Lynx.Scene.AddEntity(this.entity);
 
 	//Add hallway
-	this.nHall = new Lynx.Entity(x + 17, y - 10, 6, 10);
+	this.nHall = new Lynx.Entity(World.Rooms.roomSize * x + 17, World.Rooms.roomSize * y - 10, 6, 10);
 	this.nHall.Color = 0xFF0000;
-	this.sHall = new Lynx.Entity(x + 17, y + 40, 6, 10);
+	this.sHall = new Lynx.Entity(World.Rooms.roomSize * x + 17, World.Rooms.roomSize * y + 40, 6, 10);
 	this.sHall.Color = 0xFF0000;
-	this.eHall = new Lynx.Entity(x + 40, y + 17, 10, 6);
+	this.eHall = new Lynx.Entity(World.Rooms.roomSize * x + 40, World.Rooms.roomSize * y + 17, 10, 6);
 	this.eHall.Color = 0xFF0000;
-	this.wHall = new Lynx.Entity(x - 10, y + 17, 10, 6);
+	this.wHall = new Lynx.Entity(World.Rooms.roomSize * x - 10, World.Rooms.roomSize * y + 17, 10, 6);
 	this.wHall.Color = 0xFF0000;
 
 	//This add a room or creates a connection to an already existing room in the specified direction.
-	this.addRoom = function (direction) {
+	this.addRoom = function(direction) {
 		var newRoom;
 		var error = '';
+		var roomSize = World.Rooms.roomSize;
 
 		direction = direction.toLowerCase();
 		if (direction === "n" || direction === "north") {
 			if (this.North === null) {
 				//Check to see if thee is a room in that direction that this room isn't yet connected to.
-				var foundRoom = World.Rooms.findRoom(x, y - 50)
+				var foundRoom = World.Rooms.findRoom(x, y - 1)
 				if (foundRoom) {
 					this.North = foundRoom;
 					foundRoom.South = this;
 				} else {
-					newRoom = new Room(x, y - 50);
+					newRoom = new Room(x, y - 1);
 					this.North = newRoom;
 					newRoom.South = this;
 				}
@@ -78,12 +88,12 @@ var Room = function (x, y) {
 		} else if (direction === "s" || direction === "south") {
 
 			if (this.South === null) {
-				var foundRoom = World.Rooms.findRoom(x, y + 50)
+				var foundRoom = World.Rooms.findRoom(x, y + 1)
 				if (foundRoom) {
 					this.South = foundRoom;
 					foundRoom.North = this;
 				} else {
-					newRoom = new Room(x, y + 50);
+					newRoom = new Room(x, y + 1);
 					this.South = newRoom;
 					newRoom.North = this;
 				}
@@ -94,12 +104,12 @@ var Room = function (x, y) {
 
 		} else if (direction === "e" || direction === "east") {
 			if (this.East === null) {
-				var foundRoom = World.Rooms.findRoom(x + 50, y)
+				var foundRoom = World.Rooms.findRoom(x + 1, y)
 				if (foundRoom) {
 					this.East = foundRoom;
 					foundRoom.West = this;
 				} else {
-					newRoom = new Room(x + 50, y);
+					newRoom = new Room(x + 1, y);
 					this.East = newRoom;
 					newRoom.West = this;
 				}
@@ -110,12 +120,12 @@ var Room = function (x, y) {
 		} else if (direction === "w" || direction === "west") {
 
 			if (this.West === null) {
-				var foundRoom = World.Rooms.findRoom(x - 50)
+				var foundRoom = World.Rooms.findRoom(x - 1, y)
 				if (foundRoom) {
 					this.West = foundRoom;
 					foundRoom.East = this;
 				} else {
-					newRoom = new Room(x - 50, y);
+					newRoom = new Room(x - 1, y);
 					this.West = newRoom;
 					newRoom.East = this;
 				}
@@ -146,7 +156,7 @@ var Room = function (x, y) {
 
 
 //This creates a kinda-random dungeon, starting from 'room'
-walk = function (room, maxDepth, depth) {
+walk = function(room, maxDepth, depth) {
 	if (depth >= maxDepth || !room) {
 		return;
 	}

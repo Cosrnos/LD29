@@ -24,17 +24,14 @@ Game = {
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-<<<<<<< Updated upstream
-	SetupScene: function () {
-		Lynx.Start();
-	},
-	Ready: function () {
-=======
 	SetupScene: function() {
 		Lynx.Start();
 	},
 	Ready: function() {
->>>>>>> Stashed changes
+		World.Rooms.push(new Room(8, 5));
+		walk(World.Rooms.content[0], 5, 0);
+		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
+
 		var john = new Hero();
 		john.Name = "John";
 		var hugo = new Trog();
@@ -42,16 +39,21 @@ Game = {
 		john.GiveItem(new HP10Potion(), 1);
 		john.Experience += 99;
 		john.UseItem("HP 10 Potion");
-
-<<<<<<< Updated upstream
-		hugo.TakeDamage(50, john);
-=======
-		john.Kill();
-		hugo.Kill();
-
-		Game.Rooms.push(new Game.Room(400, 250));
-		walk(Game.Rooms.content[0], 5, 0);
->>>>>>> Stashed changes
+		john.EquipItem(new WoodenSword());
+		while (hugo.HealthDelta < hugo.Health) {
+			john.Attack(hugo);
+		}
 	}
+<<<<<<< Updated upstream
 };
-console.log('GAME LOADED')
+=======
+};
+
+var Entities = Entities || {};
+Entities.content = [];
+Entities.createEntity = function(entity) {
+	var newEntity = new entity();
+	Entities.content.push(newEntity);
+	return newEntity;
+}
+>>>>>>> Stashed changes
