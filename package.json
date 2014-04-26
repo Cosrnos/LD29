@@ -1,0 +1,21 @@
+{
+    "name": "LD29",
+    "version": "0.0.1",
+    "private": false,
+    "dependencies": {
+        "grunt": "0.4.1",
+        "grunt-ember-templates": "0.4.20",
+        "grunt-contrib-jshint": "0.5.4",
+        "grunt-contrib-watch": "0.4.3",
+        "grunt-contrib-concat": "0.3.0",
+        "grunt-contrib-less": "0.5.2",
+        "grunt-contrib-uglify": "0.2.1",
+        "grunt-contrib-connect": "0.3.0",
+        "grunt-shell": "~0.2.2"
+    },
+    "devDependencies": {},
+    "engines": {
+        "node": "0.8.x",
+        "npm": "1.1.x"
+    }
+}
