@@ -2,80 +2,83 @@ Game = {
 	CameraVX: 0,
 	CameraVY: 0,
 
-	Start: function () {
+	Start: function() {
 		this.Initialize();
-		this.LoadAssets((function () {
-			this.LoadComponents((function () {
+		this.LoadAssets((function() {
+			this.LoadComponents((function() {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function () {
+	Initialize: function() {
 		//Set Globals here
 		//Open preloader if needed
 	},
 
-	LoadAssets: function (pCallback) {
+	LoadAssets: function(pCallback) {
 		//Queue assets here
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function (pCallback) {
+	LoadComponents: function(pCallback) {
 		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function () {
-		Lynx.Scene.On("Keyboard.Press.W", function () {
+	SetupScene: function() {
+		Lynx.Scene.On("Keyboard.Press.W", function() {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.W", function () {
+		Lynx.Scene.On("Keyboard.Release.W", function() {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.S", function () {
+		Lynx.Scene.On("Keyboard.Press.S", function() {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.S", function () {
+		Lynx.Scene.On("Keyboard.Release.S", function() {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.A", function () {
+		Lynx.Scene.On("Keyboard.Press.A", function() {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.A", function () {
+		Lynx.Scene.On("Keyboard.Release.A", function() {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.D", function () {
+		Lynx.Scene.On("Keyboard.Press.D", function() {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.D", function () {
+		Lynx.Scene.On("Keyboard.Release.D", function() {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Update", function () {
+		Lynx.Scene.On("Update", function() {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
+			return true;
 		});
 
 		Lynx.Start();
 	},
-	Ready: function () {
+	Ready: function() {
 		World.Rooms.push(new Room(8, 5));
 		walk(World.Rooms.content[0], 5, 0);
 		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
 
-		var john = new Warrior("John");
+		var john = World.Entities.createEntity(Warrior);
+		john.Name = "John"
 		john.EquipItem(new WoodenSword());
 		john.BaseDefense = 10;
-		var hugo = new GiantSpider();
+
+		var hugo = World.Entities.createEntity(GiantSpider);
 		hugo.Name = "Giant Spider"
 		john.CurrentTarget = hugo;
 
@@ -97,17 +100,44 @@ Game = {
 		Lynx.Scene.AddElement(sampleText);
 
 		john.BaseSpeed = 2;
-		Lynx.Scene.On("Update", function () {
-			john.Think();
-			hugo.Think();
+		Lynx.Scene.On("Update", function() {
+			_.each(World.Entities.content, function(entity) {
+				if (entity) {
+					entity.Think();
+				}
+			});
+			return true;
 		});
 	}
 };
+var World = World || {};
 
-var Entities = Entities || {};
-Entities.content = [];
-Entities.createEntity = function (entity) {
-	var newEntity = new entity();
-	Entities.content.push(newEntity);
-	return newEntity;
+World.Entities = {
+	content: [],
+	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
+	createEntity: function(entityClass) {
+		var newEntity = new entityClass();
+		this.content.push(newEntity);
+		return newEntity;
+	},
+	removeEntity: function(delEntity) {
+		//Remove it from it's current room.
+		debugger;
+		var currentRoom = delEntity.GetRoom();
+		if (currentRoom) {
+			_.remove(currentRoom.mobs, function(entity) {
+				return entity === delEntity;
+			});
+		}
+		//Remove it from the spawned list in the room in which it was spawed.
+		if (delEntity.spawnedRoom) {
+			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
+				return entity === delEntity;
+			});
+		}
+		//Remove it from the global enitites registry.
+		_.remove(this.content, function(entity) {
+			return entity === delEntity;
+		});
+	}
 }

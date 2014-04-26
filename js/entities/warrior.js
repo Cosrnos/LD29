@@ -1,13 +1,13 @@
 // Warrior
 //--------------------------
 
-var Warrior = function (pName) {
+var Warrior = function(pName) {
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
 	this.GiveAction("Heavy Attack");
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {

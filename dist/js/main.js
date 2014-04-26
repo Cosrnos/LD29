@@ -1,4 +1,7 @@
 Game = {
+	CameraVX: 0,
+	CameraVY: 0,
+
 	Start: function() {
 		this.Initialize();
 		this.LoadAssets((function() {
@@ -20,11 +23,49 @@ Game = {
 	},
 
 	LoadComponents: function(pCallback) {
-		Lynx.CM.Load("Tracker", "Timer");
+		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
 	SetupScene: function() {
+		Lynx.Scene.On("Keyboard.Press.W", function() {
+			Game.CameraVY -= 1
+		});
+
+		Lynx.Scene.On("Keyboard.Release.W", function() {
+			Game.CameraVY += 1
+		});
+
+		Lynx.Scene.On("Keyboard.Press.S", function() {
+			Game.CameraVY += 1
+		});
+
+		Lynx.Scene.On("Keyboard.Release.S", function() {
+			Game.CameraVY -= 1
+		});
+
+		Lynx.Scene.On("Keyboard.Press.A", function() {
+			Game.CameraVX -= 1
+		});
+
+		Lynx.Scene.On("Keyboard.Release.A", function() {
+			Game.CameraVX += 1
+		});
+
+		Lynx.Scene.On("Keyboard.Press.D", function() {
+			Game.CameraVX += 1
+		});
+
+		Lynx.Scene.On("Keyboard.Release.D", function() {
+			Game.CameraVX -= 1
+		});
+
+		Lynx.Scene.On("Update", function() {
+			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
+			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
+			return true;
+		});
+
 		Lynx.Start();
 	},
 	Ready: function() {
@@ -32,27 +73,73 @@ Game = {
 		walk(World.Rooms.content[0], 5, 0);
 		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
 
-		var john = new Warrior("John");
+		var john = World.Entities.createEntity(Warrior);
+		john.Name = "John"
 		john.EquipItem(new WoodenSword());
 		john.BaseDefense = 10;
-		var hugo = new GiantSpider();
+
+		var hugo = World.Entities.createEntity(GiantSpider);
 		hugo.Name = "Giant Spider"
 		john.CurrentTarget = hugo;
 
+		var sampleText = new Lynx.Text({
+			Value: "Current Score: 0",
+			Color: "#FFFFFF",
+		});
+
+		var statFrame = new Lynx.CanvasElement(0, Lynx.Scene.Height - 50, Lynx.Scene.Width, 50);
+		statFrame.Color = 0xFF33CC;
+		statFrame.Alpha = 0.5;
+		statFrame.Static = true;
+
+		Lynx.Scene.AddElement(statFrame);
+
+
+		sampleText.Static = true;
+
+		Lynx.Scene.AddElement(sampleText);
+
 		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
-			john.Think();
-			hugo.Think();
+			_.each(World.Entities.content, function(entity) {
+				if (entity) {
+					entity.Think();
+				}
+			});
+			return true;
 		});
 	}
 };
+var World = World || {};
 
-var Entities = Entities || {};
-Entities.content = [];
-Entities.createEntity = function(entity) {
-	var newEntity = new entity();
-	Entities.content.push(newEntity);
-	return newEntity;
+World.Entities = {
+	content: [],
+	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
+	createEntity: function(entityClass) {
+		var newEntity = new entityClass();
+		this.content.push(newEntity);
+		return newEntity;
+	},
+	removeEntity: function(delEntity) {
+		//Remove it from it's current room.
+		debugger;
+		var currentRoom = delEntity.GetRoom();
+		if (currentRoom) {
+			_.remove(currentRoom.mobs, function(entity) {
+				return entity === delEntity;
+			});
+		}
+		//Remove it from the spawned list in the room in which it was spawed.
+		if (delEntity.spawnedRoom) {
+			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
+				return entity === delEntity;
+			});
+		}
+		//Remove it from the global enitites registry.
+		_.remove(this.content, function(entity) {
+			return entity === delEntity;
+		});
+	}
 }
 Actions = [];
 
@@ -91,9 +178,7 @@ var EquipSlot = {
 //--------------------------------------------
 var World = World || {};
 
-World.Entities = [];
-
-var Entity = function () {
+var Entity = function() {
 
 	var currentRoom = null;
 	var items = [];
@@ -102,6 +187,7 @@ var Entity = function () {
 	var cooldowns = [];
 	var available = [att];
 
+	this.spawnedRoom = null; //THe room in which it spawned.
 	this.Id = 0;
 	this.Name = "";
 	this.Species = "";
@@ -129,14 +215,14 @@ var Entity = function () {
 
 	//Properties
 	Object.defineProperty(this, "Alive", {
-		get: function () {
+		get: function() {
 			return this.Health > this.HealthDelta;
 		}
 	});
 
 	//Start AI
 
-	this.Think = function () {
+	this.Think = function() {
 		//See what's on cooldown and when we can use it next
 		if (!this.Alive)
 			return false;
@@ -145,7 +231,7 @@ var Entity = function () {
 		this.Brain.call(this);
 	};
 
-	this.Brain = function () {
+	this.Brain = function() {
 		//Individual AI Logic goes here.
 	};
 
@@ -164,28 +250,29 @@ var Entity = function () {
 		}
 	}
 
-	this.Idle = function () {};
+	this.Idle = function() {};
 
-	this.Run = function () {};
+	this.Run = function() {};
 
-	this.OnCooldown = function (pName) {
+	this.OnCooldown = function(pName) {
 		return (typeof _.find(cooldowns, {
 			Name: pName
 		}) !== 'undefined');
 	};
 
-	this.UseAction = function (pName, pTarget) {
+	this.UseAction = function(pName, pTarget) {
 		if (!this.Alive || this.OnCooldown(pName)) {
 			return false;
 		}
 
-		var actionObject = _.find(actions, function (pA) {
+		var actionObject = _.find(actions, function(pA) {
 			return pA.Name == pName;
 		});
 
 		if (typeof actionObject === 'undefined')
 			return false;
 
+		console.log(this.Name + " used " + pName);
 		actionObject.Use(this, pTarget);
 		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
@@ -195,7 +282,7 @@ var Entity = function () {
 		return false;
 	};
 
-	this.GiveAction = function (pAction) {
+	this.GiveAction = function(pAction) {
 		if (!pAction.hasOwnProperty("Name")) {
 			//Try finding it on a global level
 			var ta = _.find(Actions, {
@@ -207,7 +294,7 @@ var Entity = function () {
 			}
 		}
 
-		if (typeof _.find(actions, function (pA) {
+		if (typeof _.find(actions, function(pA) {
 			return pA.Name === pAction.Name;
 		}) !== 'undefined') {
 			return false;
@@ -218,7 +305,7 @@ var Entity = function () {
 	};
 
 	//End AI
-	this.TakeDamage = function (pDamage, pAttacker) {
+	this.TakeDamage = function(pDamage, pAttacker) {
 		//TODO: Fix Defense algorithm
 		if (!this.Alive) {
 			return;
@@ -233,17 +320,17 @@ var Entity = function () {
 		}
 	};
 
-	this.NotifyKill = function (pAttacker) {
+	this.NotifyKill = function(pAttacker) {
 
 	};
 
-	this.GiveItem = function (pItem, pQuantity) {
+	this.GiveItem = function(pItem, pQuantity) {
 		for (var i = 0; i < pQuantity; i++) {
 			items.push(pItem);
 		}
 	};
 
-	this.HasItem = function (pItemName, pQuantity) {
+	this.HasItem = function(pItemName, pQuantity) {
 		var totalCount = 0;
 		pQuantity = pQuantity || 1;
 
@@ -260,7 +347,7 @@ var Entity = function () {
 		return false;
 	};
 
-	this.TakeItem = function (pItemName, pQuantity) {
+	this.TakeItem = function(pItemName, pQuantity) {
 		var toRemove = 0;
 		pQuantity = pQuantity || 1;
 
@@ -283,7 +370,7 @@ var Entity = function () {
 		return true;
 	};
 
-	this.UseItem = function (pItemName) {
+	this.UseItem = function(pItemName) {
 		if (!this.Alive) {
 			return false;
 		}
@@ -304,7 +391,7 @@ var Entity = function () {
 		}
 	};
 
-	this.EquipItem = function (pEquip) {
+	this.EquipItem = function(pEquip) {
 		if ((pEquip.Type & ItemType.EQUIPABLE) === 0) {
 			return;
 		}
@@ -317,15 +404,24 @@ var Entity = function () {
 		pEquip.Equip(this);
 	};
 
-	this.SetRoom = function (pRoom) {
+	this.SetRoom = function(pRoom) {
 		if (pRoom instanceof Room) {
 			currentRoom = pRoom;
 		}
 	};
 
-	this.Kill = function () {
-		Lynx.Log("Entity " + this.Name + " has been killed!");
-		World.Entities.splice(World.Entities.indexOf(this), 1);
+	this.GetRoom = function(pRoom) {
+		return currentRoom;
+	};
+
+	this.RemoveFromGame = function() {
+		World.Entities.removeEntity(this);
+	};
+
+	this.Kill = function() {
+		//Lynx.Log("Entity " + this.Name + " has been killed!");
+		this.RemoveFromGame();
+		//World.Entities.splice(World.Entities.indexOf(this), 1);
 	};
 };
 
@@ -350,15 +446,15 @@ var HeavyAttackAction = new Action("Heavy Attack", 1000);
 HeavyAttackAction.Use = function (pEntity, pTarget) {
 	pTarget.TakeDamage(pEntity.BaseAttack * 1.5, pEntity);
 };
-var Enemy = function () {
+var Enemy = function() {
 	var originalTakeDamage = this.TakeDamage;
 
-	this.TakeDamage = function (pAmount, pAttacker) {
+	this.TakeDamage = function(pAmount, pAttacker) {
 		originalTakeDamage.call(this, pAmount, pAttacker);
 		this.CurrentTarget = pAttacker;
 	}
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -372,8 +468,9 @@ var Enemy = function () {
 		}
 	}
 
-	this.Kill = function () {
-		Lynx.Log("Enemy " + this.Name + " has been killed!");
+	this.Kill = function() {
+		Lynx.Log("Enemy " + this.Species + " has been killed!");
+		this.RemoveFromGame();
 	};
 };
 Enemy.prototype = new Entity();
@@ -383,7 +480,7 @@ Enemy.prototype.constructor = Enemy;
 //-----------------------------
 
 //Level 1-5
-var Trog = function () {
+var Trog = function() {
 	this.Species = "Trog";
 	this.Experience = 50;
 	this.Gold = 25;
@@ -394,7 +491,7 @@ var Trog = function () {
 Trog.prototype = new Enemy();
 Trog.prototype.constructor = Trog;
 
-var Spider = function () {
+var Spider = function() {
 	this.Species = "Spider";
 	this.Level = 3;
 	this.Experience = 70;
@@ -407,7 +504,7 @@ var Spider = function () {
 Spider.prototype = new Enemy();
 Spider.prototype.constructor = Spider;
 
-var Bat = function () {
+var Bat = function() {
 	this.Species = "Bat";
 	this.Level = 5;
 	this.Experience = 90;
@@ -421,7 +518,7 @@ Bat.prototype = new Enemy();
 Bat.prototype.constructor = Bat;
 
 //Level 6-10
-var Goblin = function () {
+var Goblin = function() {
 	this.Species = "Goblin";
 	this.Level = 7;
 	this.Experience = 150;
@@ -435,7 +532,7 @@ var Goblin = function () {
 Goblin.prototype = new Enemy();
 Goblin.prototype.constructor = Goblin;
 
-var GiantSpider = function () {
+var GiantSpider = function() {
 	this.Species = "Giant Spider";
 	this.Level = 10;
 	this.BaseAttack = 5;
@@ -443,7 +540,7 @@ var GiantSpider = function () {
 	this.Experience = 200;
 	this.Health = 20;
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -473,7 +570,7 @@ var HeroClass = {
 };
 
 //Basic Hero
-var Hero = function (pName) {
+var Hero = function(pName) {
 
 	var totalExp = 0;
 	var nextLevelExp = 100;
@@ -481,10 +578,10 @@ var Hero = function (pName) {
 	this.Name = pName || "";
 
 	Object.defineProperty(this, "Experience", {
-		get: function () {
+		get: function() {
 			return totalExp;
 		},
-		set: function (pValue) {
+		set: function(pValue) {
 			totalExp += pValue;
 			if (totalExp >= nextLevelExp) {
 				this.totalExp -= nextLevelExp;
@@ -498,11 +595,11 @@ var Hero = function (pName) {
 	this.Species = "Human";
 	this.Class = HeroClass.SCRUB;
 	//Start AI
-	this.NotifyKill = function (pEntityKilled) {
+	this.NotifyKill = function(pEntityKilled) {
 		this.Experience += pEntityKilled.Exp;
 	};
 
-	this.LevelUp = function () {
+	this.LevelUp = function() {
 		this.Health += 2;
 		this.BaseAttack += 1;
 		Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
@@ -510,8 +607,9 @@ var Hero = function (pName) {
 
 	//End AI
 
-	this.Kill = function () {
+	this.Kill = function() {
 		Lynx.Log("Hero " + this.Name + " has been killed!");
+		this.RemoveFromGame();
 	};
 };
 
@@ -553,13 +651,13 @@ Mage.prototype.constructor = Mage;
 // Warrior
 //--------------------------
 
-var Warrior = function (pName) {
+var Warrior = function(pName) {
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
 	this.GiveAction("Heavy Attack");
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -580,8 +678,6 @@ var Warrior = function (pName) {
 
 Warrior.prototype = new Hero();
 Warrior.prototype.constructor = Warrior;
-var World = World || {};
-
 World.Rooms = {
 
 	content: [], //Array that contains all the rooms.
@@ -625,7 +721,7 @@ var Room = function(x, y) {
 	this.West = null;
 
 	this.name = '';
-	this.type = new EmptyRoom(); //The type of room this is.
+	var type = new EmptyRoom(this); //The type of room this is.
 	this.mobs = []; //A list of creatures in the room.
 
 	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, 40, 40);
@@ -642,10 +738,24 @@ var Room = function(x, y) {
 	this.wHall = new Lynx.Entity(World.Rooms.roomSize * x - 10, World.Rooms.roomSize * y + 17, 10, 6);
 	this.wHall.Color = 0xFF0000;
 
+	Object.defineProperty(this, "type", {
+		get: function() {
+			return type;
+		},
+		set: function(newRoom) {
+			if (type) {
+				type.destroy();
+			}
+			type = newRoom;
+
+		}
+	});
+
+	// this.getType = function()
 	// this.setType = function(roomType) {
-	// 	if (roomType.prototype instanceof Room) {
+	// 	if (roomType.prototype instanceof EmptyRoom) {
 	// 		if (this.type) {
-	// 			delete this.type;
+	// 			this.type.destroy();
 	// 		}
 	// 		this.type = new roomType();
 	// 	}
@@ -735,7 +845,7 @@ var Room = function(x, y) {
 			return false;
 		}
 		if (newRoom) {
-			newRoom.type = new EmptyRoom(this);
+			//newRoom.type = new EmptyRoom(this);
 			newRoom.id = World.Rooms.content.length;
 			World.Rooms.push(newRoom);
 			return newRoom;
@@ -792,13 +902,19 @@ walk = function(room, maxDepth, depth) {
 //This is the base RootType type.
 var EmptyRoom = function(parent) {
 	this.parent = parent;
-	//Room.call(this);
+	this.destroy = function() {}
 };
 // EmptyRoom.prototype = new Room();
 // EmptyRoom.prototype.constructor = EmptyRoom;
 
 var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
+
+	this.destroy = function() {
+		this.__proto__.destroy()
+	}
+
+
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
@@ -806,8 +922,9 @@ var NodeRoom = function(parent) {
 		var entityToSpawn = _.sample(this.canSpawnEntities);
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
-				var newEntity = Entities.createEntity(entityToSpawn);
-				newEntity.SetRoom(this);
+				var newEntity = World.Entities.createEntity(entityToSpawn);
+				newEntity.SetRoom(this.parent);
+				newEntity.spawnedRoom = this;
 				this.parent.mobs.push(newEntity);
 				this.spawnedEntities.push(newEntity);
 				console.log('Spawned a ' + newEntity.Species);
@@ -824,15 +941,22 @@ NodeRoom.prototype.constructor = NodeRoom;
 var TrogRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
 
+	//Need to destpry RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
+		clearInterval(this.timer);
+		this.__proto__.destroy()
+	}
+
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
-	this.spawnCooldown = 20000;
-	setInterval(function() {
-		//Only spawn in the maxSpawnedEntities limit hsn't been reached.
-		if (this.spawnedEntities.length < this.maxSpawnedEntities) {
-			this.Spawner();
-		}
-	}.bind(this), this.spawnCooldown);
+	this.spawnCooldown = 5000;
+	// this.timer = setInterval(function() {
+	// 	//Only spawn in the maxSpawnedEntities limit hsn't been reached.
+	// 	if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+	// 		this.Spawner();
+	// 	}
+	// }.bind(this), this.spawnCooldown);
+	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
 
 TrogRoom.prototype = new NodeRoom();

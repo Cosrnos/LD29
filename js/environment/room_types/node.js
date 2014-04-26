@@ -1,13 +1,19 @@
 //This is the base RootType type.
 var EmptyRoom = function(parent) {
 	this.parent = parent;
-	//Room.call(this);
+	this.destroy = function() {}
 };
 // EmptyRoom.prototype = new Room();
 // EmptyRoom.prototype.constructor = EmptyRoom;
 
 var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
+
+	this.destroy = function() {
+		this.__proto__.destroy()
+	}
+
+
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
@@ -15,8 +21,9 @@ var NodeRoom = function(parent) {
 		var entityToSpawn = _.sample(this.canSpawnEntities);
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
-				var newEntity = Entities.createEntity(entityToSpawn);
-				newEntity.SetRoom(this);
+				var newEntity = World.Entities.createEntity(entityToSpawn);
+				newEntity.SetRoom(this.parent);
+				newEntity.spawnedRoom = this;
 				this.parent.mobs.push(newEntity);
 				this.spawnedEntities.push(newEntity);
 				console.log('Spawned a ' + newEntity.Species);
@@ -33,15 +40,22 @@ NodeRoom.prototype.constructor = NodeRoom;
 var TrogRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
 
+	//Need to destpry RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
+		clearInterval(this.timer);
+		this.__proto__.destroy()
+	}
+
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
-	this.spawnCooldown = 20000;
-	setInterval(function() {
-		//Only spawn in the maxSpawnedEntities limit hsn't been reached.
-		if (this.spawnedEntities.length < this.maxSpawnedEntities) {
-			this.Spawner();
-		}
-	}.bind(this), this.spawnCooldown);
+	this.spawnCooldown = 5000;
+	// this.timer = setInterval(function() {
+	// 	//Only spawn in the maxSpawnedEntities limit hsn't been reached.
+	// 	if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+	// 		this.Spawner();
+	// 	}
+	// }.bind(this), this.spawnCooldown);
+	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
 
 TrogRoom.prototype = new NodeRoom();
