@@ -39,6 +39,8 @@ Game = {
 		john.Experience += 99;
 		john.UseItem("HP 10 Potion");
 		john.EquipItem(new WoodenSword());
-		hugo.TakeDamage(john.BaseAttack, john);
+		while (hugo.HealthDelta < hugo.Health) {
+			john.Attack(hugo);
+		}
 	}
 };

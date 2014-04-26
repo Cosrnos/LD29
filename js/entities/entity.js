@@ -2,6 +2,7 @@ var Entity = function () {
 
 	var currentRoom = null;
 	var items = [];
+	var actions = [AttackAction];
 
 	this.Id = 0;
 	this.Name = "";
@@ -35,9 +36,22 @@ var Entity = function () {
 
 	this.Idle = function () {};
 
-	this.Attack = function (pTarget) {};
+	this.Attack = function (pTarget) {
+		this.UseAction("Attack", pTarget);
+	};
 
 	this.Run = function () {};
+
+	this.UseAction = function (pName, pTarget) {
+		var actionObject = _.find(actions, function (pA) {
+			return pA.Name == pName;
+		});
+
+		if (typeof actionObject === 'undefined')
+			return false;
+
+		actionObject.Use(this, pTarget);
+	};
 
 	//End AI
 	this.TakeDamage = function (pDamage, pAttacker) {
