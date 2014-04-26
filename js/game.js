@@ -30,6 +30,8 @@ Game = {
 		john.Name = "John";
 		var hugo = new Trog();
 		hugo.Name = "Hugo";
+		john.GiveItem(new HP10Potion(), 1);
+		john.UseItem("HP 10 Potion");
 
 		john.Kill();
 		hugo.Kill();
