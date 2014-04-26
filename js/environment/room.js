@@ -43,7 +43,7 @@ var Room = function(x, y) {
 	this.West = null;
 
 	this.name = '';
-	this.type = {}; //The type of room this is.
+	this.type = new EmptyRoom(); //The type of room this is.
 	this.mobs = []; //A list of creatures in the room.
 
 	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, 40, 40);
@@ -59,6 +59,15 @@ var Room = function(x, y) {
 	this.eHall.Color = 0xFF0000;
 	this.wHall = new Lynx.Entity(World.Rooms.roomSize * x - 10, World.Rooms.roomSize * y + 17, 10, 6);
 	this.wHall.Color = 0xFF0000;
+
+	// this.setType = function(roomType) {
+	// 	if (roomType.prototype instanceof Room) {
+	// 		if (this.type) {
+	// 			delete this.type;
+	// 		}
+	// 		this.type = new roomType();
+	// 	}
+	// };
 
 	//This add a room or creates a connection to an already existing room in the specified direction.
 	this.addRoom = function(direction) {
@@ -144,6 +153,7 @@ var Room = function(x, y) {
 			return false;
 		}
 		if (newRoom) {
+			newRoom.type = new EmptyRoom(this);
 			newRoom.id = World.Rooms.content.length;
 			World.Rooms.push(newRoom);
 			return newRoom;

@@ -36,7 +36,7 @@ Game = {
 		john.EquipItem(new WoodenSword());
 		var hugo = new Trog();
 		john.CurrentTarget = hugo;
-		Lynx.Scene.On("Update", function () {
+		Lynx.Scene.On("Update", function() {
 			john.Think();
 		});
 	}

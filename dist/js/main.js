@@ -32,17 +32,13 @@ Game = {
 		walk(World.Rooms.content[0], 5, 0);
 		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
 
-		var john = new Hero();
-		john.Name = "John";
-		var hugo = new Trog();
-		hugo.Name = "Hugo";
-		john.GiveItem(new HP10Potion(), 1);
-		john.Experience += 99;
-		john.UseItem("HP 10 Potion");
+		var john = new Warrior("John");
 		john.EquipItem(new WoodenSword());
-		while (hugo.HealthDelta < hugo.Health) {
-			john.Attack(hugo);
-		}
+		var hugo = new Trog();
+		john.CurrentTarget = hugo;
+		Lynx.Scene.On("Update", function() {
+			john.Think();
+		});
 	}
 };
 
@@ -53,48 +49,52 @@ Entities.createEntity = function(entity) {
 	Entities.content.push(newEntity);
 	return newEntity;
 }
+Actions = [];
 
-var Action = function (pName, pCost) {
+var Action = function (pName, pCooldown) {
 	this.Name = pName || "";
-	this.Cost = pCost || 1;
+	this.Cooldown = pCooldown || 500;
+	this.CanUseAt = 0;
 	this.Use = function (pEntity) {};
+
+	Actions.push(this);
 };
-var AttackAction = new Action("Attack", 1);
-
-AttackAction.Use = function (pEntity, pTarget) {
-	pTarget.TakeDamage(pEntity.BaseAttack, pEntity);
-};
-var Enemy = function () {
-	Entity.call(this);
-
-	this.Kill = function () {
-		Lynx.Log("Enemy " + this.Name + " has been killed!");
-	};
-};
-
-//Enemy Definitions
-//-----------------------------
-
-//Level 1-5
-var Trog = function () {
-	Enemy.call(this);
-
-	this.Species = "Trog";
-	this.Experience = 50;
-	this.Gold = 25;
-	this.Health = 5;
-	this.Mana = 0;
+var Item = function (pName) {
+	this.Name = pName;
+	this.Type = ItemType.JUNK;
+	this.EquipSlot = EquipSlot.NONE;
+	this.Use = function (pHero) {};
+	this.Cost = 1;
+	this.Equip = function (pHero) {};
+	this.Unequip = function (pHero) {};
 };
 
-Trog.prototype = {
-	construtor: Enemy
+var ItemType = {
+	JUNK: 0x0,
+	USABLE: 0X10,
+	EQUIPABLE: 0X100
 };
+
+var EquipSlot = {
+	NONE: 0x0,
+	WEAPON: 0x1,
+	ARMOR: 0X10,
+	ACCESSORY: 0X100
+};
+
+//Item Definitions
+//--------------------------------------------
+var World = World || {};
+
+World.Entities = [];
 
 var Entity = function () {
 
 	var currentRoom = null;
 	var items = [];
 	var actions = [AttackAction];
+	var cooldowns = [];
+	var available = [AttackAction];
 
 	this.Id = 0;
 	this.Name = "";
@@ -103,6 +103,7 @@ var Entity = function () {
 	this.Gold = 0;
 	this.Exp = 1; //Exp to be awarded to the attacker on kill
 	this.InCombat = false;
+	this.CurrentTarget = null;
 
 	this.Health = 10;
 	this.HealthDelta = 0;
@@ -119,12 +120,39 @@ var Entity = function () {
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
 
+	//Properties
+	Object.defineProperty(this, "Alive", {
+		get: function () {
+			return this.Health > this.HealthDelta;
+		}
+	});
+
 	//Start AI
 
 	this.Think = function () {
-		//AI Logic goes here.
-		this.Idle();
+		//See what's on cooldown and when we can use it next
+		__updateCooldowns();
+		this.Brain.call(this);
 	};
+
+	this.Brain = function () {
+		//Individual AI Logic goes here.
+	};
+
+	function __updateCooldowns() {
+		var makeAvailable = [];
+		var now = Date.now();
+		for (var i = 0; i < cooldowns.length; i++) {
+			if (cooldowns[i].CanUseAt <= now) {
+				makeAvailable.push(cooldowns[i]);
+			}
+		}
+
+		for (var x = 0; x < makeAvailable.length; x++) {
+			cooldowns.splice(cooldowns.indexOf(makeAvailable[x]), 1);
+			available.push(makeAvailable[x]);
+		}
+	}
 
 	this.Idle = function () {};
 
@@ -134,7 +162,17 @@ var Entity = function () {
 
 	this.Run = function () {};
 
+	this.OnCooldown = function (pName) {
+		return (typeof _.find(cooldowns, {
+			Name: pName
+		}) !== 'undefined');
+	};
+
 	this.UseAction = function (pName, pTarget) {
+		if (!this.Alive || this.OnCooldown(pName)) {
+			return false;
+		}
+
 		var actionObject = _.find(actions, function (pA) {
 			return pA.Name == pName;
 		});
@@ -143,16 +181,49 @@ var Entity = function () {
 			return false;
 
 		actionObject.Use(this, pTarget);
+		actionObject.CanUseAt = Date.now() + actionObject.Cooldown;
+
+		available.splice(available.indexOf(actionObject), 1);
+		cooldowns.push(actionObject);
+
+		return false;
+	};
+
+	this.GiveAction = function (pAction) {
+		if (!pAction.hasOwnProperty("Name")) {
+			//Try finding it on a global level
+			var ta = _.find(Actions, {
+				Name: pAction
+			});
+			if (typeof ta !== 'undefined') {
+				//We have anaction with that name so we'll use it
+				pAction = Object.create(ta);
+			}
+		}
+
+		if (typeof _.find(actions, function (pA) {
+			return pA.Name === pAction.Name;
+		}) !== 'undefined') {
+			return false;
+		}
+
+		actions.push(pAction);
+		return true;
 	};
 
 	//End AI
 	this.TakeDamage = function (pDamage, pAttacker) {
 		//TODO: Fix Defense algorithm
+		if (!this.Alive) {
+			return;
+		}
+
 		var realHit = Math.floor(pDamage - this.BaseDefense);
 		this.HealthDelta += realHit;
 		if (this.HealthDelta >= this.Health) {
-			pAttacker.NotifyKill(this);
 			this.Kill();
+			pAttacker.CurrentTarget = null;
+			pAttacker.NotifyKill(this);
 		}
 	};
 
@@ -207,6 +278,10 @@ var Entity = function () {
 	};
 
 	this.UseItem = function (pItemName) {
+		if (!this.Alive) {
+			return false;
+		}
+
 		var item = -1;
 		for (var i = 0; i < items.length; i++) {
 			if (items[i].Name === pItemName) {
@@ -215,7 +290,8 @@ var Entity = function () {
 			}
 		}
 
-		if (item !== -1 && (item.Type & ItemType.USABLE) !== 0) {
+		if (item !== -1 && (item.Type & ItemType.USABLE) !== 0 && item.Cost <= this.ActionPoints) {
+			this.ActionPoints -= item.Cost;
 			item.Use(this);
 			Lynx.Log("Hero " + this.Name + " has used a(n) " + item.Name);
 			items.splice(item, 1);
@@ -243,23 +319,59 @@ var Entity = function () {
 
 	this.Kill = function () {
 		Lynx.Log("Entity " + this.Name + " has been killed!");
+		World.Entities.splice(World.Entities.indexOf(this), 1);
 	};
+
+	World.Entities.push(this);
 };
 
 // Entity Definitions
 //--------------------------
+var AttackAction = new Action("Attack", 500);
+
+AttackAction.Use = function (pEntity, pTarget) {
+	pTarget.TakeDamage(pEntity.BaseAttack, pEntity);
+};
+var HeavyAttackAction = new Action("Heavy Attack", 1000);
+
+HeavyAttackAction.Use = function (pEntity, pTarget) {
+	Lynx.Log(pEntity.Name + " used Heavy Attack!!");
+	pTarget.TakeDamage(pEntity.BaseAttack * 2, pEntity);
+};
+var Enemy = function () {
+	this.Kill = function () {
+		Lynx.Log("Enemy " + this.Name + " has been killed!");
+	};
+};
+Enemy.prototype = new Entity();
+Enemy.prototype.constructor = Enemy;
+
+//Enemy Definitions
+//-----------------------------
+
+//Level 1-5
+var Trog = function () {
+	this.Species = "Trog";
+	this.Experience = 50;
+	this.Gold = 25;
+	this.Health = 5;
+	this.Mana = 0;
+};
+
+Trog.prototype = new Enemy();
+Trog.prototype.constructor = Trog;
 var HeroClass = {
 	SCRUB: 0,
 	WARRIOR: 1,
 };
 
 //Basic Hero
-var Hero = function () {
+var Hero = function (pName) {
 
 	var totalExp = 0;
 	var nextLevelExp = 100;
 
-	Entity.call(this);
+	this.Name = pName || "";
 
 	Object.defineProperty(this, "Experience", {
 		get: function () {
@@ -296,18 +408,32 @@ var Hero = function () {
 	};
 };
 
+Hero.prototype = new Entity();
+Hero.prototype.constructor = Hero;
+
 // Hero Definitions
 //----------------------------
-
 // Warrior
 //--------------------------
 
-var Warrior = function () {
-	Hero.call(this);
-
+var Warrior = function (pName) {
 	this.Class = HeroClass.WARRIOR;
+	this.Name = pName || "WARRIOR";
+
+	this.GiveAction("Heavy Attack");
+
+	this.Brain = function () {
+		if (this.CurrentTarget !== null) {
+			if (!this.OnCooldown("Attack")) {
+				Lynx.Log(this.Name + " is attacking!");
+				this.Attack(this.CurrentTarget);
+			}
+		}
+	};
 };
 
+Warrior.prototype = new Hero();
+Warrior.prototype.constructor = Warrior;
 var World = World || {};
 
 World.Rooms = {
@@ -353,7 +479,7 @@ var Room = function(x, y) {
 	this.West = null;
 
 	this.name = '';
-	this.type = {}; //The type of room this is.
+	this.type = new EmptyRoom(); //The type of room this is.
 	this.mobs = []; //A list of creatures in the room.
 
 	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, 40, 40);
@@ -369,6 +495,15 @@ var Room = function(x, y) {
 	this.eHall.Color = 0xFF0000;
 	this.wHall = new Lynx.Entity(World.Rooms.roomSize * x - 10, World.Rooms.roomSize * y + 17, 10, 6);
 	this.wHall.Color = 0xFF0000;
+
+	// this.setType = function(roomType) {
+	// 	if (roomType.prototype instanceof Room) {
+	// 		if (this.type) {
+	// 			delete this.type;
+	// 		}
+	// 		this.type = new roomType();
+	// 	}
+	// };
 
 	//This add a room or creates a connection to an already existing room in the specified direction.
 	this.addRoom = function(direction) {
@@ -454,6 +589,7 @@ var Room = function(x, y) {
 			return false;
 		}
 		if (newRoom) {
+			newRoom.type = new EmptyRoom(this);
 			newRoom.id = World.Rooms.content.length;
 			World.Rooms.push(newRoom);
 			return newRoom;
@@ -507,30 +643,54 @@ walk = function(room, maxDepth, depth) {
 		}
 	}
 };
-
-var NodeRoom = function() {
+//This is the base RootType type.
+var EmptyRoom = function(parent) {
+	this.parent = parent;
 	//Room.call(this);
+};
+// EmptyRoom.prototype = new Room();
+// EmptyRoom.prototype.constructor = EmptyRoom;
+
+var NodeRoom = function(parent) {
+	EmptyRoom.apply(this, [parent]);
+	this.maxSpawnedEntities = 0;
+	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
 	this.Spawner = function() {
 		var entityToSpawn = _.sample(this.canSpawnEntities);
-
-		if (entityToSpawn && entityToSpawn instanceof Entity) {
-			var newEntity = Entities.CreateEntity(entityToSpawn);
-			newEntity.SetRoom(this);
-			this.mobs.push(newEntity);
+		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
+			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+				var newEntity = Entities.createEntity(entityToSpawn);
+				newEntity.SetRoom(this);
+				this.parent.mobs.push(newEntity);
+				this.spawnedEntities.push(newEntity);
+				console.log('Spawned a ' + newEntity.Species);
+				return newEntity;
+			} else {
+				return false;
+			}
 		}
-	}
+	};
 };
-NodeRoom.prototype = new Room();
-NodeRoom.prototype.construtor = NodeRoom;
+NodeRoom.prototype = new EmptyRoom();
+NodeRoom.prototype.constructor = NodeRoom;
 
-var TrogRoom = function() {
-	NodeRoom.call(this);
+var TrogRoom = function(parent) {
+	NodeRoom.apply(this, [parent]);
+
+	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
-}
+	this.spawnCooldown = 20000;
+	setInterval(function() {
+		//Only spawn in the maxSpawnedEntities limit hsn't been reached.
+		if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+			this.Spawner();
+		}
+	}.bind(this), this.spawnCooldown);
+};
 
 TrogRoom.prototype = new NodeRoom();
-TrogRoom.prototype.construtor = TrogRoom;
+TrogRoom.prototype.constructor = TrogRoom;
 // Accessories
 //--------------------------
 
@@ -566,31 +726,6 @@ var TatteredClothes = function () {
 		pHero.BaseDefense -= 1;
 	};
 };
-
-var Item = function (pName) {
-	this.Name = pName;
-	this.Type = ItemType.JUNK;
-	this.EquipSlot = EquipSlot.NONE;
-	this.Use = function (pHero) {};
-	this.Equip = function (pHero) {};
-	this.Unequip = function (pHero) {};
-};
-
-var ItemType = {
-	JUNK: 0x0,
-	USABLE: 0X10,
-	EQUIPABLE: 0X100
-};
-
-var EquipSlot = {
-	NONE: 0x0,
-	WEAPON: 0x1,
-	ARMOR: 0X10,
-	ACCESSORY: 0X100
-};
-
-//Item Definitions
-//--------------------------------------------
 
 // Potions
 //--------------------------
