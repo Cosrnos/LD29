@@ -1,25 +1,25 @@
 Game = {
-	Start: function() {
+	Start: function () {
 		this.Initialize();
-		this.LoadAssets((function() {
-			this.LoadComponents((function() {
+		this.LoadAssets((function () {
+			this.LoadComponents((function () {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function() {
+	Initialize: function () {
 		//Set Globals here
 		//Open preloader if needed
 	},
 
-	LoadAssets: function(pCallback) {
+	LoadAssets: function (pCallback) {
 		//Queue assets here
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function(pCallback) {
+	LoadComponents: function (pCallback) {
 		Lynx.CM.Load("Tracker", "Timer");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
@@ -28,6 +28,9 @@ Game = {
 		Lynx.Start();
 	},
 	Ready: function () {
+		Game.Rooms.push(new Game.Room(400, 250));
+		walk(Game.Rooms.content[0], 5, 0);
+
 		var john = new Hero();
 		john.Name = "John";
 		var hugo = new Trog();
@@ -35,10 +38,7 @@ Game = {
 		john.GiveItem(new HP10Potion(), 1);
 		john.Experience += 99;
 		john.UseItem("HP 10 Potion");
-
-		hugo.TakeDamage(50, john);
-
-		Game.Rooms.push(new Game.Room(400, 250));
-		walk(Game.Rooms.content[0], 5, 0);
+		john.EquipItem(new WoodenSword());
+		hugo.TakeDamage(john.BaseAttack, john);
 	}
 };

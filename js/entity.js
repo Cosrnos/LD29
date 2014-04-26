@@ -19,11 +19,11 @@ var Entity = function () {
 	this.BaseMagic = 1;
 	this.ActionPoints = 1;
 
-	this.Equipment = {
-		Weapon: "None",
-		Armor: "None",
-		Accessory: "None"
-	};
+	this.Equipment = {};
+
+	this.Equipment[EquipSlot.ACCESSORY] = null;
+	this.Equipment[EquipSlot.ARMOR] = null;
+	this.Equipment[EquipSlot.WEAPON] = null;
 
 	//Start AI
 
@@ -108,11 +108,24 @@ var Entity = function () {
 			}
 		}
 
-		if (item !== -1) {
+		if (item !== -1 && (item.Type & ItemType.USABLE) !== 0) {
 			item.Use(this);
 			Lynx.Log("Hero " + this.Name + " has used a(n) " + item.Name);
 			items.splice(item, 1);
 		}
+	};
+
+	this.EquipItem = function (pEquip) {
+		if ((pEquip.Type & ItemType.EQUIPABLE) === 0) {
+			return;
+		}
+
+		if (this.Equipment[pEquip.EquipSlot] !== null) {
+			this.GiveItem(this.Equipment[pEquip.EquipSlot]);
+			this.Equipment[pEquip.EquipSlot].Unequip(this);
+		}
+		this.Equipment[pEquip.EquipSlot] = pEquip;
+		pEquip.Equip(this);
 	};
 
 	this.SetRoom = function (pRoom) {
