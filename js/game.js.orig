@@ -24,10 +24,17 @@ Game = {
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
+<<<<<<< Updated upstream
 	SetupScene: function () {
 		Lynx.Start();
 	},
 	Ready: function () {
+=======
+	SetupScene: function() {
+		Lynx.Start();
+	},
+	Ready: function() {
+>>>>>>> Stashed changes
 		var john = new Hero();
 		john.Name = "John";
 		var hugo = new Trog();
@@ -36,9 +43,15 @@ Game = {
 		john.Experience += 99;
 		john.UseItem("HP 10 Potion");
 
+<<<<<<< Updated upstream
 		hugo.TakeDamage(50, john);
+=======
+		john.Kill();
+		hugo.Kill();
 
 		Game.Rooms.push(new Game.Room(400, 250));
 		walk(Game.Rooms.content[0], 5, 0);
+>>>>>>> Stashed changes
 	}
 };
+console.log('GAME LOADED')

@@ -8,25 +8,15 @@ module.exports = function(grunt) {
                 undef: true,
                 devel: true,
                 browser: true,
-                jquery: true,
                 globals: {
-                    "App": true,
-                    "api": true,
-                    "getReportButton": true,
-                    "array2ints": true,
-                    "array2strings": true,
-                    "codes": true,
-                    "Ember": true,
-                    "Em": true,
+                    "Game": true,
+                    "Lynx": true,
                     "_": true,
-                    "moment": true,
-                    "Handlebars": true,
-                    "io": true,
-                    "CoSConfig": true
+
                 },
-                ignores: ["source/vendor/*"]       
+                ignores: ["vendor/*"]       
             },
-            all: 'source/**/*.js'        
+            all: 'js/**/*.js'        
         },
 
         concat: {
@@ -36,11 +26,11 @@ module.exports = function(grunt) {
 
                 }
             },
-            // vendors: {
-            //     files: {
-            //         'dist/js/vendor.js': ["src/Lynx.js"],
-            //     }
-            // }
+            vendors: {
+                files: {
+                    'dist/js/vendor.js': ["vendor/lodash.js"],
+                }
+            }
         },
         uglify: {
             main: {
@@ -48,11 +38,11 @@ module.exports = function(grunt) {
                     'dist/js/main.min.js': 'dist/js/main.js'
                 }
             },
-            // vendors: {
-            //     files: {
-            //         'dist/js/vendor.min.js': 'dist/js/vendor.js',
-            //     }
-            // }
+            vendors: {
+                files: {
+                    'dist/js/vendor.min.js': 'dist/js/vendor.js',
+                }
+            }
         },
         connect: {            
             server: {                
@@ -73,10 +63,10 @@ module.exports = function(grunt) {
                 files: ['js/**/*.js'],
                 tasks: ['jshint', 'concat:main']
             },
-            // vendors: {                
-            //     files: ['src/**/*js'],
-            //     tasks: ['concat:vendors']            
-            // }
+            vendors: {                
+                files: ['vendor/**/*.js'],
+                tasks: ['concat:vendors']            
+            }
         }
     });
 
