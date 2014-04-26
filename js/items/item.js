@@ -3,6 +3,7 @@ var Item = function (pName) {
 	this.Type = ItemType.JUNK;
 	this.EquipSlot = EquipSlot.NONE;
 	this.Use = function (pHero) {};
+	this.Cost = 1;
 	this.Equip = function (pHero) {};
 	this.Unequip = function (pHero) {};
 };

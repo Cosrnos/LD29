@@ -27,6 +27,13 @@ var Entity = function () {
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
 
+	//Properties
+	Object.defineProperty(this, "Alive", {
+		get: function () {
+			return this.Health > this.HealthDelta;
+		}
+	});
+
 	//Start AI
 
 	this.Think = function () {
@@ -43,6 +50,10 @@ var Entity = function () {
 	this.Run = function () {};
 
 	this.UseAction = function (pName, pTarget) {
+		if (!this.Alive) {
+			return false;
+		}
+
 		var actionObject = _.find(actions, function (pA) {
 			return pA.Name == pName;
 		});
@@ -50,7 +61,34 @@ var Entity = function () {
 		if (typeof actionObject === 'undefined')
 			return false;
 
-		actionObject.Use(this, pTarget);
+		if (this.ActionPoints >= actionObject.Cost) {
+			this.ActionPoints -= actionObject.Cost;
+			actionObject.Use(this, pTarget);
+		}
+
+		return false;
+	};
+
+	this.GiveAction = function (pAction) {
+		if (!pAction.hasOwnProperty("Name")) {
+			//Try finding it on a global level
+			var ta = _.find(Actions, {
+				Name: pAction
+			});
+			if (typeof ta !== 'undefined') {
+				//We have anaction with that name so we'll use it
+				pAction = ta;
+			}
+		}
+
+		if (typeof _.find(actions, function (pA) {
+			return pA.Name === pAction.Name;
+		}) !== 'undefined') {
+			return false;
+		}
+
+		actions.push(pAction);
+		return true;
 	};
 
 	//End AI
@@ -59,8 +97,8 @@ var Entity = function () {
 		var realHit = Math.floor(pDamage - this.BaseDefense);
 		this.HealthDelta += realHit;
 		if (this.HealthDelta >= this.Health) {
-			pAttacker.NotifyKill(this);
 			this.Kill();
+			pAttacker.NotifyKill(this);
 		}
 	};
 
@@ -115,6 +153,10 @@ var Entity = function () {
 	};
 
 	this.UseItem = function (pItemName) {
+		if (!this.Alive) {
+			return false;
+		}
+
 		var item = -1;
 		for (var i = 0; i < items.length; i++) {
 			if (items[i].Name === pItemName) {
@@ -123,7 +165,8 @@ var Entity = function () {
 			}
 		}
 
-		if (item !== -1 && (item.Type & ItemType.USABLE) !== 0) {
+		if (item !== -1 && (item.Type & ItemType.USABLE) !== 0 && item.Cost <= this.ActionPoints) {
+			this.ActionPoints -= item.Cost;
 			item.Use(this);
 			Lynx.Log("Hero " + this.Name + " has used a(n) " + item.Name);
 			items.splice(item, 1);
