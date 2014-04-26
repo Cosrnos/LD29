@@ -110,19 +110,7 @@
 			Lynx.Load(function() {
 				Viewport = new Lynx.Viewport("viewport-container");
 				Viewport.ClearColor = 0x000000;
-
-				Lynx.CM.On("ComponentManager.Ready", function() {
-					Lynx.Start();
-					Lynx.Log("-------------------------------------------------------------------");
-					Lynx.Log("  Welcome to the Lynx Sandbox!");
-					Lynx.Log("  To get started, simply navigate to the Lynx.Load function in index.html");
-					Lynx.Log("  Start putting your game logic in that method and see how easy it is to create with Lynx!");
-					Lynx.Log("  For more information, please visit <a href=\"http://lynxjs.com/\" target=\"_blank\">LynxJS.com</a>!");
-					Lynx.Log("-------------------------------------------------------------------");
-					Game.Start();
-				});
-
-				Lynx.CM.Load("Tracker");
+				Game.Start();
 			});
 		}, false);
 	</script>
