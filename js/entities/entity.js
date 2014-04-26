@@ -9,6 +9,7 @@ var Entity = function () {
 	this.Level = 1;
 	this.Gold = 0;
 	this.Exp = 1; //Exp to be awarded to the attacker on kill
+	this.InCombat = false;
 
 	this.Health = 10;
 	this.HealthDelta = 0;
@@ -138,3 +139,6 @@ var Entity = function () {
 		Lynx.Log("Entity " + this.Name + " has been killed!");
 	};
 };
+
+// Entity Definitions
+//--------------------------

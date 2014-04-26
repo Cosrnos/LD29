@@ -28,8 +28,8 @@ Game = {
 		Lynx.Start();
 	},
 	Ready: function () {
-		Game.Rooms.push(new Game.Room(400, 250));
-		walk(Game.Rooms.content[0], 5, 0);
+		World.Rooms.push(new Room(400, 250));
+		walk(World.Rooms.content[0], 5, 0);
 
 		var john = new Hero();
 		john.Name = "John";

@@ -1,3 +1,9 @@
+var HeroClass = {
+	SCRUB: 0,
+	WARRIOR: 1,
+};
+
+//Basic Hero
 var Hero = function () {
 
 	var totalExp = 0;
@@ -21,7 +27,7 @@ var Hero = function () {
 	});
 
 	this.Species = "Human";
-	this.Class = HeroClass.WARRIOR;
+	this.Class = HeroClass.SCRUB;
 	//Start AI
 	this.NotifyKill = function (pEntityKilled) {
 		this.Experience += pEntityKilled.Exp;
@@ -40,7 +46,5 @@ var Hero = function () {
 	};
 };
 
-
-var HeroClass = {
-	WARRIOR: 0
-};
+// Hero Definitions
+//----------------------------

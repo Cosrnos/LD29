@@ -1,15 +1,17 @@
-Game.Rooms = {
+var World = World || {};
+
+World.Rooms = {
 
 	content: [], //Array that contains all the rooms.
 
 	//Add a room to the room array
-	push: function(room) {
+	push: function (room) {
 		this.content.push(room);
 	},
 
 	//Finds a room whose origin cooridinates match [x,y]
-	findRoom: function(x, y) {
-		foundRoom = _.find(this.content, function(room) {
+	findRoom: function (x, y) {
+		foundRoom = _.find(this.content, function (room) {
 			if (room.x === x && room.y === y) {
 				return true;
 			}
@@ -17,7 +19,8 @@ Game.Rooms = {
 		return foundRoom;
 	}
 }
-Game.Room = function(x, y) {
+
+var Room = function (x, y) {
 
 	this.id = 0;
 	//position of this room.
@@ -49,7 +52,7 @@ Game.Room = function(x, y) {
 	this.wHall.Color = 0xFF0000;
 
 	//This add a room or creates a connection to an already existing room in the specified direction.
-	this.addRoom = function(direction) {
+	this.addRoom = function (direction) {
 		var newRoom;
 		var error = '';
 
@@ -57,12 +60,12 @@ Game.Room = function(x, y) {
 		if (direction === "n" || direction === "north") {
 			if (this.North === null) {
 				//Check to see if thee is a room in that direction that this room isn't yet connected to.
-				var foundRoom = Game.Rooms.findRoom(x, y - 50)
+				var foundRoom = World.Rooms.findRoom(x, y - 50)
 				if (foundRoom) {
 					this.North = foundRoom;
 					foundRoom.South = this;
 				} else {
-					newRoom = new Game.Room(x, y - 50);
+					newRoom = new Room(x, y - 50);
 					this.North = newRoom;
 					newRoom.South = this;
 				}
@@ -75,12 +78,12 @@ Game.Room = function(x, y) {
 		} else if (direction === "s" || direction === "south") {
 
 			if (this.South === null) {
-				var foundRoom = Game.Rooms.findRoom(x, y + 50)
+				var foundRoom = World.Rooms.findRoom(x, y + 50)
 				if (foundRoom) {
 					this.South = foundRoom;
 					foundRoom.North = this;
 				} else {
-					newRoom = new Game.Room(x, y + 50);
+					newRoom = new Room(x, y + 50);
 					this.South = newRoom;
 					newRoom.North = this;
 				}
@@ -91,12 +94,12 @@ Game.Room = function(x, y) {
 
 		} else if (direction === "e" || direction === "east") {
 			if (this.East === null) {
-				var foundRoom = Game.Rooms.findRoom(x + 50, y)
+				var foundRoom = World.Rooms.findRoom(x + 50, y)
 				if (foundRoom) {
 					this.East = foundRoom;
 					foundRoom.West = this;
 				} else {
-					newRoom = new Game.Room(x + 50, y);
+					newRoom = new Room(x + 50, y);
 					this.East = newRoom;
 					newRoom.West = this;
 				}
@@ -107,12 +110,12 @@ Game.Room = function(x, y) {
 		} else if (direction === "w" || direction === "west") {
 
 			if (this.West === null) {
-				var foundRoom = Game.Rooms.findRoom(x - 50)
+				var foundRoom = World.Rooms.findRoom(x - 50)
 				if (foundRoom) {
 					this.West = foundRoom;
 					foundRoom.East = this;
 				} else {
-					newRoom = new Game.Room(x - 50, y);
+					newRoom = new Room(x - 50, y);
 					this.West = newRoom;
 					newRoom.East = this;
 				}
@@ -131,8 +134,8 @@ Game.Room = function(x, y) {
 			return false;
 		}
 		if (newRoom) {
-			newRoom.id = Game.Rooms.content.length;
-			Game.Rooms.push(newRoom);
+			newRoom.id = World.Rooms.content.length;
+			World.Rooms.push(newRoom);
 			return newRoom;
 		} else if (foundRoom) {
 			return foundRoom
@@ -143,7 +146,7 @@ Game.Room = function(x, y) {
 
 
 //This creates a kinda-random dungeon, starting from 'room'
-walk = function(room, maxDepth, depth) {
+walk = function (room, maxDepth, depth) {
 	if (depth >= maxDepth || !room) {
 		return;
 	}
@@ -161,7 +164,7 @@ walk = function(room, maxDepth, depth) {
 			walk(newRoom, maxDepth, depth + 1);
 		}
 	}
-	debugger;
+	//debugger;
 	//Randomly create rooms in each direction.
 	if (Math.random() >= 0.6) {
 		if (room.addRoom('n')) {
