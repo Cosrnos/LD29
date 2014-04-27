@@ -27,6 +27,12 @@ World.Rooms = {
 	}
 }
 
+//This is the base RoomType type.
+var EmptyRoom = function(parent) {
+	this.parent = parent;
+	this.destroy = function() {}
+};
+
 var Room = function(x, y) {
 
 	this.id = 0;
@@ -199,44 +205,56 @@ var Room = function(x, y) {
 
 
 //This creates a kinda-random dungeon, starting from 'room'
-walk = function(room, maxDepth, depth) {
-	if (depth >= maxDepth || !room) {
-		return;
-	}
-	//Sometime create a coridor three rooms long.
-	if (Math.random() >= 0.8) {
+walk = function(room, maxDepth, minRooms, depth) {
 
-		var direction = _.sample(['n', 's', 'w', 'e']);
-		var x = 0;
-		newRoom = room.addRoom(direction);
-		while (newRoom && x < 3) {
-			x += 1;
-			newRoom = newRoom.addRoom(direction);
+	var createRooms = function(room, maxDepth, depth) {
+		if (depth >= maxDepth || !room) {
+			return;
 		}
-		if (newRoom) {
-			walk(newRoom, maxDepth, depth + 1);
+		//Sometime create a coridor three rooms long.
+		if (Math.random() >= 0.8) {
+
+			var direction = _.sample(['n', 's', 'w', 'e']);
+			var x = 0;
+			newRoom = room.addRoom(direction);
+			while (newRoom && x < 3) {
+				x += 1;
+				newRoom = newRoom.addRoom(direction);
+			}
+			if (newRoom) {
+				createRooms(newRoom, maxDepth, depth + 1);
+			}
+		}
+		//debugger;
+		//Randomly create rooms in each direction.
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('n')) {
+				createRooms(room.North, maxDepth, depth + 1);
+			}
+		}
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('s')) {
+				createRooms(room.South, maxDepth, depth + 1);
+			}
+		}
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('e')) {
+				createRooms(room.East, maxDepth, depth + 1);
+			}
+		}
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('w')) {
+				createRooms(room.West, maxDepth, depth + 1);
+			}
 		}
 	}
-	//debugger;
-	//Randomly create rooms in each direction.
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('n')) {
-			walk(room.North, maxDepth, depth + 1);
-		}
+
+	var initialRoomNum = World.Rooms.content.length;
+	createRooms(room, maxDepth, depth);
+	while (World.Rooms.content.length < minRooms) {
+		//var randRoom = _.sample(World.Rooms.content);
+		createRooms(room, maxDepth, depth);
+
 	}
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('s')) {
-			walk(room.South, maxDepth, depth + 1);
-		}
-	}
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('e')) {
-			walk(room.East, maxDepth, depth + 1);
-		}
-	}
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('w')) {
-			walk(room.West, maxDepth, depth + 1);
-		}
-	}
+
 };

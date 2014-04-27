@@ -5,11 +5,13 @@ var Mage = function(pName) {
 	Hero.apply(this);
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
+	this.HeroType = "MAGE";
 
 	this.GiveAction("Fireblast");
 
 	this.Brain = function() {
-		while (true) {
+		var thinking = true;
+		while (thinking) {
 			if (this.CurrentTarget !== null) {
 				if (!this.OnCooldown("Attack")) {
 					Lynx.Log(this.Name + " is attacking!");
@@ -22,18 +24,25 @@ var Mage = function(pName) {
 					continue;
 				};
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Enemy });
-				if(typeof enemyInRoom !== 'undefined'){
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Enemy
+				});
+				if (typeof enemyInRoom !== 'undefined') {
 					this.CurrentTarget = enemyInRoom;
 					continue;
 				}
-				
+
+				//If we're in the TreasureRoom and not fighting, ASCEND!
+				if (this.GetRoom().type instanceof TreasureRoom) {
+					this.GetRoom().type.Ascend(this);
+				}
+
 				if (!this.OnCooldown("HeroMove")) {
 					this.UseAction("HeroMove");
 					continue;
 				}
 			}
-			break;
+			thinking = false;
 		}
 	};
 };

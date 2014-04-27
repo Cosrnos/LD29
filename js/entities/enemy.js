@@ -55,6 +55,24 @@ var Enemy = function() {
 
 	this.Kill = function() {
 		Lynx.Log("Enemy " + this.Species + " has been killed!");
+
+		var self = this;
+		var attackers = _.filter(World.Entities.content, function(mob) {
+			return mob.CurrentTarget === self;
+		});
+
+		var numAttackers = attackers.length;
+
+		//RECALCULATE THE EXPERIENCE GIVEN DEPENDING ON THE NUMBER OF ATTACKERS!!!
+		//This forumla boosts the experience gained based with the number of attackers then
+		//divies it up.
+		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * numAttackers));
+
+		_.each(attackers, function(pAttacker) {
+			pAttacker.CurrentTarget = null;
+			pAttacker.NotifyKill(self);
+		});
+
 		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
@@ -74,6 +92,7 @@ var Trog = function() {
 	this.Gold = 25;
 	this.Health = 5;
 	this.Mana = 0;
+	this.BaseDefense = 0;
 };
 
 Trog.prototype = new Enemy();

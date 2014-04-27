@@ -11,3 +11,8 @@ UI.AddNodeMenu.AddOption("Spiders", function() {
 	this.type = new SpiderRoom(this);
 	return true;
 });
+
+UI.AddNodeMenu.AddOption("Treasure", function() {
+	this.type = new TreasureRoom(this);
+	return true;
+});

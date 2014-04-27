@@ -3,65 +3,65 @@ Game = {
 	CameraVY: 0,
 	ActiveMenu: null,
 
-	Start: function () {
+	Start: function() {
 		this.Initialize();
-		this.LoadAssets((function () {
-			this.LoadComponents((function () {
+		this.LoadAssets((function() {
+			this.LoadComponents((function() {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function () {
+	Initialize: function() {
 		//Set Globals here
 		//Open preloader if needed
 	},
 
-	LoadAssets: function (pCallback) {
+	LoadAssets: function(pCallback) {
 		//Queue assets here
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function (pCallback) {
+	LoadComponents: function(pCallback) {
 		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function () {
-		Lynx.Scene.On("Keyboard.Press.W", function () {
+	SetupScene: function() {
+		Lynx.Scene.On("Keyboard.Press.W", function() {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.W", function () {
+		Lynx.Scene.On("Keyboard.Release.W", function() {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.S", function () {
+		Lynx.Scene.On("Keyboard.Press.S", function() {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.S", function () {
+		Lynx.Scene.On("Keyboard.Release.S", function() {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.A", function () {
+		Lynx.Scene.On("Keyboard.Press.A", function() {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.A", function () {
+		Lynx.Scene.On("Keyboard.Release.A", function() {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.D", function () {
+		Lynx.Scene.On("Keyboard.Press.D", function() {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.D", function () {
+		Lynx.Scene.On("Keyboard.Release.D", function() {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Update", function () {
+		Lynx.Scene.On("Update", function() {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
 			if (Game.ActiveMenu !== null) {
@@ -72,9 +72,14 @@ Game = {
 
 		Lynx.Start();
 	},
-	Ready: function () {
-		World.Rooms.push(new Room(8, 5));
-		walk(World.Rooms.content[0], 5, 0);
+	Ready: function() {
+
+		var entranceRoom = new Room(8, 5);
+		entranceRoom.type = new EntranceRoom(entranceRoom);
+
+		World.Rooms.push(entranceRoom);
+
+		walk(World.Rooms.content[0], 5, 5, 0);
 		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
 
 		var john = World.Entities.createEntity(Warrior);
@@ -93,8 +98,8 @@ Game = {
 		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
-		Lynx.Scene.On("Update", function () {
-			_.each(World.Entities.content, function (entity) {
+		Lynx.Scene.On("Update", function() {
+			_.each(World.Entities.content, function(entity) {
 				if (entity) {
 					entity.Think();
 					if (entity.Draw) {
@@ -105,7 +110,7 @@ Game = {
 			return true;
 		});
 
-		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
+		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
 			if (Game.ActiveMenu !== null) {
 				if (Game.ActiveMenu.Disposed) {
@@ -130,36 +135,88 @@ Game = {
 };
 var World = World || {};
 
+World.Stats = {
+	heroesSpawned: 0,
+	heroesDied: 0,
+	heroesAscended: 0,
+
+	dungeonExp: 0,
+	dungeonGold: 0,
+
+	mobsDied: 0,
+	mobsSpawned: 0,
+
+	//What are these?  WHO KNOWS!?!
+	fame: 0,
+	peril: 0,
+}
+
 World.Entities = {
 	content: [],
+	ascendedHeroes: [],
 	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
-	createEntity: function (entityClass) {
+	createEntity: function(entityClass) {
 		var newEntity = new entityClass();
 		this.content.push(newEntity);
+
+		if (newEntity instanceof Enemy) {
+			World.Stats.mobsSpawned++;
+		} else if (newEntity instanceof Hero) {
+			World.Stats.heroesSpawned++;
+		}
+
+
+
 		return newEntity;
 	},
-	removeEntity: function (delEntity) {
+	removeEntity: function(delEntity) {
 		//Remove it from it's current room.
 		//debugger;
+
+		if (delEntity instanceof Enemy) {
+			World.Stats.mobsDied++;
+		} else if (delEntity instanceof Hero) {
+			World.Stats.heroesDied++;
+		}
+
 		var currentRoom = delEntity.GetRoom();
 		if (currentRoom) {
-			_.remove(currentRoom.mobs, function (entity) {
+			_.remove(currentRoom.mobs, function(entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the spawned list in the room in which it was spawed.
 		if (delEntity.spawnedRoom) {
-			_.remove(delEntity.spawnedRoom.spawnedEntities, function (entity) {
+			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the global enitites registry.
-		_.remove(this.content, function (entity) {
+		_.remove(this.content, function(entity) {
 			return entity === delEntity;
 		});
-	}
-}
+	},
+	ascendHero: function(ascHero) {
+		this.ascendedHeroes.push(ascHero);
 
+		var currentRoom = ascHero.GetRoom();
+		if (currentRoom) {
+			_.remove(currentRoom.mobs, function(entity) {
+				return entity === ascHero;
+			});
+		}
+		//Remove it from the spawned list in the room in which it was spawed.
+		if (ascHero.spawnedRoom) {
+			_.remove(ascHero.spawnedRoom.spawnedEntities, function(entity) {
+				return entity === ascHero;
+			});
+		}
+		//Remove it from the global enitites registry.
+		_.remove(this.content, function(entity) {
+			return entity === ascHero;
+		});
+	},
+}
 Actions = [];
 
 var Action = function (pName, pCooldown) {
@@ -470,7 +527,7 @@ var Entity = function() {
 		if (typeof actionObject === 'undefined')
 			return false;
 
-	//	console.log(this.Name + " used " + pName);
+		//	console.log(this.Name + " used " + pName);
 		actionObject.Use(this, pTarget);
 		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
@@ -506,15 +563,17 @@ var Entity = function() {
 	this.TakeDamage = function(pDamage, pAttacker) {
 		//TODO: Fix Defense algorithm
 		if (!this.Alive) {
-			return;
+			//return;
 		}
 
 		var realHit = Math.floor(pDamage - this.BaseDefense);
+		if (realHit < 0) {
+			realHit = 0;
+		}
 		this.HealthDelta += realHit;
+		debugger;
 		if (this.HealthDelta >= this.Health) {
 			this.Kill();
-			pAttacker.CurrentTarget = null;
-			pAttacker.NotifyKill(this);
 		}
 	};
 
@@ -628,37 +687,47 @@ UI.AddNodeMenu.AddOption("Spiders", function() {
 	this.type = new SpiderRoom(this);
 	return true;
 });
+
+UI.AddNodeMenu.AddOption("Treasure", function() {
+	this.type = new TreasureRoom(this);
+	return true;
+});
 var UI = UI || {};
 
 UI.RoomMenu = new Menu("Room", true);
-UI.RoomMenu.NodeChange = UI.RoomMenu.AddOption("Add Node &raquo;", function () {
+UI.RoomMenu.NodeChange = UI.RoomMenu.AddOption("Add Node &raquo;", function() {
 	UI.RoomMenu.Hide();
 	UI.AddNodeMenu.Target = this;
 	UI.AddNodeMenu.ShowAt(UI.RoomMenu.X, UI.RoomMenu.Y);
 	return true;
 });
-UI.RoomMenu.AddOption("Kill Mobs", function(){
-	while(this.mobs.length > 0)
+UI.RoomMenu.AddOption("Kill Mobs", function() {
+	while (this.mobs.length > 0)
 		this.mobs[0].Kill();
-	
+
 	return true;
 });
-UI.RoomMenu.AddOption("Remove Nodes", function(){
+UI.RoomMenu.AddOption("Remove Nodes", function() {
 	this.type = new EmptyRoom(this);
 	return true;
 });
 
-UI.RoomMenu.AddOption("Spawn Player", function(){
+UI.RoomMenu.AddOption("Dig Some!!", function() {
+	walk(this, 4, World.Rooms.content.length + 5, 0);
+	return true;
+});
+
+UI.RoomMenu.AddOption("Spawn Player", function() {
 	var type = Warrior;
-	if(Date.now() % 2 === 0)
+	if (Date.now() % 2 === 0)
 		type = Mage;
 
 	var newEntity = World.Entities.createEntity(type);
-	newEntity.Name = "Hero #0x"+Date.now().toString(16);
+	newEntity.Name = "Hero #0x" + Date.now().toString(16);
 	newEntity.BaseAttack = 5;
 	newEntity.BaseMagic = 5;
 	newEntity.BaseDefense = 10;
-	
+
 	newEntity.SetRoom(this);
 	return true;
 });
@@ -776,6 +845,24 @@ var Enemy = function() {
 
 	this.Kill = function() {
 		Lynx.Log("Enemy " + this.Species + " has been killed!");
+
+		var self = this;
+		var attackers = _.filter(World.Entities.content, function(mob) {
+			return mob.CurrentTarget === self;
+		});
+
+		var numAttackers = attackers.length;
+
+		//RECALCULATE THE EXPERIENCE GIVEN DEPENDING ON THE NUMBER OF ATTACKERS!!!
+		//This forumla boosts the experience gained based with the number of attackers then
+		//divies it up.
+		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * numAttackers));
+
+		_.each(attackers, function(pAttacker) {
+			pAttacker.CurrentTarget = null;
+			pAttacker.NotifyKill(self);
+		});
+
 		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
@@ -795,6 +882,7 @@ var Trog = function() {
 	this.Gold = 25;
 	this.Health = 5;
 	this.Mana = 0;
+	this.BaseDefense = 0;
 };
 
 Trog.prototype = new Enemy();
@@ -897,11 +985,18 @@ GiantSpider.prototype.constructor = GiantSpider;
 var HeroClass = {
 	SCRUB: 0,
 	WARRIOR: 1,
+	MAGE: 2,
 };
 
 //Basic Hero
 var Hero = function(pName) {
 	Entity.apply(this);
+
+	this.Species = "Human";
+	this.HeroType = "";
+	this.Class = HeroClass.SCRUB;
+
+	this.expGainedInDungeon = 0; //This is the experience gained during this visit to the dungeon.
 	var totalExp = 0;
 	var nextLevelExp = 100;
 
@@ -932,6 +1027,7 @@ var Hero = function(pName) {
 		},
 		set: function(pValue) {
 			totalExp += pValue;
+			this.expGainedInDungeon += pValue;
 			if (totalExp >= nextLevelExp) {
 				this.totalExp -= nextLevelExp;
 				nextLevelExp = nextLevelExp * 1.5;
@@ -941,8 +1037,7 @@ var Hero = function(pName) {
 		}
 	});
 
-	this.Species = "Human";
-	this.Class = HeroClass.SCRUB;
+
 	//Start AI
 	this.NotifyKill = function(pEntityKilled) {
 		this.Experience += pEntityKilled.Exp;
@@ -958,6 +1053,16 @@ var Hero = function(pName) {
 
 	this.Kill = function() {
 		Lynx.Log("Hero " + this.Name + " has been killed!");
+
+		//Get all entities that are attacking this hero and notifiy them of it's death.
+		var self = this;
+		_.each(World.Entities.content, function(mob) {
+			if (mob.CurrentTarget === self) {
+				mob.CurrentTarget = null;
+				mob.NotifyKill(self);
+			}
+		});
+
 		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
@@ -975,11 +1080,13 @@ var Mage = function(pName) {
 	Hero.apply(this);
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
+	this.HeroType = "MAGE";
 
 	this.GiveAction("Fireblast");
 
 	this.Brain = function() {
-		while (true) {
+		var thinking = true;
+		while (thinking) {
 			if (this.CurrentTarget !== null) {
 				if (!this.OnCooldown("Attack")) {
 					Lynx.Log(this.Name + " is attacking!");
@@ -992,18 +1099,25 @@ var Mage = function(pName) {
 					continue;
 				};
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Enemy });
-				if(typeof enemyInRoom !== 'undefined'){
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Enemy
+				});
+				if (typeof enemyInRoom !== 'undefined') {
 					this.CurrentTarget = enemyInRoom;
 					continue;
 				}
-				
+
+				//If we're in the TreasureRoom and not fighting, ASCEND!
+				if (this.GetRoom().type instanceof TreasureRoom) {
+					this.GetRoom().type.Ascend(this);
+				}
+
 				if (!this.OnCooldown("HeroMove")) {
 					this.UseAction("HeroMove");
 					continue;
 				}
 			}
-			break;
+			thinking = false;
 		}
 	};
 };
@@ -1015,6 +1129,7 @@ Mage.prototype.constructor = Mage;
 
 var Warrior = function(pName) {
 	Hero.apply(this);
+	this.HeroType = "WARRIOR";
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
@@ -1034,15 +1149,24 @@ var Warrior = function(pName) {
 					continue;
 				}
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Enemy });
-				if(typeof enemyInRoom !== 'undefined'){
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Enemy
+				});
+				if (typeof enemyInRoom !== 'undefined') {
 					this.CurrentTarget = enemyInRoom;
 					continue;
 				}
+
+				//If we're in the TreasureRoom and not fighting, ASCEND!
+				if (this.GetRoom().type instanceof TreasureRoom) {
+					this.GetRoom().type.Ascend(this);
+				}
+
 				if (!this.OnCooldown("HeroMove")) {
 					this.UseAction("HeroMove");
 					continue;
 				}
+
 			}
 			thinking = false;
 		}
@@ -1079,6 +1203,12 @@ World.Rooms = {
 		return foundRoom;
 	}
 }
+
+//This is the base RoomType type.
+var EmptyRoom = function(parent) {
+	this.parent = parent;
+	this.destroy = function() {}
+};
 
 var Room = function(x, y) {
 
@@ -1252,59 +1382,61 @@ var Room = function(x, y) {
 
 
 //This creates a kinda-random dungeon, starting from 'room'
-walk = function(room, maxDepth, depth) {
-	if (depth >= maxDepth || !room) {
-		return;
-	}
-	//Sometime create a coridor three rooms long.
-	if (Math.random() >= 0.8) {
+walk = function(room, maxDepth, minRooms, depth) {
 
-		var direction = _.sample(['n', 's', 'w', 'e']);
-		var x = 0;
-		newRoom = room.addRoom(direction);
-		while (newRoom && x < 3) {
-			x += 1;
-			newRoom = newRoom.addRoom(direction);
+	var createRooms = function(room, maxDepth, depth) {
+		if (depth >= maxDepth || !room) {
+			return;
 		}
-		if (newRoom) {
-			walk(newRoom, maxDepth, depth + 1);
-		}
-	}
-	//debugger;
-	//Randomly create rooms in each direction.
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('n')) {
-			walk(room.North, maxDepth, depth + 1);
-		}
-	}
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('s')) {
-			walk(room.South, maxDepth, depth + 1);
-		}
-	}
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('e')) {
-			walk(room.East, maxDepth, depth + 1);
-		}
-	}
-	if (Math.random() >= 0.6) {
-		if (room.addRoom('w')) {
-			walk(room.West, maxDepth, depth + 1);
-		}
-	}
-};
-//This is the base RootType type.
-var EmptyRoom = function(parent) {
-	this.parent = parent;
-	this.destroy = function() {}
-};
-// EmptyRoom.prototype = new Room();
-// EmptyRoom.prototype.constructor = EmptyRoom;
+		//Sometime create a coridor three rooms long.
+		if (Math.random() >= 0.8) {
 
+			var direction = _.sample(['n', 's', 'w', 'e']);
+			var x = 0;
+			newRoom = room.addRoom(direction);
+			while (newRoom && x < 3) {
+				x += 1;
+				newRoom = newRoom.addRoom(direction);
+			}
+			if (newRoom) {
+				createRooms(newRoom, maxDepth, depth + 1);
+			}
+		}
+		//debugger;
+		//Randomly create rooms in each direction.
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('n')) {
+				createRooms(room.North, maxDepth, depth + 1);
+			}
+		}
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('s')) {
+				createRooms(room.South, maxDepth, depth + 1);
+			}
+		}
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('e')) {
+				createRooms(room.East, maxDepth, depth + 1);
+			}
+		}
+		if (Math.random() >= 0.6) {
+			if (room.addRoom('w')) {
+				createRooms(room.West, maxDepth, depth + 1);
+			}
+		}
+	}
+
+	var initialRoomNum = World.Rooms.content.length;
+	createRooms(room, maxDepth, depth);
+	while (World.Rooms.content.length < minRooms) {
+		//var randRoom = _.sample(World.Rooms.content);
+		createRooms(room, maxDepth, depth);
+
+	}
+
+};
 var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
-
-
 
 	var originalDestroy = this.destroy;
 	this.destroy = function() {
@@ -1332,6 +1464,44 @@ var NodeRoom = function(parent) {
 	};
 };
 
+//The entrance to the dungeon.  It spawns heros.
+var EntranceRoom = function(parent) {
+	NodeRoom.apply(this, [parent]);
+	var originalDestroy = this.destroy;
+	//Need to destory RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
+		clearInterval(this.timer);
+		originalDestroy()
+	}
+	this.Color = 0xFF00FF;
+
+	this.maxSpawnedEntities = 3;
+	this.canSpawnEntities = [Warrior, Mage];
+	this.spawnCooldown = 2000;
+
+	this.spawnedEntities = [];
+
+	this.HeroSpawner = function() {
+		var entityToSpawn = _.sample(this.canSpawnEntities);
+		//debugger;
+		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
+			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+				var newEntity = World.Entities.createEntity(entityToSpawn);
+				newEntity.SetRoom(this.parent);
+				newEntity.spawnedRoom = this;
+
+				this.spawnedEntities.push(newEntity);
+				console.log('A new ' + newEntity.HeroType + ' entered the dungeon!');
+				return newEntity;
+			} else {
+				return false;
+			}
+		}
+	};
+
+	this.timer = setInterval(this.HeroSpawner.bind(this), this.spawnCooldown);
+}
+
 NodeRoom.prototype = new EmptyRoom();
 NodeRoom.prototype.constructor = NodeRoom;
 
@@ -1347,12 +1517,6 @@ var TrogRoom = function(parent) {
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
 	this.spawnCooldown = 5000;
-	// this.timer = setInterval(function() {
-	// 	//Only spawn in the maxSpawnedEntities limit hsn't been reached.
-	// 	if (this.spawnedEntities.length < this.maxSpawnedEntities) {
-	// 		this.Spawner();
-	// 	}
-	// }.bind(this), this.spawnCooldown);
 	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
 //TrogRoom.prototype = new NodeRoom();
@@ -1370,13 +1534,53 @@ var SpiderRoom = function(parent) {
 	this.maxSpawnedEntities = 2;
 	this.canSpawnEntities = [GiantSpider];
 	this.spawnCooldown = 10000;
-	// this.timer = setInterval(function() {
-	// 	//Only spawn in the maxSpawnedEntities limit hsn't been reached.
-	// 	if (this.spawnedEntities.length < this.maxSpawnedEntities) {
-	// 		this.Spawner();
-	// 	}
-	// }.bind(this), this.spawnCooldown);
+
 	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
+};
+var TreasureRoom = function(parent) {
+	EmptyRoom.apply(this, [parent]);
+
+	var originalDestroy = this.destroy;
+	this.destroy = function() {
+		//clearInterval(this.timer);
+		originalDestroy();
+	}
+
+	this.Color = 0xF2D70C;
+
+	this.maxSpawnedEntities = 0;
+	this.spawnedEntities = [];
+	this.canSpawnEntities = [],
+
+	//A Hero has entered the Treasure Room!!! Rejoice!
+	this.Ascend = function(hero) {
+		World.Stats.heroesAscended++;
+		World.Stats.experience += hero.expGainedInDungeon;
+		World.Stats.fame += hero.Level;
+
+		Lynx.Scene.Layers[1].RemoveEntity(hero.entity);
+
+		console.log(hero.Name + " has Ascended!");
+
+		World.Entities.ascendHero(hero);
+	};
+
+	this.Spawner = function() {
+		var entityToSpawn = _.sample(this.canSpawnEntities);
+		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
+			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+				var newEntity = World.Entities.createEntity(entityToSpawn);
+				newEntity.SetRoom(this.parent);
+				newEntity.spawnedRoom = this;
+
+				this.spawnedEntities.push(newEntity);
+				console.log('Spawned a ' + newEntity.Species);
+				return newEntity;
+			} else {
+				return false;
+			}
+		}
+	};
 };
 // Accessories
 //--------------------------

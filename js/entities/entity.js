@@ -154,7 +154,7 @@ var Entity = function() {
 		if (typeof actionObject === 'undefined')
 			return false;
 
-	//	console.log(this.Name + " used " + pName);
+		//	console.log(this.Name + " used " + pName);
 		actionObject.Use(this, pTarget);
 		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
@@ -190,15 +190,17 @@ var Entity = function() {
 	this.TakeDamage = function(pDamage, pAttacker) {
 		//TODO: Fix Defense algorithm
 		if (!this.Alive) {
-			return;
+			//return;
 		}
 
 		var realHit = Math.floor(pDamage - this.BaseDefense);
+		if (realHit < 0) {
+			realHit = 0;
+		}
 		this.HealthDelta += realHit;
+		debugger;
 		if (this.HealthDelta >= this.Health) {
 			this.Kill();
-			pAttacker.CurrentTarget = null;
-			pAttacker.NotifyKill(this);
 		}
 	};
 
