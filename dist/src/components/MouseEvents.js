@@ -35,7 +35,7 @@
 
 		//Simple Mouse Hold Event
 		this.On("Update", function () {
-			if (this.State == this.MouseStates.DOWN) {
+			if (this.State == 1) {
 				Lynx.Emit("MouseEvents.Hold", this);
 			}
 		});
@@ -49,13 +49,13 @@
 		}).bind(this), false);
 
 		window.addEventListener("mousedown", (function handleDown() {
-			this.State = this.MouseStates.Down;
+			this.State = 1;
 
 			Lynx.Emit("MouseEvents.Down", this);
 		}).bind(this), false);
 
 		window.addEventListener("mouseup", (function handleUp() {
-			this.State = this.MouseStates.Down;
+			this.State = 0;
 
 			Lynx.Emit("MouseEvents.Up", this);
 		}).bind(this), false);
