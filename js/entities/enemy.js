@@ -1,5 +1,8 @@
 var Enemy = function() {
 	Entity.apply(this);
+	var move = (Object.create(MoveAction));
+	this.actions.push(move);
+
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 	this.Draw = function() {
@@ -30,7 +33,6 @@ var Enemy = function() {
 					this.UseAction("Attack", this.CurrentTarget);
 					continue;
 				}
-
 			} else {
 				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
 				if(typeof heroInRoom !== 'undefined'){
@@ -42,7 +44,6 @@ var Enemy = function() {
 					this.UseAction("Move");
 					continue;
 				}
-
 			}
 
 			thinking = false;

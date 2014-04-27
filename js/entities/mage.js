@@ -28,8 +28,8 @@ var Mage = function(pName) {
 					continue;
 				}
 				
-				if (!this.OnCooldown("Move")) {
-					this.UseAction("Move");
+				if (!this.OnCooldown("HeroMove")) {
+					this.UseAction("HeroMove");
 					continue;
 				}
 			}

@@ -62,6 +62,9 @@ Game = {
 		});
 
 		Lynx.Scene.On("Update", function() {
+			if(Game.ActiveMenu !== null)
+				return true;
+			
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
 			return true;
@@ -86,22 +89,7 @@ Game = {
 		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
 
-		var sampleText = new Lynx.Text({
-			Value: "Current Score: 0",
-			Color: "#FFFFFF",
-		});
-
-		var statFrame = new Lynx.CanvasElement(0, Lynx.Scene.Height - 50, Lynx.Scene.Width, 50);
-		statFrame.Color = 0xFF33CC;
-		statFrame.Alpha = 0.5;
-		statFrame.Static = true;
-
-		Lynx.Scene.AddElement(statFrame);
-
-
-		sampleText.Static = true;
-
-		Lynx.Scene.AddElement(sampleText);
+		
 		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
@@ -117,8 +105,6 @@ Game = {
 			return true;
 		});
 
-		debugger;
-
 		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
 			if (Game.ActiveMenu !== null) {
@@ -131,6 +117,10 @@ Game = {
 			var room = World.Rooms.findRoom(Math.floor(gamePos.X / World.Rooms.roomSize), Math.floor(gamePos.Y / World.Rooms.roomSize));
 			if (typeof room !== 'undefined') {
 				UI.RoomMenu.Target = room;
+				if(room.type instanceof EmptyRoom)
+					UI.RoomMenu.NodeChange.Element.innerHTML = "Add Node &raquo;";
+				else
+					UI.RoomMenu.NodeChange.Element.innerHTML = "Change Node &raquo;";
 				UI.RoomMenu.Name = "Room #" + room.id;
 				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
 				return true;
@@ -204,6 +194,112 @@ var EquipSlot = {
 
 //Item Definitions
 //--------------------------------------------
+var Menu = function (pName, pClose) {
+	this.Target = null;
+	this.Disposed = true;
+	this.Name = pName;
+	this.X = 0;
+	this.Y = 0;
+
+	pClose = pClose || true;
+
+	var options = [];
+
+	var element = document.createElement("div");
+	element.id = "ui-" + pName;
+	element.style.position = "absolute";
+	element.style.zIndex = 1;
+	element.style.position.top = 0;
+	element.style.position.left = 0;
+	element.style.background = "#efefef";
+	element.style.padding = "10px 10px";
+	element.style.width = "300px";
+	element.style.border = "3px solid #868686";
+	element.style.borderRadius = "5px";
+
+	element.style.visibility = "hidden";
+	var Option = function (pName, pClickCallback, pParent) {
+		var that = {};
+		that.Parent = pParent;
+
+		that.Element = document.createElement("button");
+		that.Element.innerHTML = pName;
+		that.Element.style.background = "rgba(0,175, 55, 0.4)";
+		that.Element.style.border = "1px solid #000000";
+		that.Element.style.borderRadius = "5px";
+
+		that.Element.style.width = "100%";
+		that.Element.style.display = "block";
+		that.Element.style.color = "#333333";
+		that.Element.style.outline = "0px";
+		that.Element.style.cursor = "pointer";
+		
+		that.Element.onmouseover = function(){
+			that.Element.style.background = "rgba(0, 175, 55, 0.2)";
+		};
+		
+		that.Element.onmouseout = function(){
+			that.Element.style.background = "rgba(0, 175, 55, 0.4)";
+		};
+		
+		that.Element.onclick = function (e) {
+			if (pClickCallback.call(pParent.Target))
+				pParent.Hide();
+
+			e.preventDefault();
+		};
+
+		return that;
+	};
+
+	this.AddOption = (function (pName, pClickCallback) {
+		var o = new Option(pName, pClickCallback, this);
+		options.push(o);
+		return o;
+	}).bind(this);
+
+	this.RemoveOption = function (pO) {
+		if (options.indexOf(pO) > -1) {
+			options.splice(options.indexOf(pO), 1);
+		}
+	};
+
+	this.ShowAt = function (pX, pY) {
+		this.X = pX;
+		this.Y = pY;
+		//Rebuild
+		element.innerHTML = "";
+		var menuHead = document.createElement("h3");
+		menuHead.style.fontSize = "22px";
+		menuHead.style.color = "#333333";
+		menuHead.style.margin = "0px";
+		menuHead.style.padding = "0px 0px 10px 10px";
+		menuHead.style.textDecoration = "underline";
+		menuHead.innerHTML = this.Name;
+		element.appendChild(menuHead);
+
+		for (var i = 0; i < options.length; i++) {
+			element.appendChild(options[i].Element);
+		}
+		if (pClose) {
+			element.appendChild(new Option("Close", function () {
+				return true;
+			}, this).Element);
+		}
+		element.style.left = pX + "px";
+		element.style.top = pY + "px";
+		element.style.visibility = "visible";
+		this.Disposed = false;
+		Game.ActiveMenu = this;
+	};
+
+	this.Hide = function () {
+		element.style.visibility = "hidden";
+		this.Disposed = true;
+	};
+
+	document.body.appendChild(element);
+}
 var World = World || {};
 
 var Entity = function() {
@@ -211,11 +307,11 @@ var Entity = function() {
 
 	var items = [];
 	var att = (Object.create(AttackAction));
-	var move = (Object.create(MoveAction));
-	var actions = [att, move];
+	this.actions = [];
+	this.actions.push(att);
 
 	this.cooldowns = [];
-	var available = [att, move];
+	var available = [att];
 
 	this.CurrentRoom = null;
 	this.spawnedRoom = null; //THe room in which it spawned.
@@ -244,6 +340,9 @@ var Entity = function() {
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
 
+	this.lastMoveDirection = null;
+
+	//Stupid Move Function.  Picks a random direction and goes.
 	this.Move = function(direction) {
 		var self = this;
 		var currentRoom = this.GetRoom();
@@ -252,18 +351,22 @@ var Entity = function() {
 		if (currentRoom) {
 			if (direction === "n" || direction === "north") {
 				if (currentRoom.North) {
+					this.lastMoveDirection = 'n';
 					moveToRoom = currentRoom.North;
 				}
 			} else if (direction === "s" || direction === "south") {
 				if (currentRoom.South) {
+					this.lastMoveDirection = 's';
 					moveToRoom = currentRoom.South;
 				}
 			} else if (direction === "e" || direction === "east") {
 				if (currentRoom.East) {
+					this.lastMoveDirection = 'e';
 					moveToRoom = currentRoom.East;
 				}
 			} else if (direction === "w" || direction === "west") {
 				if (currentRoom.West) {
+					this.lastMoveDirection = 'w';
 					moveToRoom = currentRoom.West;
 				}
 			}
@@ -346,14 +449,14 @@ var Entity = function() {
 			return false;
 		}
 
-		var actionObject = _.find(actions, function(pA) {
+		var actionObject = _.find(this.actions, function(pA) {
 			return pA.Name == pName;
 		});
 
 		if (typeof actionObject === 'undefined')
 			return false;
 
-		console.log(this.Name + " used " + pName);
+	//	console.log(this.Name + " used " + pName);
 		actionObject.Use(this, pTarget);
 		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
@@ -375,13 +478,13 @@ var Entity = function() {
 			}
 		}
 
-		if (typeof _.find(actions, function(pA) {
+		if (typeof _.find(this.actions, function(pA) {
 			return pA.Name === pAction.Name;
 		}) !== 'undefined') {
 			return false;
 		}
 
-		actions.push(pAction);
+		this.actions.push(pAction);
 		return true;
 	};
 
@@ -498,113 +601,46 @@ var Entity = function() {
 
 // Entity Definitions
 //--------------------------
-var Menu = function (pName, pClose) {
-	this.Target = null;
-	this.Disposed = true;
-	this.Name = pName;
+var UI = UI || {};
 
-	pClose = pClose || true;
+UI.AddNodeMenu = new Menu("Add/Change Node", true);
 
-	var options = [];
-
-	var element = document.createElement("div");
-	element.id = "ui-" + pName;
-	element.style.position = "absolute";
-	element.style.zIndex = 1;
-	element.style.position.top = 0;
-	element.style.position.left = 0;
-	element.style.background = "#efefef";
-	element.style.padding = "10px 10px";
-	element.style.width = "300px";
-	element.style.border = "3px solid #868686";
-	element.style.borderRadius = "5px";
-
-	element.style.visibility = "hidden";
-	var Option = function (pName, pClickCallback, pParent) {
-		var that = {};
-		that.Parent = pParent;
-
-		that.Element = document.createElement("button");
-		that.Element.innerHTML = pName;
-		that.Element.style.background = "rgba(0,175, 55, 0.4)";
-		that.Element.style.border = "1px solid #000000";
-		that.Element.style.borderRadius = "5px";
-
-		that.Element.style.width = "100%";
-		that.Element.style.display = "block";
-		that.Element.style.color = "#333333";
-		that.Element.style.outline = "0px";
-		that.Element.style.cursor = "pointer";
-		
-		that.Element.onmouseover = function(){
-			that.Element.style.background = "rgba(0, 175, 55, 0.2)";
-		};
-		
-		that.Element.onmouseout = function(){
-			that.Element.style.background = "rgba(0, 175, 55, 0.4)";
-		};
-		
-		that.Element.onclick = function (e) {
-			if (pClickCallback.call(pParent.Target))
-				pParent.Hide();
-
-			e.preventDefault();
-		};
-
-		return that;
-	};
-
-	this.AddOption = (function (pName, pClickCallback) {
-		var o = new Option(pName, pClickCallback, this);
-		options.push(o);
-		return o;
-	}).bind(this);
-
-	this.RemoveOption = function (pO) {
-		if (options.indexOf(pO) > -1) {
-			options.splice(options.indexOf(pO), 1);
-		}
-	};
-
-	this.ShowAt = function (pX, pY) {
-		//Rebuild
-		element.innerHTML = "";
-		var menuHead = document.createElement("h3");
-		menuHead.style.fontSize = "22px";
-		menuHead.style.color = "#333333";
-		menuHead.style.margin = "0px";
-		menuHead.style.padding = "0px 0px 10px 10px";
-		menuHead.style.textDecoration = "underline";
-		menuHead.innerHTML = this.Name;
-		element.appendChild(menuHead);
-
-		for (var i = 0; i < options.length; i++) {
-			element.appendChild(options[i].Element);
-		}
-		if (pClose) {
-			element.appendChild(new Option("Close", function () {
-				return true;
-			}, this).Element);
-		}
-		element.style.left = pX + "px";
-		element.style.top = pY + "px";
-		element.style.visibility = "visible";
-		this.Disposed = false;
-		Game.ActiveMenu = this;
-	};
-
-	this.Hide = function () {
-		element.style.visibility = "hidden";
-		this.Disposed = true;
-	};
-
-	document.body.appendChild(element);
-}
+UI.AddNodeMenu.AddOption("Trogs", function () {
+	this.type = new TrogRoom(this);
+	return true;
+});
 var UI = UI || {};
 
 UI.RoomMenu = new Menu("Room", true);
-UI.RoomMenu.AddOption("Add Node &raquo;", function () {
-	this.type = new TrogRoom(this);
+UI.RoomMenu.NodeChange = UI.RoomMenu.AddOption("Add Node &raquo;", function () {
+	UI.RoomMenu.Hide();
+	UI.AddNodeMenu.Target = this;
+	UI.AddNodeMenu.ShowAt(UI.RoomMenu.X, UI.RoomMenu.Y);
+	return true;
+});
+UI.RoomMenu.AddOption("Kill Mobs", function(){
+	while(this.mobs.length > 0)
+		this.mobs[0].Kill();
+	
+	return true;
+});
+UI.RoomMenu.AddOption("Remove Nodes", function(){
+	this.type = new EmptyRoom(this);
+	return true;
+});
+
+UI.RoomMenu.AddOption("Spawn Player", function(){
+	var type = Warrior;
+	if(Date.now() % 2 === 0)
+		type = Mage;
+
+	var newEntity = World.Entities.createEntity(type);
+	newEntity.Name = "Hero #0x"+Date.now().toString(16);
+	newEntity.BaseAttack = 5;
+	newEntity.BaseMagic = 5;
+	newEntity.BaseDefense = 10;
+	
+	newEntity.SetRoom(this);
 	return true;
 });
 var AttackAction = new Action("Attack", 500);
@@ -635,10 +671,41 @@ MoveAction.Use = function(pEntity) {
 		var directions = currentRoom.getMovableDirs();
 		pEntity.Move(_.sample(directions));
 	}
+};
 
+
+var HeroMoveAction = new Action("HeroMove", 2000);
+
+HeroMoveAction.Use = function(pEntity) {
+	var lastMoveDirection = pEntity.lastMoveDirection;
+	if (Math.random() > 0.6) {
+		var currentRoom = pEntity.GetRoom();
+		var directions = currentRoom.getMovableDirs();
+		if (directions.length > 1 && lastMoveDirection) {
+			var remove = undefined;
+			if (lastMoveDirection === 'n') {
+				remove = 's';
+			} else if (lastMoveDirection === 's') {
+				remove = 'n'
+			} else if (lastMoveDirection === 'e') {
+				remove = 'w'
+			} else if (lastMoveDirection === 'w') {
+				remove = 'w'
+			}
+
+			_.remove(directions, function(dir) {
+				return dir === remove;
+			});
+		}
+
+		pEntity.Move(_.sample(directions));
+	}
 };
 var Enemy = function() {
 	Entity.apply(this);
+	var move = (Object.create(MoveAction));
+	this.actions.push(move);
+
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 	this.Draw = function() {
@@ -666,17 +733,20 @@ var Enemy = function() {
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
 				if (!this.OnCooldown("Attack")) {
-					this.Attack(this.CurrentTarget);
+					this.UseAction("Attack", this.CurrentTarget);
 					continue;
 				}
-
 			} else {
-
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
+				if(typeof heroInRoom !== 'undefined'){
+					this.CurrentTarget = heroInRoom;
+					continue;
+				}
+				
 				if (!this.OnCooldown("Move")) {
 					this.UseAction("Move");
 					continue;
 				}
-
 			}
 
 			thinking = false;
@@ -775,7 +845,13 @@ var GiantSpider = function() {
 					this.UseAction("Bite", this.CurrentTarget);
 					continue;
 				}
-
+			} else {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
+				if(typeof heroInRoom !== 'undefined'){
+					this.CurrentTarget = heroInRoom;
+					continue;
+				}
+				
 				if (!this.OnCooldown("Move")) {
 					if (!this.CurrentTarget) {
 						this.UseAction("Move");
@@ -800,10 +876,14 @@ var HeroClass = {
 
 //Basic Hero
 var Hero = function(pName) {
-
+	Entity.apply(this);
 	var totalExp = 0;
 	var nextLevelExp = 100;
 
+	var move = (Object.create(HeroMoveAction));
+	this.actions.push(move);
+
+	this.lastMoveDir = null;
 	this.Name = pName || "";
 
 	this.Draw = function() {
@@ -812,7 +892,7 @@ var Hero = function(pName) {
 		if (currentRoom) {
 			if (!this.entity) {
 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-				this.entity.Color = 0x00ffff;
+				this.entity.Color = 0x009933;
 				Lynx.Scene.Layers[1].AddEntity(this.entity);
 			} else {
 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
@@ -867,6 +947,7 @@ Hero.prototype.constructor = Hero;
 //--------------------------
 
 var Mage = function(pName) {
+	Hero.apply(this);
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
 
@@ -886,8 +967,14 @@ var Mage = function(pName) {
 					continue;
 				};
 			} else {
-				if (!this.OnCooldown("Move")) {
-					this.UseAction("Move");
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Enemy });
+				if(typeof enemyInRoom !== 'undefined'){
+					this.CurrentTarget = enemyInRoom;
+					continue;
+				}
+				
+				if (!this.OnCooldown("HeroMove")) {
+					this.UseAction("HeroMove");
 					continue;
 				}
 			}
@@ -902,6 +989,7 @@ Mage.prototype.constructor = Mage;
 //--------------------------
 
 var Warrior = function(pName) {
+	Hero.apply(this);
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
@@ -921,8 +1009,13 @@ var Warrior = function(pName) {
 					continue;
 				}
 			} else {
-				if (!this.OnCooldown("Move")) {
-					this.UseAction("Move");
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Enemy });
+				if(typeof enemyInRoom !== 'undefined'){
+					this.CurrentTarget = enemyInRoom;
+					continue;
+				}
+				if (!this.OnCooldown("HeroMove")) {
+					this.UseAction("HeroMove");
 					continue;
 				}
 			}
@@ -1183,8 +1276,9 @@ var EmptyRoom = function(parent) {
 var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
 
+	var originalDestroy = this.destroy;
 	this.destroy = function() {
-		this.__proto__.destroy()
+		originalDestroy();
 	}
 
 	this.maxSpawnedEntities = 0;
@@ -1207,16 +1301,17 @@ var NodeRoom = function(parent) {
 		}
 	};
 };
+
 NodeRoom.prototype = new EmptyRoom();
 NodeRoom.prototype.constructor = NodeRoom;
 
 var TrogRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
-
+	var originalDestroy = this.destroy;
 	//Need to destpry RoomTypes or these Intervals will go haywire.
 	this.destroy = function() {
 		clearInterval(this.timer);
-		this.__proto__.destroy()
+		originalDestroy()
 	}
 
 	this.maxSpawnedEntities = 5;
