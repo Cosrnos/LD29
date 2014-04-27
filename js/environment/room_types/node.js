@@ -13,7 +13,6 @@ var NodeRoom = function(parent) {
 		this.__proto__.destroy()
 	}
 
-
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
@@ -24,7 +23,7 @@ var NodeRoom = function(parent) {
 				var newEntity = World.Entities.createEntity(entityToSpawn);
 				newEntity.SetRoom(this.parent);
 				newEntity.spawnedRoom = this;
-				this.parent.mobs.push(newEntity);
+
 				this.spawnedEntities.push(newEntity);
 				console.log('Spawned a ' + newEntity.Species);
 				return newEntity;
