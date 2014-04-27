@@ -27,12 +27,17 @@ var Enemy = function() {
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
 				if (!this.OnCooldown("Attack")) {
-					this.Attack(this.CurrentTarget);
+					this.UseAction("Attack", this.CurrentTarget);
 					continue;
 				}
 
 			} else {
-
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
+				if(typeof heroInRoom !== 'undefined'){
+					this.CurrentTarget = heroInRoom;
+					continue;
+				}
+				
 				if (!this.OnCooldown("Move")) {
 					this.UseAction("Move");
 					continue;
@@ -136,7 +141,13 @@ var GiantSpider = function() {
 					this.UseAction("Bite", this.CurrentTarget);
 					continue;
 				}
-
+			} else {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
+				if(typeof heroInRoom !== 'undefined'){
+					this.CurrentTarget = heroInRoom;
+					continue;
+				}
+				
 				if (!this.OnCooldown("Move")) {
 					if (!this.CurrentTarget) {
 						this.UseAction("Move");

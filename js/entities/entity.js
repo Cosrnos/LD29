@@ -147,7 +147,7 @@ var Entity = function() {
 		if (typeof actionObject === 'undefined')
 			return false;
 
-		console.log(this.Name + " used " + pName);
+	//	console.log(this.Name + " used " + pName);
 		actionObject.Use(this, pTarget);
 		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 

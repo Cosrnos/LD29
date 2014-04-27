@@ -62,6 +62,9 @@ Game = {
 		});
 
 		Lynx.Scene.On("Update", function() {
+			if(Game.ActiveMenu !== null)
+				return true;
+			
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
 			return true;
@@ -86,22 +89,7 @@ Game = {
 		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
 
-		var sampleText = new Lynx.Text({
-			Value: "Current Score: 0",
-			Color: "#FFFFFF",
-		});
-
-		var statFrame = new Lynx.CanvasElement(0, Lynx.Scene.Height - 50, Lynx.Scene.Width, 50);
-		statFrame.Color = 0xFF33CC;
-		statFrame.Alpha = 0.5;
-		statFrame.Static = true;
-
-		Lynx.Scene.AddElement(statFrame);
-
-
-		sampleText.Static = true;
-
-		Lynx.Scene.AddElement(sampleText);
+		
 		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
@@ -116,8 +104,6 @@ Game = {
 			});
 			return true;
 		});
-
-		debugger;
 
 		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);

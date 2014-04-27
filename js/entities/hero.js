@@ -5,7 +5,7 @@ var HeroClass = {
 
 //Basic Hero
 var Hero = function(pName) {
-
+	Entity.apply(this);
 	var totalExp = 0;
 	var nextLevelExp = 100;
 

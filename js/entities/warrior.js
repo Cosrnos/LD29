@@ -2,6 +2,7 @@
 //--------------------------
 
 var Warrior = function(pName) {
+	Hero.apply(this);
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
@@ -21,6 +22,12 @@ var Warrior = function(pName) {
 					continue;
 				}
 			} else {
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Enemy });
+				if(typeof enemyInRoom !== 'undefined'){
+					this.CurrentTarget = enemyInRoom;
+					continue;
+				}
+					
 				if (!this.OnCooldown("Move")) {
 					this.UseAction("Move");
 					continue;
