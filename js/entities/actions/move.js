@@ -26,14 +26,13 @@ HeroMoveAction.Use = function(pEntity) {
 			} else if (lastMoveDirection === 'e') {
 				remove = 'w'
 			} else if (lastMoveDirection === 'w') {
-				remove = 'w'
+				remove = 'e'
 			}
 
 			_.remove(directions, function(dir) {
 				return dir === remove;
 			});
 		}
-
 		pEntity.Move(_.sample(directions));
 	}
 };
