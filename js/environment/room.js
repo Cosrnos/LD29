@@ -71,6 +71,24 @@ var Room = function(x, y) {
 		}
 	});
 
+	//Returns an array of movable directions form this room.
+	this.getMovableDirs = function() {
+		var dirs = [];
+		if (this.North) {
+			dirs.push('n');
+		}
+		if (this.South) {
+			dirs.push('s');
+		}
+		if (this.East) {
+			dirs.push('e');
+		}
+		if (this.West) {
+			dirs.push('w');
+		}
+		return dirs;
+	}
+
 	// this.getType = function()
 	// this.setType = function(roomType) {
 	// 	if (roomType.prototype instanceof EmptyRoom) {

@@ -1,6 +1,7 @@
 Game = {
 	CameraVX: 0,
 	CameraVY: 0,
+	ActiveMenu: null,
 
 	Start: function() {
 		this.Initialize();
@@ -23,7 +24,7 @@ Game = {
 	},
 
 	LoadComponents: function(pCallback) {
-		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents");
+		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
@@ -115,6 +116,26 @@ Game = {
 			});
 			return true;
 		});
+
+		debugger;
+
+		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
+			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
+			if (Game.ActiveMenu !== null) {
+				if (Game.ActiveMenu.Disposed) {
+					Game.ActiveMenu = null;
+				}
+				return true;
+			}
+			//Test for Room Menu
+			var room = World.Rooms.findRoom(Math.floor(gamePos.X / World.Rooms.roomSize), Math.floor(gamePos.Y / World.Rooms.roomSize));
+			if (typeof room !== 'undefined') {
+				UI.RoomMenu.Target = room;
+				UI.RoomMenu.Name = "Room #" + room.id;
+				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
+				return true;
+			}
+		});
 	}
 };
 var World = World || {};
@@ -187,13 +208,16 @@ var World = World || {};
 
 var Entity = function() {
 
-	var currentRoom = null;
+
 	var items = [];
 	var att = (Object.create(AttackAction));
-	var actions = [att];
-	var cooldowns = [];
-	var available = [att];
+	var move = (Object.create(MoveAction));
+	var actions = [att, move];
 
+	this.cooldowns = [];
+	var available = [att, move];
+
+	this.CurrentRoom = null;
 	this.spawnedRoom = null; //THe room in which it spawned.
 	this.Id = 0;
 	this.Name = "";
@@ -220,16 +244,54 @@ var Entity = function() {
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
 
+	this.Move = function(direction) {
+		var self = this;
+		var currentRoom = this.GetRoom();
+		var moveToRoom = null;
+
+		if (currentRoom) {
+			if (direction === "n" || direction === "north") {
+				if (currentRoom.North) {
+					moveToRoom = currentRoom.North;
+				}
+			} else if (direction === "s" || direction === "south") {
+				if (currentRoom.South) {
+					moveToRoom = currentRoom.South;
+				}
+			} else if (direction === "e" || direction === "east") {
+				if (currentRoom.East) {
+					moveToRoom = currentRoom.East;
+				}
+			} else if (direction === "w" || direction === "west") {
+				if (currentRoom.West) {
+					moveToRoom = currentRoom.West;
+				}
+			}
+
+			if (moveToRoom) {
+				this.SetRoom(moveToRoom);
+			}
+		}
+	}
+
 	this.SetRoom = function(pRoom) {
+		var self = this;
+		//var currentRoom = this.getRoom()
 		if (pRoom instanceof Room) {
-			currentRoom = pRoom;
+
+			if (this.CurrentRoom) {
+				_.remove(this.CurrentRoom.mobs, function(mob) {
+					return mob === self;
+				});
+			}
+			this.CurrentRoom = pRoom;
 			pRoom.mobs.push(this);
 		}
 
 	};
 
 	this.GetRoom = function(pRoom) {
-		return currentRoom;
+		return this.CurrentRoom;
 	};
 
 	//Properties
@@ -246,7 +308,7 @@ var Entity = function() {
 		if (!this.Alive)
 			return false;
 
-		__updateCooldowns();
+		this.__updateCooldowns();
 		this.Brain.call(this);
 	};
 
@@ -254,27 +316,27 @@ var Entity = function() {
 		//Individual AI Logic goes here.
 	};
 
-	function __updateCooldowns() {
+	this.__updateCooldowns = function() {
 		var makeAvailable = [];
 		var now = Date.now();
-		for (var i = 0; i < cooldowns.length; i++) {
-			if (cooldowns[i].CanUseAt <= now) {
-				makeAvailable.push(cooldowns[i]);
+		for (var i = 0; i < this.cooldowns.length; i++) {
+			if (this.cooldowns[i].CanUseAt <= now) {
+				makeAvailable.push(this.cooldowns[i]);
 			}
 		}
 
 		for (var x = 0; x < makeAvailable.length; x++) {
-			cooldowns.splice(cooldowns.indexOf(makeAvailable[x]), 1);
+			this.cooldowns.splice(this.cooldowns.indexOf(makeAvailable[x]), 1);
 			available.push(makeAvailable[x]);
 		}
-	}
+	};
 
 	this.Idle = function() {};
 
 	this.Run = function() {};
 
 	this.OnCooldown = function(pName) {
-		return (typeof _.find(cooldowns, {
+		return (typeof _.find(this.cooldowns, {
 			Name: pName
 		}) !== 'undefined');
 	};
@@ -296,7 +358,7 @@ var Entity = function() {
 		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
 		available.splice(available.indexOf(actionObject), 1);
-		cooldowns.push(actionObject);
+		this.cooldowns.push(actionObject);
 
 		return false;
 	};
@@ -436,6 +498,115 @@ var Entity = function() {
 
 // Entity Definitions
 //--------------------------
+var Menu = function (pName, pClose) {
+	this.Target = null;
+	this.Disposed = true;
+	this.Name = pName;
+
+	pClose = pClose || true;
+
+	var options = [];
+
+	var element = document.createElement("div");
+	element.id = "ui-" + pName;
+	element.style.position = "absolute";
+	element.style.zIndex = 1;
+	element.style.position.top = 0;
+	element.style.position.left = 0;
+	element.style.background = "#efefef";
+	element.style.padding = "10px 10px";
+	element.style.width = "300px";
+	element.style.border = "3px solid #868686";
+	element.style.borderRadius = "5px";
+
+	element.style.visibility = "hidden";
+	var Option = function (pName, pClickCallback, pParent) {
+		var that = {};
+		that.Parent = pParent;
+
+		that.Element = document.createElement("button");
+		that.Element.innerHTML = pName;
+		that.Element.style.background = "rgba(0,175, 55, 0.4)";
+		that.Element.style.border = "1px solid #000000";
+		that.Element.style.borderRadius = "5px";
+
+		that.Element.style.width = "100%";
+		that.Element.style.display = "block";
+		that.Element.style.color = "#333333";
+		that.Element.style.outline = "0px";
+		that.Element.style.cursor = "pointer";
+		
+		that.Element.onmouseover = function(){
+			that.Element.style.background = "rgba(0, 175, 55, 0.2)";
+		};
+		
+		that.Element.onmouseout = function(){
+			that.Element.style.background = "rgba(0, 175, 55, 0.4)";
+		};
+		
+		that.Element.onclick = function (e) {
+			if (pClickCallback.call(pParent.Target))
+				pParent.Hide();
+
+			e.preventDefault();
+		};
+
+		return that;
+	};
+
+	this.AddOption = (function (pName, pClickCallback) {
+		var o = new Option(pName, pClickCallback, this);
+		options.push(o);
+		return o;
+	}).bind(this);
+
+	this.RemoveOption = function (pO) {
+		if (options.indexOf(pO) > -1) {
+			options.splice(options.indexOf(pO), 1);
+		}
+	};
+
+	this.ShowAt = function (pX, pY) {
+		//Rebuild
+		element.innerHTML = "";
+		var menuHead = document.createElement("h3");
+		menuHead.style.fontSize = "22px";
+		menuHead.style.color = "#333333";
+		menuHead.style.margin = "0px";
+		menuHead.style.padding = "0px 0px 10px 10px";
+		menuHead.style.textDecoration = "underline";
+		menuHead.innerHTML = this.Name;
+		element.appendChild(menuHead);
+
+		for (var i = 0; i < options.length; i++) {
+			element.appendChild(options[i].Element);
+		}
+		if (pClose) {
+			element.appendChild(new Option("Close", function () {
+				return true;
+			}, this).Element);
+		}
+		element.style.left = pX + "px";
+		element.style.top = pY + "px";
+		element.style.visibility = "visible";
+		this.Disposed = false;
+		Game.ActiveMenu = this;
+	};
+
+	this.Hide = function () {
+		element.style.visibility = "hidden";
+		this.Disposed = true;
+	};
+
+	document.body.appendChild(element);
+}
+var UI = UI || {};
+
+UI.RoomMenu = new Menu("Room", true);
+UI.RoomMenu.AddOption("Add Node &raquo;", function () {
+	this.type = new TrogRoom(this);
+	return true;
+});
 var AttackAction = new Action("Attack", 500);
 
 AttackAction.Use = function (pEntity, pTarget) {
@@ -455,7 +626,19 @@ var HeavyAttackAction = new Action("Heavy Attack", 1000);
 HeavyAttackAction.Use = function (pEntity, pTarget) {
 	pTarget.TakeDamage(pEntity.BaseAttack * 1.5, pEntity);
 };
+var MoveAction = new Action("Move", 2000);
+
+MoveAction.Use = function(pEntity) {
+
+	if (Math.random() > 0.6) {
+		var currentRoom = pEntity.GetRoom();
+		var directions = currentRoom.getMovableDirs();
+		pEntity.Move(_.sample(directions));
+	}
+
+};
 var Enemy = function() {
+	Entity.apply(this);
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 	this.Draw = function() {
@@ -486,6 +669,14 @@ var Enemy = function() {
 					this.Attack(this.CurrentTarget);
 					continue;
 				}
+
+			} else {
+
+				if (!this.OnCooldown("Move")) {
+					this.UseAction("Move");
+					continue;
+				}
+
 			}
 
 			thinking = false;
@@ -498,6 +689,7 @@ var Enemy = function() {
 		this.RemoveFromGame();
 	};
 };
+
 Enemy.prototype = new Entity();
 Enemy.prototype.constructor = Enemy;
 
@@ -506,6 +698,7 @@ Enemy.prototype.constructor = Enemy;
 
 //Level 1-5
 var Trog = function() {
+	Enemy.apply(this);
 	this.Species = "Trog";
 	this.Experience = 50;
 	this.Gold = 25;
@@ -517,6 +710,7 @@ Trog.prototype = new Enemy();
 Trog.prototype.constructor = Trog;
 
 var Spider = function() {
+	Enemy.apply(this);
 	this.Species = "Spider";
 	this.Level = 3;
 	this.Experience = 70;
@@ -530,6 +724,7 @@ Spider.prototype = new Enemy();
 Spider.prototype.constructor = Spider;
 
 var Bat = function() {
+	Enemy.apply(this);
 	this.Species = "Bat";
 	this.Level = 5;
 	this.Experience = 90;
@@ -544,6 +739,7 @@ Bat.prototype.constructor = Bat;
 
 //Level 6-10
 var Goblin = function() {
+	Enemy.apply(this);
 	this.Species = "Goblin";
 	this.Level = 7;
 	this.Experience = 150;
@@ -558,6 +754,7 @@ Goblin.prototype = new Enemy();
 Goblin.prototype.constructor = Goblin;
 
 var GiantSpider = function() {
+	Enemy.apply(this);
 	this.Species = "Giant Spider";
 	this.Level = 10;
 	this.BaseAttack = 5;
@@ -577,6 +774,13 @@ var GiantSpider = function() {
 				if (!this.OnCooldown("Bite")) {
 					this.UseAction("Bite", this.CurrentTarget);
 					continue;
+				}
+
+				if (!this.OnCooldown("Move")) {
+					if (!this.CurrentTarget) {
+						this.UseAction("Move");
+						continue;
+					}
 				}
 			}
 
@@ -662,13 +866,13 @@ Hero.prototype.constructor = Hero;
 // Mage
 //--------------------------
 
-var Mage = function (pName) {
+var Mage = function(pName) {
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
 
 	this.GiveAction("Fireblast");
 
-	this.Brain = function () {
+	this.Brain = function() {
 		while (true) {
 			if (this.CurrentTarget !== null) {
 				if (!this.OnCooldown("Attack")) {
@@ -681,6 +885,11 @@ var Mage = function (pName) {
 					this.UseAction("Fireblast", this.CurrentTarget);
 					continue;
 				};
+			} else {
+				if (!this.OnCooldown("Move")) {
+					this.UseAction("Move");
+					continue;
+				}
 			}
 			break;
 		}
@@ -709,6 +918,11 @@ var Warrior = function(pName) {
 
 				if (!this.OnCooldown("Heavy Attack")) {
 					this.UseAction("Heavy Attack", this.CurrentTarget);
+					continue;
+				}
+			} else {
+				if (!this.OnCooldown("Move")) {
+					this.UseAction("Move");
 					continue;
 				}
 			}
@@ -791,6 +1005,24 @@ var Room = function(x, y) {
 
 		}
 	});
+
+	//Returns an array of movable directions form this room.
+	this.getMovableDirs = function() {
+		var dirs = [];
+		if (this.North) {
+			dirs.push('n');
+		}
+		if (this.South) {
+			dirs.push('s');
+		}
+		if (this.East) {
+			dirs.push('e');
+		}
+		if (this.West) {
+			dirs.push('w');
+		}
+		return dirs;
+	}
 
 	// this.getType = function()
 	// this.setType = function(roomType) {
@@ -999,8 +1231,8 @@ var TrogRoom = function(parent) {
 	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
 
-TrogRoom.prototype = new NodeRoom();
-TrogRoom.prototype.constructor = TrogRoom;
+//TrogRoom.prototype = new NodeRoom();
+//TrogRoom.prototype.constructor = TrogRoom;
 // Accessories
 //--------------------------
 

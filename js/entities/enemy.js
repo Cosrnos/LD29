@@ -1,4 +1,5 @@
 var Enemy = function() {
+	Entity.apply(this);
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 	this.Draw = function() {
@@ -29,6 +30,14 @@ var Enemy = function() {
 					this.Attack(this.CurrentTarget);
 					continue;
 				}
+
+			} else {
+
+				if (!this.OnCooldown("Move")) {
+					this.UseAction("Move");
+					continue;
+				}
+
 			}
 
 			thinking = false;
@@ -50,6 +59,7 @@ Enemy.prototype.constructor = Enemy;
 
 //Level 1-5
 var Trog = function() {
+	Enemy.apply(this);
 	this.Species = "Trog";
 	this.Experience = 50;
 	this.Gold = 25;
@@ -61,6 +71,7 @@ Trog.prototype = new Enemy();
 Trog.prototype.constructor = Trog;
 
 var Spider = function() {
+	Enemy.apply(this);
 	this.Species = "Spider";
 	this.Level = 3;
 	this.Experience = 70;
@@ -74,6 +85,7 @@ Spider.prototype = new Enemy();
 Spider.prototype.constructor = Spider;
 
 var Bat = function() {
+	Enemy.apply(this);
 	this.Species = "Bat";
 	this.Level = 5;
 	this.Experience = 90;
@@ -88,6 +100,7 @@ Bat.prototype.constructor = Bat;
 
 //Level 6-10
 var Goblin = function() {
+	Enemy.apply(this);
 	this.Species = "Goblin";
 	this.Level = 7;
 	this.Experience = 150;
@@ -102,6 +115,7 @@ Goblin.prototype = new Enemy();
 Goblin.prototype.constructor = Goblin;
 
 var GiantSpider = function() {
+	Enemy.apply(this);
 	this.Species = "Giant Spider";
 	this.Level = 10;
 	this.BaseAttack = 5;
@@ -121,6 +135,13 @@ var GiantSpider = function() {
 				if (!this.OnCooldown("Bite")) {
 					this.UseAction("Bite", this.CurrentTarget);
 					continue;
+				}
+
+				if (!this.OnCooldown("Move")) {
+					if (!this.CurrentTarget) {
+						this.UseAction("Move");
+						continue;
+					}
 				}
 			}
 

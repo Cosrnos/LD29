@@ -1,13 +1,13 @@
 // Mage
 //--------------------------
 
-var Mage = function (pName) {
+var Mage = function(pName) {
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
 
 	this.GiveAction("Fireblast");
 
-	this.Brain = function () {
+	this.Brain = function() {
 		while (true) {
 			if (this.CurrentTarget !== null) {
 				if (!this.OnCooldown("Attack")) {
@@ -20,6 +20,11 @@ var Mage = function (pName) {
 					this.UseAction("Fireblast", this.CurrentTarget);
 					continue;
 				};
+			} else {
+				if (!this.OnCooldown("Move")) {
+					this.UseAction("Move");
+					continue;
+				}
 			}
 			break;
 		}

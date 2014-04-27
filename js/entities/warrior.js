@@ -20,6 +20,11 @@ var Warrior = function(pName) {
 					this.UseAction("Heavy Attack", this.CurrentTarget);
 					continue;
 				}
+			} else {
+				if (!this.OnCooldown("Move")) {
+					this.UseAction("Move");
+					continue;
+				}
 			}
 			thinking = false;
 		}

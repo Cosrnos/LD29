@@ -2,12 +2,14 @@ var World = World || {};
 
 var Entity = function() {
 
-	
+
 	var items = [];
 	var att = (Object.create(AttackAction));
-	var actions = [att];
-	var cooldowns = [];
-	var available = [att];
+	var move = (Object.create(MoveAction));
+	var actions = [att, move];
+
+	this.cooldowns = [];
+	var available = [att, move];
 
 	this.CurrentRoom = null;
 	this.spawnedRoom = null; //THe room in which it spawned.
@@ -36,8 +38,46 @@ var Entity = function() {
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
 
+	this.Move = function(direction) {
+		var self = this;
+		var currentRoom = this.GetRoom();
+		var moveToRoom = null;
+
+		if (currentRoom) {
+			if (direction === "n" || direction === "north") {
+				if (currentRoom.North) {
+					moveToRoom = currentRoom.North;
+				}
+			} else if (direction === "s" || direction === "south") {
+				if (currentRoom.South) {
+					moveToRoom = currentRoom.South;
+				}
+			} else if (direction === "e" || direction === "east") {
+				if (currentRoom.East) {
+					moveToRoom = currentRoom.East;
+				}
+			} else if (direction === "w" || direction === "west") {
+				if (currentRoom.West) {
+					moveToRoom = currentRoom.West;
+				}
+			}
+
+			if (moveToRoom) {
+				this.SetRoom(moveToRoom);
+			}
+		}
+	}
+
 	this.SetRoom = function(pRoom) {
+		var self = this;
+		//var currentRoom = this.getRoom()
 		if (pRoom instanceof Room) {
+
+			if (this.CurrentRoom) {
+				_.remove(this.CurrentRoom.mobs, function(mob) {
+					return mob === self;
+				});
+			}
 			this.CurrentRoom = pRoom;
 			pRoom.mobs.push(this);
 		}
@@ -62,7 +102,7 @@ var Entity = function() {
 		if (!this.Alive)
 			return false;
 
-		__updateCooldowns();
+		this.__updateCooldowns();
 		this.Brain.call(this);
 	};
 
@@ -70,27 +110,27 @@ var Entity = function() {
 		//Individual AI Logic goes here.
 	};
 
-	function __updateCooldowns() {
+	this.__updateCooldowns = function() {
 		var makeAvailable = [];
 		var now = Date.now();
-		for (var i = 0; i < cooldowns.length; i++) {
-			if (cooldowns[i].CanUseAt <= now) {
-				makeAvailable.push(cooldowns[i]);
+		for (var i = 0; i < this.cooldowns.length; i++) {
+			if (this.cooldowns[i].CanUseAt <= now) {
+				makeAvailable.push(this.cooldowns[i]);
 			}
 		}
 
 		for (var x = 0; x < makeAvailable.length; x++) {
-			cooldowns.splice(cooldowns.indexOf(makeAvailable[x]), 1);
+			this.cooldowns.splice(this.cooldowns.indexOf(makeAvailable[x]), 1);
 			available.push(makeAvailable[x]);
 		}
-	}
+	};
 
 	this.Idle = function() {};
 
 	this.Run = function() {};
 
 	this.OnCooldown = function(pName) {
-		return (typeof _.find(cooldowns, {
+		return (typeof _.find(this.cooldowns, {
 			Name: pName
 		}) !== 'undefined');
 	};
@@ -112,7 +152,7 @@ var Entity = function() {
 		actionObject.CanUseAt = Date.now() + Math.floor(actionObject.Cooldown / this.BaseSpeed);
 
 		available.splice(available.indexOf(actionObject), 1);
-		cooldowns.push(actionObject);
+		this.cooldowns.push(actionObject);
 
 		return false;
 	};
