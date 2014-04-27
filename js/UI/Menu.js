@@ -2,6 +2,8 @@ var Menu = function (pName, pClose) {
 	this.Target = null;
 	this.Disposed = true;
 	this.Name = pName;
+	this.X = 0;
+	this.Y = 0;
 
 	pClose = pClose || true;
 
@@ -67,6 +69,8 @@ var Menu = function (pName, pClose) {
 	};
 
 	this.ShowAt = function (pX, pY) {
+		this.X = pX;
+		this.Y = pY;
 		//Rebuild
 		element.innerHTML = "";
 		var menuHead = document.createElement("h3");
