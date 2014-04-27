@@ -1,66 +1,67 @@
 Game = {
 	CameraVX: 0,
 	CameraVY: 0,
+	ActiveMenu: null,
 
-	Start: function() {
+	Start: function () {
 		this.Initialize();
-		this.LoadAssets((function() {
-			this.LoadComponents((function() {
+		this.LoadAssets((function () {
+			this.LoadComponents((function () {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function() {
+	Initialize: function () {
 		//Set Globals here
 		//Open preloader if needed
 	},
 
-	LoadAssets: function(pCallback) {
+	LoadAssets: function (pCallback) {
 		//Queue assets here
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function(pCallback) {
-		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents");
+	LoadComponents: function (pCallback) {
+		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function() {
-		Lynx.Scene.On("Keyboard.Press.W", function() {
+	SetupScene: function () {
+		Lynx.Scene.On("Keyboard.Press.W", function () {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.W", function() {
+		Lynx.Scene.On("Keyboard.Release.W", function () {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.S", function() {
+		Lynx.Scene.On("Keyboard.Press.S", function () {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.S", function() {
+		Lynx.Scene.On("Keyboard.Release.S", function () {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.A", function() {
+		Lynx.Scene.On("Keyboard.Press.A", function () {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.A", function() {
+		Lynx.Scene.On("Keyboard.Release.A", function () {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.D", function() {
+		Lynx.Scene.On("Keyboard.Press.D", function () {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.D", function() {
+		Lynx.Scene.On("Keyboard.Release.D", function () {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Update", function() {
+		Lynx.Scene.On("Update", function () {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
 			return true;
@@ -68,7 +69,7 @@ Game = {
 
 		Lynx.Start();
 	},
-	Ready: function() {
+	Ready: function () {
 		World.Rooms.push(new Room(8, 5));
 		walk(World.Rooms.content[0], 5, 0);
 		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
@@ -104,8 +105,8 @@ Game = {
 		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
-		Lynx.Scene.On("Update", function() {
-			_.each(World.Entities.content, function(entity) {
+		Lynx.Scene.On("Update", function () {
+			_.each(World.Entities.content, function (entity) {
 				if (entity) {
 					entity.Think();
 					if (entity.Draw) {
@@ -115,6 +116,23 @@ Game = {
 			});
 			return true;
 		});
+
+		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
+			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
+			if (Game.ActiveMenu !== null) {
+				if (Game.ActiveMenu.Disposed) {
+					Game.ActiveMenu = null;
+				}
+				return true;
+			}
+			//Test for Room Menu
+			var room = World.Rooms.findRoom(Math.floor(gamePos.X / World.Rooms.roomSize), Math.floor(gamePos.Y / World.Rooms.roomSize));
+			if (typeof room !== 'undefined') {
+				UI.RoomMenu.Target = room;
+				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
+				return true;
+			}
+		});
 	}
 };
 var World = World || {};
@@ -122,28 +140,28 @@ var World = World || {};
 World.Entities = {
 	content: [],
 	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
-	createEntity: function(entityClass) {
+	createEntity: function (entityClass) {
 		var newEntity = new entityClass();
 		this.content.push(newEntity);
 		return newEntity;
 	},
-	removeEntity: function(delEntity) {
+	removeEntity: function (delEntity) {
 		//Remove it from it's current room.
 		//debugger;
 		var currentRoom = delEntity.GetRoom();
 		if (currentRoom) {
-			_.remove(currentRoom.mobs, function(entity) {
+			_.remove(currentRoom.mobs, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the spawned list in the room in which it was spawed.
 		if (delEntity.spawnedRoom) {
-			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
+			_.remove(delEntity.spawnedRoom.spawnedEntities, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the global enitites registry.
-		_.remove(this.content, function(entity) {
+		_.remove(this.content, function (entity) {
 			return entity === delEntity;
 		});
 	}
