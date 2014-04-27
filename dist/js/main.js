@@ -1,66 +1,67 @@
 Game = {
 	CameraVX: 0,
 	CameraVY: 0,
+	ActiveMenu: null,
 
-	Start: function() {
+	Start: function () {
 		this.Initialize();
-		this.LoadAssets((function() {
-			this.LoadComponents((function() {
+		this.LoadAssets((function () {
+			this.LoadComponents((function () {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function() {
+	Initialize: function () {
 		//Set Globals here
 		//Open preloader if needed
 	},
 
-	LoadAssets: function(pCallback) {
+	LoadAssets: function (pCallback) {
 		//Queue assets here
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function(pCallback) {
-		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents");
+	LoadComponents: function (pCallback) {
+		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function() {
-		Lynx.Scene.On("Keyboard.Press.W", function() {
+	SetupScene: function () {
+		Lynx.Scene.On("Keyboard.Press.W", function () {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.W", function() {
+		Lynx.Scene.On("Keyboard.Release.W", function () {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.S", function() {
+		Lynx.Scene.On("Keyboard.Press.S", function () {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.S", function() {
+		Lynx.Scene.On("Keyboard.Release.S", function () {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.A", function() {
+		Lynx.Scene.On("Keyboard.Press.A", function () {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.A", function() {
+		Lynx.Scene.On("Keyboard.Release.A", function () {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.D", function() {
+		Lynx.Scene.On("Keyboard.Press.D", function () {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.D", function() {
+		Lynx.Scene.On("Keyboard.Release.D", function () {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Update", function() {
+		Lynx.Scene.On("Update", function () {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
 			return true;
@@ -68,7 +69,7 @@ Game = {
 
 		Lynx.Start();
 	},
-	Ready: function() {
+	Ready: function () {
 		World.Rooms.push(new Room(8, 5));
 		walk(World.Rooms.content[0], 5, 0);
 		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
@@ -104,8 +105,8 @@ Game = {
 		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
-		Lynx.Scene.On("Update", function() {
-			_.each(World.Entities.content, function(entity) {
+		Lynx.Scene.On("Update", function () {
+			_.each(World.Entities.content, function (entity) {
 				if (entity) {
 					entity.Think();
 					if (entity.Draw) {
@@ -115,6 +116,28 @@ Game = {
 			});
 			return true;
 		});
+
+		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
+			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
+			if (Game.ActiveMenu !== null) {
+				if (Game.ActiveMenu.Disposed) {
+					Game.ActiveMenu = null;
+				}
+				return true;
+			}
+			//Test for Room Menu
+			var room = World.Rooms.findRoom(Math.floor(gamePos.X / World.Rooms.roomSize), Math.floor(gamePos.Y / World.Rooms.roomSize));
+			if (typeof room !== 'undefined') {
+				UI.RoomMenu.Target = room;
+				if(room.type instanceof EmptyRoom)
+					UI.RoomMenu.NodeChange.Element.innerHTML = "Add Node &raquo;";
+				else
+					UI.RoomMenu.NodeChange.Element.innerHTML = "Change Node &raquo;";
+				UI.RoomMenu.Name = "Room #" + room.id;
+				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
+				return true;
+			}
+		});
 	}
 };
 var World = World || {};
@@ -122,28 +145,28 @@ var World = World || {};
 World.Entities = {
 	content: [],
 	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
-	createEntity: function(entityClass) {
+	createEntity: function (entityClass) {
 		var newEntity = new entityClass();
 		this.content.push(newEntity);
 		return newEntity;
 	},
-	removeEntity: function(delEntity) {
+	removeEntity: function (delEntity) {
 		//Remove it from it's current room.
 		//debugger;
 		var currentRoom = delEntity.GetRoom();
 		if (currentRoom) {
-			_.remove(currentRoom.mobs, function(entity) {
+			_.remove(currentRoom.mobs, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the spawned list in the room in which it was spawed.
 		if (delEntity.spawnedRoom) {
-			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
+			_.remove(delEntity.spawnedRoom.spawnedEntities, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the global enitites registry.
-		_.remove(this.content, function(entity) {
+		_.remove(this.content, function (entity) {
 			return entity === delEntity;
 		});
 	}
@@ -183,17 +206,124 @@ var EquipSlot = {
 
 //Item Definitions
 //--------------------------------------------
+var Menu = function (pName, pClose) {
+	this.Target = null;
+	this.Disposed = true;
+	this.Name = pName;
+	this.X = 0;
+	this.Y = 0;
+
+	pClose = pClose || true;
+
+	var options = [];
+
+	var element = document.createElement("div");
+	element.id = "ui-" + pName;
+	element.style.position = "absolute";
+	element.style.zIndex = 1;
+	element.style.position.top = 0;
+	element.style.position.left = 0;
+	element.style.background = "#efefef";
+	element.style.padding = "10px 10px";
+	element.style.width = "300px";
+	element.style.border = "3px solid #868686";
+	element.style.borderRadius = "5px";
+
+	element.style.visibility = "hidden";
+	var Option = function (pName, pClickCallback, pParent) {
+		var that = {};
+		that.Parent = pParent;
+
+		that.Element = document.createElement("button");
+		that.Element.innerHTML = pName;
+		that.Element.style.background = "rgba(0,175, 55, 0.4)";
+		that.Element.style.border = "1px solid #000000";
+		that.Element.style.borderRadius = "5px";
+
+		that.Element.style.width = "100%";
+		that.Element.style.display = "block";
+		that.Element.style.color = "#333333";
+		that.Element.style.outline = "0px";
+		that.Element.style.cursor = "pointer";
+		
+		that.Element.onmouseover = function(){
+			that.Element.style.background = "rgba(0, 175, 55, 0.2)";
+		};
+		
+		that.Element.onmouseout = function(){
+			that.Element.style.background = "rgba(0, 175, 55, 0.4)";
+		};
+		
+		that.Element.onclick = function (e) {
+			if (pClickCallback.call(pParent.Target))
+				pParent.Hide();
+
+			e.preventDefault();
+		};
+
+		return that;
+	};
+
+	this.AddOption = (function (pName, pClickCallback) {
+		var o = new Option(pName, pClickCallback, this);
+		options.push(o);
+		return o;
+	}).bind(this);
+
+	this.RemoveOption = function (pO) {
+		if (options.indexOf(pO) > -1) {
+			options.splice(options.indexOf(pO), 1);
+		}
+	};
+
+	this.ShowAt = function (pX, pY) {
+		this.X = pX;
+		this.Y = pY;
+		//Rebuild
+		element.innerHTML = "";
+		var menuHead = document.createElement("h3");
+		menuHead.style.fontSize = "22px";
+		menuHead.style.color = "#333333";
+		menuHead.style.margin = "0px";
+		menuHead.style.padding = "0px 0px 10px 10px";
+		menuHead.style.textDecoration = "underline";
+		menuHead.innerHTML = this.Name;
+		element.appendChild(menuHead);
+
+		for (var i = 0; i < options.length; i++) {
+			element.appendChild(options[i].Element);
+		}
+		if (pClose) {
+			element.appendChild(new Option("Close", function () {
+				return true;
+			}, this).Element);
+		}
+		element.style.left = pX + "px";
+		element.style.top = pY + "px";
+		element.style.visibility = "visible";
+		this.Disposed = false;
+		Game.ActiveMenu = this;
+	};
+
+	this.Hide = function () {
+		element.style.visibility = "hidden";
+		this.Disposed = true;
+	};
+
+	document.body.appendChild(element);
+}
 var World = World || {};
 
 var Entity = function() {
 
-	var currentRoom = null;
+	
 	var items = [];
 	var att = (Object.create(AttackAction));
 	var actions = [att];
 	var cooldowns = [];
 	var available = [att];
 
+	this.CurrentRoom = null;
 	this.spawnedRoom = null; //THe room in which it spawned.
 	this.Id = 0;
 	this.Name = "";
@@ -222,14 +352,14 @@ var Entity = function() {
 
 	this.SetRoom = function(pRoom) {
 		if (pRoom instanceof Room) {
-			currentRoom = pRoom;
+			this.CurrentRoom = pRoom;
 			pRoom.mobs.push(this);
 		}
 
 	};
 
 	this.GetRoom = function(pRoom) {
-		return currentRoom;
+		return this.CurrentRoom;
 	};
 
 	//Properties
@@ -436,6 +566,48 @@ var Entity = function() {
 
 // Entity Definitions
 //--------------------------
+var UI = UI || {};
+
+UI.AddNodeMenu = new Menu("Add/Change Node", true);
+
+UI.AddNodeMenu.AddOption("Trogs", function () {
+	this.type = new TrogRoom(this);
+	return true;
+});
+var UI = UI || {};
+
+UI.RoomMenu = new Menu("Room", true);
+UI.RoomMenu.NodeChange = UI.RoomMenu.AddOption("Add Node &raquo;", function () {
+	UI.RoomMenu.Hide();
+	UI.AddNodeMenu.Target = this;
+	UI.AddNodeMenu.ShowAt(UI.RoomMenu.X, UI.RoomMenu.Y);
+	return true;
+});
+UI.RoomMenu.AddOption("Kill Mobs", function(){
+	while(this.mobs.length > 0)
+		this.mobs[0].Kill();
+	
+	return true;
+});
+UI.RoomMenu.AddOption("Remove Nodes", function(){
+	this.type = new EmptyRoom(this);
+	return true;
+});
+
+UI.RoomMenu.AddOption("Spawn Player", function(){
+	var type = Warrior;
+	if(Date.now() % 2 === 0)
+		type = Mage;
+
+	var newEntity = World.Entities.createEntity(type);
+	newEntity.Name = "Hero #0x"+Date.now().toString(16);
+	newEntity.BaseAttack = 5;
+	newEntity.BaseMagic = 5;
+	newEntity.BaseDefense = 10;
+	
+	newEntity.SetRoom(this);
+	return true;
+});
 var AttackAction = new Action("Attack", 500);
 
 AttackAction.Use = function (pEntity, pTarget) {
@@ -498,6 +670,7 @@ var Enemy = function() {
 		this.RemoveFromGame();
 	};
 };
+
 Enemy.prototype = new Entity();
 Enemy.prototype.constructor = Enemy;
 
@@ -941,24 +1114,24 @@ walk = function(room, maxDepth, depth) {
 	}
 };
 //This is the base RootType type.
-var EmptyRoom = function(parent) {
+var EmptyRoom = function (parent) {
 	this.parent = parent;
-	this.destroy = function() {}
+	this.destroy = function () {}
 };
 // EmptyRoom.prototype = new Room();
 // EmptyRoom.prototype.constructor = EmptyRoom;
 
-var NodeRoom = function(parent) {
+var NodeRoom = function (parent) {
 	EmptyRoom.apply(this, [parent]);
-
-	this.destroy = function() {
-		this.__proto__.destroy()
+	var originalDestroy = this.destroy;
+	this.destroy = function () {
+		originalDestroy();
 	}
 
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
-	this.Spawner = function() {
+	this.Spawner = function () {
 		var entityToSpawn = _.sample(this.canSpawnEntities);
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
@@ -975,16 +1148,17 @@ var NodeRoom = function(parent) {
 		}
 	};
 };
+
 NodeRoom.prototype = new EmptyRoom();
 NodeRoom.prototype.constructor = NodeRoom;
 
-var TrogRoom = function(parent) {
+var TrogRoom = function (parent) {
 	NodeRoom.apply(this, [parent]);
-
+	var originalDestroy = this.destroy;
 	//Need to destpry RoomTypes or these Intervals will go haywire.
-	this.destroy = function() {
+	this.destroy = function () {
 		clearInterval(this.timer);
-		this.__proto__.destroy()
+		originalDestroy()
 	}
 
 	this.maxSpawnedEntities = 5;
@@ -999,8 +1173,8 @@ var TrogRoom = function(parent) {
 	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
 
-TrogRoom.prototype = new NodeRoom();
-TrogRoom.prototype.constructor = TrogRoom;
+//TrogRoom.prototype = new NodeRoom();
+//TrogRoom.prototype.constructor = TrogRoom;
 // Accessories
 //--------------------------
 

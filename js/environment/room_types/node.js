@@ -8,9 +8,9 @@ var EmptyRoom = function (parent) {
 
 var NodeRoom = function (parent) {
 	EmptyRoom.apply(this, [parent]);
-
+	var originalDestroy = this.destroy;
 	this.destroy = function () {
-		this.__proto__.destroy()
+		originalDestroy();
 	}
 
 	this.maxSpawnedEntities = 0;
@@ -33,16 +33,17 @@ var NodeRoom = function (parent) {
 		}
 	};
 };
+
 NodeRoom.prototype = new EmptyRoom();
 NodeRoom.prototype.constructor = NodeRoom;
 
 var TrogRoom = function (parent) {
 	NodeRoom.apply(this, [parent]);
-
+	var originalDestroy = this.destroy;
 	//Need to destpry RoomTypes or these Intervals will go haywire.
 	this.destroy = function () {
 		clearInterval(this.timer);
-		this.__proto__.destroy()
+		originalDestroy()
 	}
 
 	this.maxSpawnedEntities = 5;
