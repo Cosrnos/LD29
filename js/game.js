@@ -2,6 +2,7 @@ Game = {
 	CameraVX: 0,
 	CameraVY: 0,
 	ActiveMenu: null,
+	Scale: 1,
 
 	Start: function () {
 		this.Initialize();
@@ -64,7 +65,7 @@ Game = {
 		Lynx.Scene.On("Update", function () {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
-			if (Game.ActiveMenu !== null) {
+			if (Game.ActiveMenu === UI.RoomMenu) {
 				Game.ActiveMenu.MoveBy(Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2)), Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2)));
 			}
 			return true;
@@ -104,6 +105,33 @@ Game = {
 			});
 			return true;
 		});
+		
+		window.addEventListener("mousewheel", function(event){
+			if(Game.ActiveMenu !== null){
+				return;
+			}
+	
+			if(event.wheelDelta > 0){				
+				Game.Scale += (event.wheelDelta * 0.001)
+			}
+			else
+			{
+				Game.Scale -= (event.wheelDelta * -0.001)
+			}
+			if(Game.Scale > 5)
+				Game.Scale = 5;
+			if(Game.Scale < 0.5)
+				Game.Scale = 0.5
+				
+			if(Game.ActiveMenu === UI.RoomMenu){
+//				Game.ActiveMenu.Scale = Game.Scale;
+			}
+							
+			for(var i = 0; i < Lynx.Scene.Entities.length; i++){
+				var e = Lynx.Scene.Entities[i];
+				e.Scale = Game.Scale;
+			}
+		}, false);
 
 		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
@@ -114,7 +142,7 @@ Game = {
 				return true;
 			}
 			//Test for Room Menu
-			var room = World.Rooms.findRoom(Math.floor(gamePos.X / World.Rooms.roomSize), Math.floor(gamePos.Y / World.Rooms.roomSize));
+			var room = World.Rooms.findRoom(Math.floor(gamePos.X / (World.Rooms.roomSize * Game.Scale)), Math.floor(gamePos.Y / (World.Rooms.roomSize * Game.Scale)));
 			if (typeof room !== 'undefined') {
 				UI.RoomMenu.Target = room;
 				if (room.type instanceof EmptyRoom)
@@ -126,6 +154,14 @@ Game = {
 				return true;
 			}
 		});
+		
+		//Scale entities to default scale
+		for(var i = 0; i < Lynx.Scene.Entities.length; i++){
+			var e = Lynx.Scene.Entities[i];
+			e.Scale = Game.Scale;
+		}		
+		UI.Out.UpdateExpbar(500000,2000000);		
+		welcomeMessage.Show();
 	}
 };
 var World = World || {};

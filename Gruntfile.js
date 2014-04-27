@@ -22,7 +22,7 @@ module.exports = function(grunt) {
         concat: {
             main: {
                 files: {
-                    'dist/js/main.js': ['js/game.js', 'js/entities/actions/action.js', 'js/items/item.js', 'js/UI/Menu.js', 'js/entities/entity.js', 'js/**/*.js'],
+                    'dist/js/main.js': ['js/game.js', 'js/entities/actions/action.js', 'js/items/item.js', 'js/UI/menus/Menu.js', 'js/entities/entity.js', 'js/**/*.js'],
 
 
                 }

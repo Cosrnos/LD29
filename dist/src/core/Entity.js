@@ -20,6 +20,7 @@ Lynx.Entity = function () {
 		y = 0,
 		width = 1,
 		height = 1;
+	var scale = 1;
 
 	if (arguments.length < 1) {
 		return Lynx.Warning("A ghost entity has been created, please make sure to initialize all entities to avoid conflicts.");
@@ -73,7 +74,7 @@ Lynx.Entity = function () {
 	 */
 	Object.defineProperty(this, "X", {
 		get: function () {
-			return x;
+			return x * this.Scale;
 		},
 		set: function (pX) {
 			if (isNaN(pX)) {
@@ -81,8 +82,8 @@ Lynx.Entity = function () {
 			}
 
 			x = pX;
-			bounds.X = pX;
-			canvasElement.X = pX;
+			bounds.X = pX * this.Scale;
+			canvasElement.X = pX * this.Scale;
 		}
 	});
 
@@ -93,12 +94,12 @@ Lynx.Entity = function () {
 	 */
 	Object.defineProperty(this, "Y", {
 		get: function () {
-			return y;
+			return y * this.Scale;
 		},
 		set: function (pY) {
 			y = pY;
-			bounds.Y = pY;
-			canvasElement.Y = pY;
+			bounds.Y = pY * this.Scale;
+			canvasElement.Y = pY*this.Scale;
 		}
 	});
 
@@ -109,12 +110,12 @@ Lynx.Entity = function () {
 	 */
 	Object.defineProperty(this, "Width", {
 		get: function () {
-			return width;
+			return width * this.Scale;
 		},
 		set: function (pWidth) {
 			width = pWidth;
-			bounds.Width = pWidth;
-			canvasElement.Width = pWidth;
+			bounds.Width = pWidth * this.Scale;
+			canvasElement.Width = pWidth * this.Scale;
 		}
 	});
 
@@ -153,12 +154,12 @@ Lynx.Entity = function () {
 	 */
 	Object.defineProperty(this, "Height", {
 		get: function () {
-			return height;
+			return height * this.Scale;
 		},
 		set: function (pHeight) {
 			height = pHeight;
-			bounds.Height = pHeight;
-			canvasElement.Height = pHeight;
+			bounds.Height = pHeight * this.Scale;
+			canvasElement.Height = pHeight * this.Scale;
 		}
 	});
 
@@ -201,6 +202,19 @@ Lynx.Entity = function () {
 		this.X += pX;
 		this.Y += pY;
 	}).bind(this);
+	
+	Object.defineProperty(this, "Scale",{
+		get: function(){ return scale; },
+		set:(function(pFactor){
+		scale = pFactor;
+		this.Height = height;
+		this.Width = width;
+		this.X = x;
+		this.Y = y;
+	}).bind(this)
+	});
+	
+	
 
 	Lynx.Emit("Entity.Create");
 };

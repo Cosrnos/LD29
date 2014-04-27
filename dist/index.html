@@ -27,33 +27,7 @@
 		}
 		a {
 			color: #eeeeee;
-		}
-		#logo {
-			text-decoration: none;
-			font-size: 40px;
-			font-family: 'Press Start 2P', Helvetica, Arial, Sans-serif;
-		}
-		nav {
-			border: 0px;
-			border-top: 8px solid #df8349;
-			border-bottom: 8px solid #df8349;
-			padding: 5px;
-			width: 806px;
-			margin: 00 auto;
-			clear: both;
-			overflow: auto;
-			text-transform: uppercase;
-		}
-		nav a {
-			text-decoration: none;
-			font-size: 20px;
-			font-weight: 500;
-			letter-spacing: 2px;
-			padding: 5px 10px 5px 10px;
-		}
-		nav a:hover {
-			color: #df8349;
-		}
+		} 
 		h2 {
 			font-size: 26px;
 			letter-spacing: 2px;
@@ -111,10 +85,121 @@
 			border-left: 10px solid rgba(94, 75, 52, 1);
 			right: 0;
 			height: 100%;
-			z-index: 99;
+			z-index: 10;
 		}
 		#stat-logo {
+			display: block;
+			margin: 00 auto;
 			margin-top: 20px;
+		}
+		#stat-dg-stats {
+			display: block;
+			margin: 00 auto;
+			margin-top: 10px;
+			border-bottom: 2px solid #333;
+			padding-right: 25px;
+			margin-right: 50px;
+		}
+		li {
+			list-style: none;
+			margin: 0px;
+			padding: 0px;
+			vertical-align: middle;
+			line-height: 30px;
+		}
+		li>img {
+			vertical-align: middle;
+		}
+		.meter {
+			position: absolute;
+			width: 100px;
+			height: 25px;
+			background: #736357;
+			display: inline-block;
+			margin-left: 20px;
+			border: 3px solid #362f2d;
+			overflow: hidden;
+			font-size: 12px;
+		}
+		.meter>.progress {
+			position: relative;
+			height: 100%;
+			width: 0px;
+			top: 0;
+			left: 0;
+			background: #603913;
+			border-right: 2px solid #c7b299
+		}
+		.meter>.amount {
+			position: absolute;
+			top: 0;
+			right: 10px;
+			line-height: 25px;
+			vertical-align: middle;
+			z-index: 2;
+			color: #fff;
+		}
+		
+		#fader-container{
+			background: rgba(0,0,0,0.8);
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: block;
+			visibility: hidden;
+		}
+		#messageBox{
+			width: 950px;
+			padding: 25px 50px 50px 50px;
+			margin: 00 auto;
+			max-height: 500px;
+			position: relative;
+			top: 10%;
+			border-radius: 25px;
+			background: #fff;
+			color:#333;
+			z-index: 99;
+		}
+		#messageBox h3{
+			margin: 0px;
+			font-size: 32px;
+			padding: 0px 0px -10px 0px;
+			width: 100%;
+			display: block;
+			border-bottom: 2px solid #333;
+			letter-spacing: 1px;
+		}
+		#messageBlock{
+			width: 95%;
+			margin: 00 auto;
+			margin-top: 25px;
+			font-size: 18px;
+			text-indent: 26px;
+			min-height: 50%;
+			max-height: 300px;
+			overflow-x: hidden;
+			overflow-y: auto;
+		}
+		#messageBox>button{
+			background: #333;
+			color: #fff;
+			font-size: 18px;
+			padding: 10px 25px;
+			border: 3px solid #666;
+			min-width: 150px;
+			margin-top: 25px;
+			margin-left: 50px;
+			border-radius: 10px;
+			margin-right: -25px;
+			margin-top: 25px;
+			outline: none;
+		}
+		
+		#messageBox>button:hover{
+			background: #666;
+			cursor: pointer;
 		}
 	</style>
 	<script type="text/javascript" src="js/vendor.js"></script>
@@ -126,7 +211,7 @@
 			//Lynx.Debug = true;
 			Lynx.Load(function() {
 				Viewport = new Lynx.Viewport("viewport-container");
-				Viewport.ClearColor = 0x000000;
+				Viewport.ClearColor = 0x352210;
 				var gameSource = document.createElement("script");
 				gameSource.onload = function() {
 					Game.Start();
@@ -148,23 +233,45 @@
 	</div>
 	<div id="stat-container">
 		<img src="assets/logo.png" alt="You are the dungeon!" id="stat-logo" />
-		<h3>Dungeon Stats</h3>
+		<img src="assets/stats_lgo.png" alt="Dungeon Stats" id="stat-dg-stats" />
 		<ul>
-			<li>Level:
-				<span id="stat-level-out">1</span>
+			<li>
+				<img src="assets/stats_lvl.png" alt="Level" />
+				<span id="stat-level-out" style="padding-left: 20px;">1</span>
 			</li>
-			<li>Experience:
-				<span id="stat-xp-out">0</span>xp</li>
-			<li>Lira:
+			<li>
+				<img src="assets/xp.png" alt="Exp" />
+				<div class="meter">
+					<div class="progress" id="stat-expbar-out">
+
+					</div>
+					<div class="amount">
+						<span id="stat-exp-out">0</span>
+						 xp
+					</div>
+				</div>
+			</li>
+			<li>
+				<img src="assets/lira.png" style="padding-right: 21px;" alt="Lira" />&nbsp;
 				<span id="stat-lira-out">0</span>
 			</li>
-			<li>Doma:
+			<li>
+				<img src="assets/doma.png" style="padding-right: 20px;" alt="Doma" />&nbsp;
 				<span id="stat-doma-out">0</span>
 			</li>
-			<li>Peril:
-				<span id="stat-peril-out">0</span>
-			</li>
 		</ul>
+	</div>
+	
+	<div id="fader-container">
+		<div id="messageBox">
+			<h3 id="messageHeader">Sample Message</h3>
+			<div id="messageBlock">
+				<p>This is a sample message to be used for testing and styling purposes only. Please remove once finished. Lots and lots of sample text is required for this mission, which is why I'm going to attempt to continue writing text until I run out of things to say. I saw a bird once. I said to him "Bird, do you ever get lonely?" Do you know what he said back? Nothing. That was the day I learned birds do not understand english. Fucking nickelodian lied to me with that wild thornberrys show.</p>
+				<p>Anyway, here's wonderwall.</p>
+			</div>
+			<button id="messageConfirm">Okay</button>
+			<button id="messageCancel">No</button>
+		</div>
 	</div>
 
 	<footer>

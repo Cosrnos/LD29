@@ -44,19 +44,27 @@ var Room = function(x, y) {
 	var type = new EmptyRoom(this); //The type of room this is.
 	this.mobs = []; //A list of creatures in the room.
 
-	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, 40, 40);
+	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, World.Rooms.roomSize * 0.8, World.Rooms.roomSize * 0.8);
 	this.entity.Color = 0xDEADBE;
 	Lynx.Scene.AddEntity(this.entity);
 
 	//Add hallway
-	this.nHall = new Lynx.Entity(World.Rooms.roomSize * x + 17, World.Rooms.roomSize * y - 10, 6, 10);
-	this.nHall.Color = 0xFF0000;
-	this.sHall = new Lynx.Entity(World.Rooms.roomSize * x + 17, World.Rooms.roomSize * y + 40, 6, 10);
-	this.sHall.Color = 0xFF0000;
-	this.eHall = new Lynx.Entity(World.Rooms.roomSize * x + 40, World.Rooms.roomSize * y + 17, 10, 6);
-	this.eHall.Color = 0xFF0000;
-	this.wHall = new Lynx.Entity(World.Rooms.roomSize * x - 10, World.Rooms.roomSize * y + 17, 10, 6);
-	this.wHall.Color = 0xFF0000;
+	var middle = Math.floor((World.Rooms.roomSize * 0.8) / 2);
+	var hallWidth = Math.floor(6);
+	var hallLength = Math.floor(10);
+	var hallWOffset = (middle - Math.floor(hallWidth /2));
+	var hallHOffset = (World.Rooms.roomSize - hallLength);
+	
+	var hallColor = 0xFFFFFF;
+	
+	this.nHall = new Lynx.Entity(World.Rooms.roomSize * x + hallWOffset, World.Rooms.roomSize * y - hallLength, hallWidth, hallLength);
+	this.nHall.Color = hallColor;
+	this.sHall = new Lynx.Entity(World.Rooms.roomSize * x + hallWOffset, World.Rooms.roomSize * y + hallHOffset, hallWidth, hallLength);
+	this.sHall.Color = hallColor;
+	this.eHall = new Lynx.Entity(World.Rooms.roomSize * x + hallHOffset, World.Rooms.roomSize * y + hallWOffset, hallLength, hallWidth);
+	this.eHall.Color = hallColor;
+	this.wHall = new Lynx.Entity(World.Rooms.roomSize * x - hallLength, World.Rooms.roomSize * y + hallWOffset, hallLength, hallWidth);
+	this.wHall.Color = hallColor;
 
 	Object.defineProperty(this, "type", {
 		get: function() {
@@ -178,7 +186,7 @@ var Room = function(x, y) {
 		}
 
 		if (error) {
-			console.log(error)
+			//console.log(error)
 			delete newRoom;
 			return false;
 		}

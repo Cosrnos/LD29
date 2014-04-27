@@ -2,9 +2,29 @@ var Menu = function (pName, pClose) {
 	this.Target = null;
 	this.Disposed = true;
 	this.Name = pName;
-	this.X = 0;
-	this.Y = 0;
-
+	
+	var x = 0;
+	var y = 0;
+	var scale = 1;
+	
+	Object.defineProperty(this, "X", {
+		get: function(){
+			return x * scale;
+		},
+		set: function(pX){
+			x = pX;
+		}
+	});
+	
+	Object.defineProperty(this, "Y", {
+		get: function(){
+			return y * scale;
+		},
+		set: function(pY){
+			y = pY;
+		}
+	});
+		
 	pClose = pClose || true;
 
 	var options = [];
@@ -73,11 +93,9 @@ var Menu = function (pName, pClose) {
 		if (pX === 0 && pY === 0)
 			return;
 
-		this.X -= pX;
-		this.Y -= pY;
-
-		element.style.top = this.Y + "px";
-		element.style.left = this.X + "px";
+		x = x - pX;
+		y = y - pY;
+		this.CalculatePosition();
 	}
 
 	this.ShowAt = function (pX, pY) {
@@ -107,6 +125,21 @@ var Menu = function (pName, pClose) {
 		element.style.visibility = "visible";
 		this.Disposed = false;
 		Game.ActiveMenu = this;
+	};
+	
+	Object.defineProperty(this, "Scale", {
+		get: function(){
+			return scale;
+		},
+		set: function(pValue){
+			scale = pValue;
+			this.CalculatePosition();
+		}
+	});
+	
+	this.CalculatePosition = function(){
+		element.style.top = this.Y + "px";
+		element.style.left = this.X + "px";	
 	};
 
 	this.Hide = function () {
