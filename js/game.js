@@ -129,6 +129,7 @@ Game = {
 			var room = World.Rooms.findRoom(Math.floor(gamePos.X / World.Rooms.roomSize), Math.floor(gamePos.Y / World.Rooms.roomSize));
 			if (typeof room !== 'undefined') {
 				UI.RoomMenu.Target = room;
+				UI.RoomMenu.Name = "Room #" + room.id;
 				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
 				return true;
 			}

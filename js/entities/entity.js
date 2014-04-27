@@ -2,13 +2,14 @@ var World = World || {};
 
 var Entity = function() {
 
-	var currentRoom = null;
+	
 	var items = [];
 	var att = (Object.create(AttackAction));
 	var actions = [att];
 	var cooldowns = [];
 	var available = [att];
 
+	this.CurrentRoom = null;
 	this.spawnedRoom = null; //THe room in which it spawned.
 	this.Id = 0;
 	this.Name = "";
@@ -37,14 +38,14 @@ var Entity = function() {
 
 	this.SetRoom = function(pRoom) {
 		if (pRoom instanceof Room) {
-			currentRoom = pRoom;
+			this.CurrentRoom = pRoom;
 			pRoom.mobs.push(this);
 		}
 
 	};
 
 	this.GetRoom = function(pRoom) {
-		return currentRoom;
+		return this.CurrentRoom;
 	};
 
 	//Properties

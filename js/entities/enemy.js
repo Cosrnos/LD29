@@ -41,6 +41,7 @@ var Enemy = function() {
 		this.RemoveFromGame();
 	};
 };
+
 Enemy.prototype = new Entity();
 Enemy.prototype.constructor = Enemy;
 

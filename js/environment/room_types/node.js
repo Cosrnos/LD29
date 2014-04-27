@@ -1,22 +1,22 @@
 //This is the base RootType type.
-var EmptyRoom = function(parent) {
+var EmptyRoom = function (parent) {
 	this.parent = parent;
-	this.destroy = function() {}
+	this.destroy = function () {}
 };
 // EmptyRoom.prototype = new Room();
 // EmptyRoom.prototype.constructor = EmptyRoom;
 
-var NodeRoom = function(parent) {
+var NodeRoom = function (parent) {
 	EmptyRoom.apply(this, [parent]);
 
-	this.destroy = function() {
+	this.destroy = function () {
 		this.__proto__.destroy()
 	}
 
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
-	this.Spawner = function() {
+	this.Spawner = function () {
 		var entityToSpawn = _.sample(this.canSpawnEntities);
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
@@ -36,11 +36,11 @@ var NodeRoom = function(parent) {
 NodeRoom.prototype = new EmptyRoom();
 NodeRoom.prototype.constructor = NodeRoom;
 
-var TrogRoom = function(parent) {
+var TrogRoom = function (parent) {
 	NodeRoom.apply(this, [parent]);
 
 	//Need to destpry RoomTypes or these Intervals will go haywire.
-	this.destroy = function() {
+	this.destroy = function () {
 		clearInterval(this.timer);
 		this.__proto__.destroy()
 	}
@@ -57,5 +57,5 @@ var TrogRoom = function(parent) {
 	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
 
-TrogRoom.prototype = new NodeRoom();
-TrogRoom.prototype.constructor = TrogRoom;
+//TrogRoom.prototype = new NodeRoom();
+//TrogRoom.prototype.constructor = TrogRoom;
