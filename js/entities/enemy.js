@@ -1,5 +1,8 @@
 var Enemy = function() {
 	Entity.apply(this);
+	var move = (Object.create(MoveAction));
+	this.actions.push(move);
+
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 	this.Draw = function() {
@@ -30,14 +33,11 @@ var Enemy = function() {
 					this.Attack(this.CurrentTarget);
 					continue;
 				}
-
 			} else {
-
 				if (!this.OnCooldown("Move")) {
 					this.UseAction("Move");
 					continue;
 				}
-
 			}
 
 			thinking = false;

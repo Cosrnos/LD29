@@ -2,6 +2,7 @@
 //--------------------------
 
 var Warrior = function(pName) {
+	Hero.apply(this);
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
@@ -21,8 +22,8 @@ var Warrior = function(pName) {
 					continue;
 				}
 			} else {
-				if (!this.OnCooldown("Move")) {
-					this.UseAction("Move");
+				if (!this.OnCooldown("HeroMove")) {
+					this.UseAction("HeroMove");
 					continue;
 				}
 			}

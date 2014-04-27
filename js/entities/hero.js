@@ -5,10 +5,14 @@ var HeroClass = {
 
 //Basic Hero
 var Hero = function(pName) {
-
+	Entity.apply(this);
 	var totalExp = 0;
 	var nextLevelExp = 100;
+	debugger;
+	var move = (Object.create(HeroMoveAction));
+	this.actions.push(move);
 
+	this.lastMoveDir = null;
 	this.Name = pName || "";
 
 	this.Draw = function() {
@@ -17,7 +21,7 @@ var Hero = function(pName) {
 		if (currentRoom) {
 			if (!this.entity) {
 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-				this.entity.Color = 0x00ffff;
+				this.entity.Color = 0x009933;
 				Lynx.Scene.Layers[1].AddEntity(this.entity);
 			} else {
 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;

@@ -5,11 +5,11 @@ var Entity = function() {
 
 	var items = [];
 	var att = (Object.create(AttackAction));
-	var move = (Object.create(MoveAction));
-	var actions = [att, move];
+	this.actions = [];
+	this.actions.push(att);
 
 	this.cooldowns = [];
-	var available = [att, move];
+	var available = [att];
 
 	this.CurrentRoom = null;
 	this.spawnedRoom = null; //THe room in which it spawned.
@@ -38,6 +38,9 @@ var Entity = function() {
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
 
+	this.lastMoveDirection = null;
+
+	//Stupid Move Function.  Picks a random direction and goes.
 	this.Move = function(direction) {
 		var self = this;
 		var currentRoom = this.GetRoom();
@@ -46,18 +49,22 @@ var Entity = function() {
 		if (currentRoom) {
 			if (direction === "n" || direction === "north") {
 				if (currentRoom.North) {
+					this.lastMoveDirection = 'n';
 					moveToRoom = currentRoom.North;
 				}
 			} else if (direction === "s" || direction === "south") {
 				if (currentRoom.South) {
+					this.lastMoveDirection = 's';
 					moveToRoom = currentRoom.South;
 				}
 			} else if (direction === "e" || direction === "east") {
 				if (currentRoom.East) {
+					this.lastMoveDirection = 'e';
 					moveToRoom = currentRoom.East;
 				}
 			} else if (direction === "w" || direction === "west") {
 				if (currentRoom.West) {
+					this.lastMoveDirection = 'w';
 					moveToRoom = currentRoom.West;
 				}
 			}
@@ -140,7 +147,7 @@ var Entity = function() {
 			return false;
 		}
 
-		var actionObject = _.find(actions, function(pA) {
+		var actionObject = _.find(this.actions, function(pA) {
 			return pA.Name == pName;
 		});
 
@@ -169,13 +176,13 @@ var Entity = function() {
 			}
 		}
 
-		if (typeof _.find(actions, function(pA) {
+		if (typeof _.find(this.actions, function(pA) {
 			return pA.Name === pAction.Name;
 		}) !== 'undefined') {
 			return false;
 		}
 
-		actions.push(pAction);
+		this.actions.push(pAction);
 		return true;
 	};
 
