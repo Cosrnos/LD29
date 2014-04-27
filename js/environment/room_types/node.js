@@ -9,6 +9,8 @@ var EmptyRoom = function(parent) {
 var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
 
+
+
 	var originalDestroy = this.destroy;
 	this.destroy = function() {
 		originalDestroy();
@@ -46,7 +48,7 @@ var TrogRoom = function(parent) {
 		clearInterval(this.timer);
 		originalDestroy()
 	}
-
+	this.Color = 0xee3300;
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
 	this.spawnCooldown = 5000;
@@ -58,6 +60,26 @@ var TrogRoom = function(parent) {
 	// }.bind(this), this.spawnCooldown);
 	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
-
 //TrogRoom.prototype = new NodeRoom();
 //TrogRoom.prototype.constructor = TrogRoom;
+
+var SpiderRoom = function(parent) {
+	NodeRoom.apply(this, [parent]);
+	var originalDestroy = this.destroy;
+	//Need to destpry RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
+		clearInterval(this.timer);
+		originalDestroy()
+	}
+	this.Color = 0xee0033;
+	this.maxSpawnedEntities = 2;
+	this.canSpawnEntities = [GiantSpider];
+	this.spawnCooldown = 10000;
+	// this.timer = setInterval(function() {
+	// 	//Only spawn in the maxSpawnedEntities limit hsn't been reached.
+	// 	if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+	// 		this.Spawner();
+	// 	}
+	// }.bind(this), this.spawnCooldown);
+	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
+};

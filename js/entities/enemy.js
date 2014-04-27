@@ -3,6 +3,7 @@ var Enemy = function() {
 	var move = (Object.create(MoveAction));
 	this.actions.push(move);
 
+	this.Color = 0x0000ff;
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 	this.Draw = function() {
@@ -11,7 +12,7 @@ var Enemy = function() {
 		if (currentRoom) {
 			if (!this.entity) {
 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 5, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-				this.entity.Color = 0x0000ff;
+				this.entity.Color = this.Color;
 				Lynx.Scene.Layers[1].AddEntity(this.entity);
 			} else {
 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 5;
@@ -34,12 +35,14 @@ var Enemy = function() {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
-				if(typeof heroInRoom !== 'undefined'){
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Hero
+				});
+				if (typeof heroInRoom !== 'undefined') {
 					this.CurrentTarget = heroInRoom;
 					continue;
 				}
-				
+
 				if (!this.OnCooldown("Move")) {
 					this.UseAction("Move");
 					continue;
@@ -129,6 +132,8 @@ var GiantSpider = function() {
 	this.Experience = 200;
 	this.Health = 20;
 
+	this.Color = 0xffffff;
+
 	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
@@ -143,12 +148,14 @@ var GiantSpider = function() {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
-				if(typeof heroInRoom !== 'undefined'){
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Hero
+				});
+				if (typeof heroInRoom !== 'undefined') {
 					this.CurrentTarget = heroInRoom;
 					continue;
 				}
-				
+
 				if (!this.OnCooldown("Move")) {
 					if (!this.CurrentTarget) {
 						this.UseAction("Move");

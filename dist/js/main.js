@@ -3,76 +3,76 @@ Game = {
 	CameraVY: 0,
 	ActiveMenu: null,
 
-	Start: function() {
+	Start: function () {
 		this.Initialize();
-		this.LoadAssets((function() {
-			this.LoadComponents((function() {
+		this.LoadAssets((function () {
+			this.LoadComponents((function () {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function() {
+	Initialize: function () {
 		//Set Globals here
 		//Open preloader if needed
 	},
 
-	LoadAssets: function(pCallback) {
+	LoadAssets: function (pCallback) {
 		//Queue assets here
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function(pCallback) {
+	LoadComponents: function (pCallback) {
 		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function() {
-		Lynx.Scene.On("Keyboard.Press.W", function() {
+	SetupScene: function () {
+		Lynx.Scene.On("Keyboard.Press.W", function () {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.W", function() {
+		Lynx.Scene.On("Keyboard.Release.W", function () {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.S", function() {
+		Lynx.Scene.On("Keyboard.Press.S", function () {
 			Game.CameraVY += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.S", function() {
+		Lynx.Scene.On("Keyboard.Release.S", function () {
 			Game.CameraVY -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.A", function() {
+		Lynx.Scene.On("Keyboard.Press.A", function () {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.A", function() {
+		Lynx.Scene.On("Keyboard.Release.A", function () {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Press.D", function() {
+		Lynx.Scene.On("Keyboard.Press.D", function () {
 			Game.CameraVX += 1
 		});
 
-		Lynx.Scene.On("Keyboard.Release.D", function() {
+		Lynx.Scene.On("Keyboard.Release.D", function () {
 			Game.CameraVX -= 1
 		});
 
-		Lynx.Scene.On("Update", function() {
-			if(Game.ActiveMenu !== null)
-				return true;
-			
+		Lynx.Scene.On("Update", function () {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
+			if (Game.ActiveMenu !== null) {
+				Game.ActiveMenu.MoveBy(Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2)), Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2)));
+			}
 			return true;
 		});
 
 		Lynx.Start();
 	},
-	Ready: function() {
+	Ready: function () {
 		World.Rooms.push(new Room(8, 5));
 		walk(World.Rooms.content[0], 5, 0);
 		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
@@ -89,12 +89,12 @@ Game = {
 		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
 
-		
+
 		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
-		Lynx.Scene.On("Update", function() {
-			_.each(World.Entities.content, function(entity) {
+		Lynx.Scene.On("Update", function () {
+			_.each(World.Entities.content, function (entity) {
 				if (entity) {
 					entity.Think();
 					if (entity.Draw) {
@@ -105,7 +105,7 @@ Game = {
 			return true;
 		});
 
-		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
+		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
 			if (Game.ActiveMenu !== null) {
 				if (Game.ActiveMenu.Disposed) {
@@ -117,7 +117,7 @@ Game = {
 			var room = World.Rooms.findRoom(Math.floor(gamePos.X / World.Rooms.roomSize), Math.floor(gamePos.Y / World.Rooms.roomSize));
 			if (typeof room !== 'undefined') {
 				UI.RoomMenu.Target = room;
-				if(room.type instanceof EmptyRoom)
+				if (room.type instanceof EmptyRoom)
 					UI.RoomMenu.NodeChange.Element.innerHTML = "Add Node &raquo;";
 				else
 					UI.RoomMenu.NodeChange.Element.innerHTML = "Change Node &raquo;";
@@ -133,32 +133,33 @@ var World = World || {};
 World.Entities = {
 	content: [],
 	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
-	createEntity: function(entityClass) {
+	createEntity: function (entityClass) {
 		var newEntity = new entityClass();
 		this.content.push(newEntity);
 		return newEntity;
 	},
-	removeEntity: function(delEntity) {
+	removeEntity: function (delEntity) {
 		//Remove it from it's current room.
 		//debugger;
 		var currentRoom = delEntity.GetRoom();
 		if (currentRoom) {
-			_.remove(currentRoom.mobs, function(entity) {
+			_.remove(currentRoom.mobs, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the spawned list in the room in which it was spawed.
 		if (delEntity.spawnedRoom) {
-			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
+			_.remove(delEntity.spawnedRoom.spawnedEntities, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the global enitites registry.
-		_.remove(this.content, function(entity) {
+		_.remove(this.content, function (entity) {
 			return entity === delEntity;
 		});
 	}
 }
+
 Actions = [];
 
 var Action = function (pName, pCooldown) {
@@ -208,13 +209,13 @@ var Menu = function (pName, pClose) {
 	var element = document.createElement("div");
 	element.id = "ui-" + pName;
 	element.style.position = "absolute";
-	element.style.zIndex = 1;
+	element.style.zIndex = 9;
 	element.style.position.top = 0;
 	element.style.position.left = 0;
-	element.style.background = "#efefef";
+	element.style.background = "#c7b299";
 	element.style.padding = "10px 10px";
 	element.style.width = "300px";
-	element.style.border = "3px solid #868686";
+	element.style.border = "3px solid #362f2d";
 	element.style.borderRadius = "5px";
 
 	element.style.visibility = "hidden";
@@ -224,24 +225,25 @@ var Menu = function (pName, pClose) {
 
 		that.Element = document.createElement("button");
 		that.Element.innerHTML = pName;
-		that.Element.style.background = "rgba(0,175, 55, 0.4)";
+		that.Element.style.background = "#362f2d";
 		that.Element.style.border = "1px solid #000000";
 		that.Element.style.borderRadius = "5px";
 
 		that.Element.style.width = "100%";
 		that.Element.style.display = "block";
-		that.Element.style.color = "#333333";
+		that.Element.style.color = "#ffffff";
+		that.Element.style.fontSize = "18px";
 		that.Element.style.outline = "0px";
 		that.Element.style.cursor = "pointer";
-		
-		that.Element.onmouseover = function(){
-			that.Element.style.background = "rgba(0, 175, 55, 0.2)";
+
+		that.Element.onmouseover = function () {
+			that.Element.style.background = "#534741";
 		};
-		
-		that.Element.onmouseout = function(){
-			that.Element.style.background = "rgba(0, 175, 55, 0.4)";
+
+		that.Element.onmouseout = function () {
+			that.Element.style.background = "#362f2d";
 		};
-		
+
 		that.Element.onclick = function (e) {
 			if (pClickCallback.call(pParent.Target))
 				pParent.Hide();
@@ -263,6 +265,17 @@ var Menu = function (pName, pClose) {
 			options.splice(options.indexOf(pO), 1);
 		}
 	};
+
+	this.MoveBy = function (pX, pY) {
+		if (pX === 0 && pY === 0)
+			return;
+
+		this.X -= pX;
+		this.Y -= pY;
+
+		element.style.top = this.Y + "px";
+		element.style.left = this.X + "px";
+	}
 
 	this.ShowAt = function (pX, pY) {
 		this.X = pX;
@@ -286,8 +299,8 @@ var Menu = function (pName, pClose) {
 				return true;
 			}, this).Element);
 		}
-		element.style.left = pX + "px";
-		element.style.top = pY + "px";
+		element.style.left = this.X + "px";
+		element.style.top = this.Y + "px";
 		element.style.visibility = "visible";
 		this.Disposed = false;
 		Game.ActiveMenu = this;
@@ -300,6 +313,7 @@ var Menu = function (pName, pClose) {
 
 	document.body.appendChild(element);
 }
+
 var World = World || {};
 
 var Entity = function() {
@@ -605,8 +619,13 @@ var UI = UI || {};
 
 UI.AddNodeMenu = new Menu("Add/Change Node", true);
 
-UI.AddNodeMenu.AddOption("Trogs", function () {
+UI.AddNodeMenu.AddOption("Trogs", function() {
 	this.type = new TrogRoom(this);
+	return true;
+});
+
+UI.AddNodeMenu.AddOption("Spiders", function() {
+	this.type = new SpiderRoom(this);
 	return true;
 });
 var UI = UI || {};
@@ -690,14 +709,13 @@ HeroMoveAction.Use = function(pEntity) {
 			} else if (lastMoveDirection === 'e') {
 				remove = 'w'
 			} else if (lastMoveDirection === 'w') {
-				remove = 'w'
+				remove = 'e'
 			}
 
 			_.remove(directions, function(dir) {
 				return dir === remove;
 			});
 		}
-
 		pEntity.Move(_.sample(directions));
 	}
 };
@@ -706,6 +724,7 @@ var Enemy = function() {
 	var move = (Object.create(MoveAction));
 	this.actions.push(move);
 
+	this.Color = 0x0000ff;
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 	this.Draw = function() {
@@ -714,7 +733,7 @@ var Enemy = function() {
 		if (currentRoom) {
 			if (!this.entity) {
 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 5, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-				this.entity.Color = 0x0000ff;
+				this.entity.Color = this.Color;
 				Lynx.Scene.Layers[1].AddEntity(this.entity);
 			} else {
 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 5;
@@ -737,12 +756,14 @@ var Enemy = function() {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
-				if(typeof heroInRoom !== 'undefined'){
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Hero
+				});
+				if (typeof heroInRoom !== 'undefined') {
 					this.CurrentTarget = heroInRoom;
 					continue;
 				}
-				
+
 				if (!this.OnCooldown("Move")) {
 					this.UseAction("Move");
 					continue;
@@ -832,6 +853,8 @@ var GiantSpider = function() {
 	this.Experience = 200;
 	this.Health = 20;
 
+	this.Color = 0xffffff;
+
 	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
@@ -846,12 +869,14 @@ var GiantSpider = function() {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) { return pa instanceof Hero });
-				if(typeof heroInRoom !== 'undefined'){
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Hero
+				});
+				if (typeof heroInRoom !== 'undefined') {
 					this.CurrentTarget = heroInRoom;
 					continue;
 				}
-				
+
 				if (!this.OnCooldown("Move")) {
 					if (!this.CurrentTarget) {
 						this.UseAction("Move");
@@ -1095,6 +1120,9 @@ var Room = function(x, y) {
 				type.destroy();
 			}
 			type = newRoom;
+			if (newRoom.Color) {
+				this.entity.Color = newRoom.Color;
+			}
 
 		}
 	});
@@ -1276,6 +1304,8 @@ var EmptyRoom = function(parent) {
 var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
 
+
+
 	var originalDestroy = this.destroy;
 	this.destroy = function() {
 		originalDestroy();
@@ -1313,7 +1343,7 @@ var TrogRoom = function(parent) {
 		clearInterval(this.timer);
 		originalDestroy()
 	}
-
+	this.Color = 0xee3300;
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
 	this.spawnCooldown = 5000;
@@ -1325,9 +1355,29 @@ var TrogRoom = function(parent) {
 	// }.bind(this), this.spawnCooldown);
 	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
 };
-
 //TrogRoom.prototype = new NodeRoom();
 //TrogRoom.prototype.constructor = TrogRoom;
+
+var SpiderRoom = function(parent) {
+	NodeRoom.apply(this, [parent]);
+	var originalDestroy = this.destroy;
+	//Need to destpry RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
+		clearInterval(this.timer);
+		originalDestroy()
+	}
+	this.Color = 0xee0033;
+	this.maxSpawnedEntities = 2;
+	this.canSpawnEntities = [GiantSpider];
+	this.spawnCooldown = 10000;
+	// this.timer = setInterval(function() {
+	// 	//Only spawn in the maxSpawnedEntities limit hsn't been reached.
+	// 	if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+	// 		this.Spawner();
+	// 	}
+	// }.bind(this), this.spawnCooldown);
+	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
+};
 // Accessories
 //--------------------------
 

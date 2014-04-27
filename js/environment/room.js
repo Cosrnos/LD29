@@ -67,6 +67,9 @@ var Room = function(x, y) {
 				type.destroy();
 			}
 			type = newRoom;
+			if (newRoom.Color) {
+				this.entity.Color = newRoom.Color;
+			}
 
 		}
 	});
