@@ -12,6 +12,7 @@
 			height: 100%;
 			margin: 0px;
 			padding: 0px;
+			overflow: hidden;
 		}
 		body {
 			background: #2A3338;
@@ -68,21 +69,23 @@
 			text-decoration: none;
 		}
 		#viewport-container {
-			height: 450px;
-			width: 800px;
-			margin: 00 auto;
-			border: 8px solid #df8349;
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
 		}
 		#console-container {
-			background: #121212;
+			background: rgba(18, 18, 18, 0.7);
 			color: #fff;
 			height: 200px;
-			width: 800px;
-			margin: 00 auto;
-			border: 8px solid #df8349;
-			overflow-y: scroll;
+			width: 100%;
+			z-index: 2;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			overflow-y: auto;
 			overflow-x: hidden;
-			position: relative;
 		}
 		#console {
 			position: absolute;
@@ -98,6 +101,20 @@
 			left: 0;
 			font-size: 14px;
 			font-family: Consolas, "Courier New", Courier, monospace;
+		}
+		#stat-container {
+			color: #362f2d;
+			padding: 0px 50px 0px 50px;
+			background: #c7b299;
+			position: absolute;
+			top: 0;
+			border-left: 10px solid rgba(94, 75, 52, 1);
+			right: 0;
+			height: 100%;
+			z-index: 99;
+		}
+		#stat-logo {
+			margin-top: 20px;
 		}
 	</style>
 	<script type="text/javascript" src="js/vendor.js"></script>
@@ -123,17 +140,33 @@
 </head>
 
 <body>
-	<header>
-		<a href="/" id="logo">LynxJS</a>
-	</header>
-	<h2 style="border-top: 8px solid #df8349; border-radius: 15px 15px 0px 0px;">Viewport</h2>
 	<div id="viewport-container" width="800" height="450">
 	</div>
-	<h2>Console</h2>
 	<div id="console-container" width="600" height="300">
 		<div id="console">
 		</div>
 	</div>
+	<div id="stat-container">
+		<img src="assets/logo.png" alt="You are the dungeon!" id="stat-logo" />
+		<h3>Dungeon Stats</h3>
+		<ul>
+			<li>Level:
+				<span id="stat-level-out">1</span>
+			</li>
+			<li>Experience:
+				<span id="stat-xp-out">0</span>xp</li>
+			<li>Lira:
+				<span id="stat-lira-out">0</span>
+			</li>
+			<li>Doma:
+				<span id="stat-doma-out">0</span>
+			</li>
+			<li>Peril:
+				<span id="stat-peril-out">0</span>
+			</li>
+		</ul>
+	</div>
+
 	<footer>
 	</footer>
 </body>
