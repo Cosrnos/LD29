@@ -1,5 +1,20 @@
 var Enemy = function() {
 	var originalTakeDamage = this.TakeDamage;
+	//Add hallway
+	this.Draw = function() {
+		//debugger;
+		var currentRoom = this.GetRoom();
+		if (currentRoom) {
+			if (!this.entity) {
+				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 5, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				this.entity.Color = 0x0000ff;
+				Lynx.Scene.Layers[1].AddEntity(this.entity);
+			} else {
+				this.entity.X = World.Rooms.roomSize * currentRoom.x + 5;
+				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+			}
+		}
+	}
 
 	this.TakeDamage = function(pAmount, pAttacker) {
 		originalTakeDamage.call(this, pAmount, pAttacker);
@@ -22,6 +37,7 @@ var Enemy = function() {
 
 	this.Kill = function() {
 		Lynx.Log("Enemy " + this.Species + " has been killed!");
+		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
 };

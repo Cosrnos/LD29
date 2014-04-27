@@ -78,8 +78,11 @@ Game = {
 		john.EquipItem(new WoodenSword());
 		john.BaseDefense = 10;
 
+		john.SetRoom(World.Rooms.content[0]);
+
 		var hugo = World.Entities.createEntity(GiantSpider);
 		hugo.Name = "Giant Spider"
+		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
 
 		var sampleText = new Lynx.Text({
@@ -98,12 +101,16 @@ Game = {
 		sampleText.Static = true;
 
 		Lynx.Scene.AddElement(sampleText);
+		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
 			_.each(World.Entities.content, function(entity) {
 				if (entity) {
 					entity.Think();
+					if (entity.Draw) {
+						entity.Draw();
+					}
 				}
 			});
 			return true;
@@ -122,7 +129,7 @@ World.Entities = {
 	},
 	removeEntity: function(delEntity) {
 		//Remove it from it's current room.
-		debugger;
+		//debugger;
 		var currentRoom = delEntity.GetRoom();
 		if (currentRoom) {
 			_.remove(currentRoom.mobs, function(entity) {
@@ -212,6 +219,18 @@ var Entity = function() {
 	this.Equipment[EquipSlot.ACCESSORY] = null;
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
+
+	this.SetRoom = function(pRoom) {
+		if (pRoom instanceof Room) {
+			currentRoom = pRoom;
+			pRoom.mobs.push(this);
+		}
+
+	};
+
+	this.GetRoom = function(pRoom) {
+		return currentRoom;
+	};
 
 	//Properties
 	Object.defineProperty(this, "Alive", {
@@ -404,16 +423,6 @@ var Entity = function() {
 		pEquip.Equip(this);
 	};
 
-	this.SetRoom = function(pRoom) {
-		if (pRoom instanceof Room) {
-			currentRoom = pRoom;
-		}
-	};
-
-	this.GetRoom = function(pRoom) {
-		return currentRoom;
-	};
-
 	this.RemoveFromGame = function() {
 		World.Entities.removeEntity(this);
 	};
@@ -448,6 +457,21 @@ HeavyAttackAction.Use = function (pEntity, pTarget) {
 };
 var Enemy = function() {
 	var originalTakeDamage = this.TakeDamage;
+	//Add hallway
+	this.Draw = function() {
+		//debugger;
+		var currentRoom = this.GetRoom();
+		if (currentRoom) {
+			if (!this.entity) {
+				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 5, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				this.entity.Color = 0x0000ff;
+				Lynx.Scene.Layers[1].AddEntity(this.entity);
+			} else {
+				this.entity.X = World.Rooms.roomSize * currentRoom.x + 5;
+				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+			}
+		}
+	}
 
 	this.TakeDamage = function(pAmount, pAttacker) {
 		originalTakeDamage.call(this, pAmount, pAttacker);
@@ -470,6 +494,7 @@ var Enemy = function() {
 
 	this.Kill = function() {
 		Lynx.Log("Enemy " + this.Species + " has been killed!");
+		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
 };
@@ -577,6 +602,21 @@ var Hero = function(pName) {
 
 	this.Name = pName || "";
 
+	this.Draw = function() {
+		//debugger;
+		var currentRoom = this.GetRoom();
+		if (currentRoom) {
+			if (!this.entity) {
+				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				this.entity.Color = 0x00ffff;
+				Lynx.Scene.Layers[1].AddEntity(this.entity);
+			} else {
+				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
+				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+			}
+		}
+	}
+
 	Object.defineProperty(this, "Experience", {
 		get: function() {
 			return totalExp;
@@ -609,6 +649,7 @@ var Hero = function(pName) {
 
 	this.Kill = function() {
 		Lynx.Log("Hero " + this.Name + " has been killed!");
+		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
 };

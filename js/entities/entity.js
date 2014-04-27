@@ -35,6 +35,18 @@ var Entity = function() {
 	this.Equipment[EquipSlot.ARMOR] = null;
 	this.Equipment[EquipSlot.WEAPON] = null;
 
+	this.SetRoom = function(pRoom) {
+		if (pRoom instanceof Room) {
+			currentRoom = pRoom;
+			pRoom.mobs.push(this);
+		}
+
+	};
+
+	this.GetRoom = function(pRoom) {
+		return currentRoom;
+	};
+
 	//Properties
 	Object.defineProperty(this, "Alive", {
 		get: function() {
@@ -224,16 +236,6 @@ var Entity = function() {
 		}
 		this.Equipment[pEquip.EquipSlot] = pEquip;
 		pEquip.Equip(this);
-	};
-
-	this.SetRoom = function(pRoom) {
-		if (pRoom instanceof Room) {
-			currentRoom = pRoom;
-		}
-	};
-
-	this.GetRoom = function(pRoom) {
-		return currentRoom;
 	};
 
 	this.RemoveFromGame = function() {

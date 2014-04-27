@@ -11,6 +11,21 @@ var Hero = function(pName) {
 
 	this.Name = pName || "";
 
+	this.Draw = function() {
+		//debugger;
+		var currentRoom = this.GetRoom();
+		if (currentRoom) {
+			if (!this.entity) {
+				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				this.entity.Color = 0x00ffff;
+				Lynx.Scene.Layers[1].AddEntity(this.entity);
+			} else {
+				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
+				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+			}
+		}
+	}
+
 	Object.defineProperty(this, "Experience", {
 		get: function() {
 			return totalExp;
@@ -43,6 +58,7 @@ var Hero = function(pName) {
 
 	this.Kill = function() {
 		Lynx.Log("Hero " + this.Name + " has been killed!");
+		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
 };

@@ -78,8 +78,11 @@ Game = {
 		john.EquipItem(new WoodenSword());
 		john.BaseDefense = 10;
 
+		john.SetRoom(World.Rooms.content[0]);
+
 		var hugo = World.Entities.createEntity(GiantSpider);
 		hugo.Name = "Giant Spider"
+		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
 
 		var sampleText = new Lynx.Text({
@@ -98,12 +101,16 @@ Game = {
 		sampleText.Static = true;
 
 		Lynx.Scene.AddElement(sampleText);
+		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
 			_.each(World.Entities.content, function(entity) {
 				if (entity) {
 					entity.Think();
+					if (entity.Draw) {
+						entity.Draw();
+					}
 				}
 			});
 			return true;
@@ -122,7 +129,7 @@ World.Entities = {
 	},
 	removeEntity: function(delEntity) {
 		//Remove it from it's current room.
-		debugger;
+		//debugger;
 		var currentRoom = delEntity.GetRoom();
 		if (currentRoom) {
 			_.remove(currentRoom.mobs, function(entity) {
