@@ -98,20 +98,33 @@ World.Stats = new function() {
 
 World.LevelUp = function() {
 	var level = World.Stats.level;
+	level++;
 
 	var tRoom = World.TreasureRoom;
 
-	walk(World.Rooms.content[0], 4, World.Rooms.content.length + 2, 0);
-	walk(tRoom, 5, World.Rooms.content.length + 7, 0);
+	if (level <= 5) {
+		walk(World.Rooms.content[0], 1);
+		walk(tRoom, level - 2);
+	} else {
+		walk(World.Rooms.content[0], 1);
+		walk(_.sample(World.Rooms.content), 2);
+		walk(tRoom, level - 5);
+	}
+
+
 
 	var newTRoom = _.max(World.Rooms.content, function(room) {
 		return Math.sqrt(room.x * room.x + room.y * room.y + room.id);
 	});
-	newTRoom.type = tRoom.type;
-	newTRoom.type.parent = newTRoom;
-	tRoom.type = new EmptyRoom();
 
-	World.TreasureRoom = newTRoom;
+	//Make sure the treasure room actually changed locations
+	if (newTRoom !== tRoom) {
+		newTRoom.type = tRoom.type;
+		newTRoom.type.parent = newTRoom;
+		tRoom.type = new EmptyRoom();
+
+		World.TreasureRoom = newTRoom;
+	}
 	World.Stats.level += 1;
 
 
