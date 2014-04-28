@@ -2,9 +2,9 @@ var Enemy = function() {
 	Entity.apply(this);
 	var move = (Object.create(MoveAction));
 	this.actions.push(move);
-	
+
 	this.Drops = [];
-	
+
 	this.Color = 0x0000ff;
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
@@ -13,18 +13,18 @@ var Enemy = function() {
 		var currentRoom = this.GetRoom();
 		if (currentRoom) {
 			if (!this.entity) {
-				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 5, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 7, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 3, 4, 4);
 				this.entity.Color = this.Color;
 				Game.ScaleEntity(this.entity);
-				Lynx.Scene.Layers[1].AddEntity(this.entity);
+				Lynx.Scene.Layers[2].AddEntity(this.entity);
 			} else {
-				this.entity.X = World.Rooms.roomSize * currentRoom.x + 5;
-				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+				this.entity.X = World.Rooms.roomSize * currentRoom.x + 7;
+				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 3;
 			}
 		}
 	}
-	
-	this.AddDrop = function(pItem, pChance){
+
+	this.AddDrop = function(pItem, pChance) {
 		var drop = Object.create(pItem);
 		pItem.Chance = pChance;
 		this.Drops.push(pItem);
@@ -75,39 +75,38 @@ var Enemy = function() {
 		//RECALCULATE THE EXPERIENCE GIVEN DEPENDING ON THE NUMBER OF ATTACKERS!!!
 		//This forumla boosts the experience gained based with the number of attackers then
 		//divies it up.
-		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * numAttackers));
+		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * (numAttackers - 1)));
 
 		_.each(attackers, (function(pAttacker) {
-			if(this.Drops.length > 0)
-			{
+			if (this.Drops.length > 0) {
 				var totalChance = this.Drops.length * 100;
 				var dropChance = 0;
 				var currentChanceRate = 0;
-				_.each(this.Drops, function(pDrop){
+				_.each(this.Drops, function(pDrop) {
 					dropChance += pDrop.Chance;
 				});
 				var roll = Math.floor(Math.random() * totalChance);
-			
-				_.each(this.Drops, function(pDrop){
-					if(roll <= pDrop.Chance + currentChanceRate)
-					{
+
+				_.each(this.Drops, function(pDrop) {
+					if (roll <= pDrop.Chance + currentChanceRate) {
 						//Drop found.
 						pAttacker.GiveItem(Object.create(pDrop));
-						Lynx.Log(pAttacker.Name + " picked up a(n) "+ pDrop.Name);
+						Lynx.Log(pAttacker.Name + " picked up a(n) " + pDrop.Name);
 						return;
-					}
-					else 
-					{
+					} else {
 						currentChanceRate += pDrop.Chance;
 					}
-				});	
+				});
 			}
-			
+
 			pAttacker.CurrentTarget = null;
 			pAttacker.NotifyKill(self);
+
+
 		}).bind(this));
-		
-		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
+
+		Lynx.Scene.Layers[2].RemoveEntity(this.entity);
+
 		this.RemoveFromGame();
 	};
 };
@@ -122,7 +121,7 @@ Enemy.prototype.constructor = Enemy;
 var Trog = function() {
 	Enemy.apply(this);
 	this.Species = "Trog";
-	this.Experience = 50;
+	this.Exp = 40;
 	this.Gold = 25;
 	this.Health = 5;
 	this.Mana = 0;
@@ -140,7 +139,7 @@ var Spider = function() {
 	Enemy.apply(this);
 	this.Species = "Spider";
 	this.Level = 3;
-	this.Experience = 70;
+	this.Exp = 60;
 	this.BaseAttack = 2;
 	this.Gold = 25;
 	this.Health = 7;
@@ -159,7 +158,7 @@ var Bat = function() {
 	Enemy.apply(this);
 	this.Species = "Bat";
 	this.Level = 5;
-	this.Experience = 90;
+	this.Exp = 90;
 	this.Gold = 25;
 	this.BaseAttack = 3;
 	this.Health = 10;
@@ -178,7 +177,7 @@ var Goblin = function() {
 	Enemy.apply(this);
 	this.Species = "Goblin";
 	this.Level = 7;
-	this.Experience = 150;
+	this.Exp = 125;
 	this.Gold = 25;
 	this.BaseAttack = 3;
 	this.BaseDefense = 2;
@@ -199,7 +198,7 @@ var GiantSpider = function() {
 	this.Level = 10;
 	this.BaseAttack = 5;
 	this.BaseDefense = 3;
-	this.Experience = 200;
+	this.Exp = 200;
 	this.Health = 20;
 
 	this.Color = 0xffffff;

@@ -21,7 +21,25 @@ Game = {
 
 	LoadAssets: function(pCallback) {
 		//Queue assets here
-		Lynx.AM.QueueImage('fencer', 'assets/fencer.png');
+
+		Lynx.AM.QueueImage('warrior', 'assets/warrior.png');
+		Lynx.AM.QueueImage('mage', 'assets/mage.png');
+		Lynx.AM.QueueImage('e-room', 'assets/DungeonWalls/1-E.png');
+		Lynx.AM.QueueImage('w-room', 'assets/DungeonWalls/1-W.png');
+		Lynx.AM.QueueImage('n-room', 'assets/DungeonWalls/1-N.png');
+		Lynx.AM.QueueImage('s-room', 'assets/DungeonWalls/1-S.png');
+		Lynx.AM.QueueImage('ne-room', 'assets/DungeonWalls/2-NE.png');
+		Lynx.AM.QueueImage('es-room', 'assets/DungeonWalls/2-ES.png');
+		Lynx.AM.QueueImage('ew-room', 'assets/DungeonWalls/2-EW.png');
+		Lynx.AM.QueueImage('ns-room', 'assets/DungeonWalls/2-NS.png');
+		Lynx.AM.QueueImage('nw-room', 'assets/DungeonWalls/2-NW.png');
+		Lynx.AM.QueueImage('sw-room', 'assets/DungeonWalls/2-SW.png');
+		Lynx.AM.QueueImage('esw-room', 'assets/DungeonWalls/3-ESW.png');
+		Lynx.AM.QueueImage('nes-room', 'assets/DungeonWalls/3-NES.png');
+		Lynx.AM.QueueImage('new-room', 'assets/DungeonWalls/3-NEW.png');
+		Lynx.AM.QueueImage('nsw-room', 'assets/DungeonWalls/3-NSW.png');
+		Lynx.AM.QueueImage('nesw-room', 'assets/DungeonWalls/4-NESW.png');
+
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
@@ -32,35 +50,35 @@ Game = {
 
 	SetupScene: function() {
 		Lynx.Scene.On("Keyboard.Press.W", function() {
-			Game.CameraVY -= 1
+			Game.CameraVY -= 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.W", function() {
-			Game.CameraVY += 1
+			Game.CameraVY += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Press.S", function() {
-			Game.CameraVY += 1
+			Game.CameraVY += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.S", function() {
-			Game.CameraVY -= 1
+			Game.CameraVY -= 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Press.A", function() {
-			Game.CameraVX -= 1
+			Game.CameraVX -= 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.A", function() {
-			Game.CameraVX += 1
+			Game.CameraVX += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Press.D", function() {
-			Game.CameraVX += 1
+			Game.CameraVX += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.D", function() {
-			Game.CameraVX -= 1
+			Game.CameraVX -= 1;
 		});
 
 		Lynx.Scene.On("Update", function() {
@@ -82,8 +100,19 @@ Game = {
 			var e = Lynx.Scene.Entities[i];
 			e.Scale = Game.Scale;
 		}
+
+		_.each(Lynx.Scene.Layers, function(layer) {
+			_.each(layer.Elements, function(element) {
+				element.Scale = Game.Scale;
+			});
+		});
 	},
 	Ready: function() {
+
+		Lynx.Scene.AddLayer();
+		Lynx.Scene.AddLayer();
+
+
 		Lynx.Scene.Camera.X = -Lynx.Scene.Width / 2 + 200;
 		Lynx.Scene.Camera.Y = -Lynx.Scene.Height / 2 + 150;
 		var entranceRoom = new Room(0, 0);
@@ -99,20 +128,18 @@ Game = {
 		//World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
 
 		var john = World.Entities.createEntity(Warrior);
-		john.Name = "John"
+		john.Name = "John";
 		john.GiveItem(new HP10Potion(), 4);
-		john.EquipItem(new WoodenSword());
+		john.EquipItem(new WoodenStick());
 		john.BaseDefense = 10;
 
 		john.SetRoom(World.Rooms.content[0]);
 
 		var hugo = World.Entities.createEntity(GiantSpider);
-		hugo.Name = "Giant Spider"
+		hugo.Name = "Giant Spider";
 		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
 
-
-		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
@@ -133,14 +160,14 @@ Game = {
 			}
 
 			if (event.wheelDelta > 0) {
-				Game.Scale += (event.wheelDelta * 0.001)
+				Game.Scale += (event.wheelDelta * 0.001);
 			} else {
-				Game.Scale -= (event.wheelDelta * -0.001)
+				Game.Scale -= (event.wheelDelta * -0.001);
 			}
 			if (Game.Scale > 5)
 				Game.Scale = 5;
 			if (Game.Scale < 0.5)
-				Game.Scale = 0.5
+				Game.Scale = 0.5;
 
 			if (Game.ActiveMenu === UI.RoomMenu) {
 				//				Game.ActiveMenu.Scale = Game.Scale;
@@ -174,7 +201,7 @@ Game = {
 		//Scale entities to default scale
 		Game.ScaleAllEntities();
 
-		UI.Out.UpdateExpbar(500000, 2000000);
+		//UI.Out.UpdateExpbar(500000, 2000000);
 		welcomeMessage.Show();
 	}
 };
@@ -196,7 +223,7 @@ var Item = function(pName) {
 	this.Cost = 1;
 	this.Equip = function(pHero) {};
 	this.Unequip = function(pHero) {};
-
+	this.Rating = 0;
 	this.Cooldown = 1000;
 	this.CanUseAt = 0;
 };
@@ -581,6 +608,11 @@ var Entity = function() {
 	this.GiveItem = function(pItem, pQuantity) {
 		for (var i = 0; i < pQuantity; i++) {
 			this.items.push(pItem);
+			if((pItem.type & ItemType.EQUIPABLE) !== 0){
+				if(pItem.Rating > this.Equipment[pItem.EquipSlot].Rating){
+					this.EquipItem(pItem);
+				}
+			}
 		}
 	};
 
@@ -959,6 +991,8 @@ var Enemy = function() {
 	var move = (Object.create(MoveAction));
 	this.actions.push(move);
 
+	this.Drops = [];
+
 	this.Color = 0x0000ff;
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
@@ -967,16 +1001,22 @@ var Enemy = function() {
 		var currentRoom = this.GetRoom();
 		if (currentRoom) {
 			if (!this.entity) {
-				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 5, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 7, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 3, 4, 4);
 				this.entity.Color = this.Color;
 				Game.ScaleEntity(this.entity);
-				Lynx.Scene.Layers[1].AddEntity(this.entity);
+				Lynx.Scene.Layers[2].AddEntity(this.entity);
 			} else {
-				this.entity.X = World.Rooms.roomSize * currentRoom.x + 5;
-				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+				this.entity.X = World.Rooms.roomSize * currentRoom.x + 7;
+				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 3;
 			}
 		}
 	}
+
+	this.AddDrop = function(pItem, pChance) {
+		var drop = Object.create(pItem);
+		pItem.Chance = pChance;
+		this.Drops.push(pItem);
+	};
 
 	this.TakeDamage = function(pAmount, pAttacker) {
 		originalTakeDamage.call(this, pAmount, pAttacker);
@@ -1023,14 +1063,38 @@ var Enemy = function() {
 		//RECALCULATE THE EXPERIENCE GIVEN DEPENDING ON THE NUMBER OF ATTACKERS!!!
 		//This forumla boosts the experience gained based with the number of attackers then
 		//divies it up.
-		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * numAttackers));
+		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * (numAttackers - 1)));
 
-		_.each(attackers, function(pAttacker) {
+		_.each(attackers, (function(pAttacker) {
+			if (this.Drops.length > 0) {
+				var totalChance = this.Drops.length * 100;
+				var dropChance = 0;
+				var currentChanceRate = 0;
+				_.each(this.Drops, function(pDrop) {
+					dropChance += pDrop.Chance;
+				});
+				var roll = Math.floor(Math.random() * totalChance);
+
+				_.each(this.Drops, function(pDrop) {
+					if (roll <= pDrop.Chance + currentChanceRate) {
+						//Drop found.
+						pAttacker.GiveItem(Object.create(pDrop));
+						Lynx.Log(pAttacker.Name + " picked up a(n) " + pDrop.Name);
+						return;
+					} else {
+						currentChanceRate += pDrop.Chance;
+					}
+				});
+			}
+
 			pAttacker.CurrentTarget = null;
 			pAttacker.NotifyKill(self);
-		});
 
-		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
+
+		}).bind(this));
+
+		Lynx.Scene.Layers[2].RemoveEntity(this.entity);
+
 		this.RemoveFromGame();
 	};
 };
@@ -1045,11 +1109,15 @@ Enemy.prototype.constructor = Enemy;
 var Trog = function() {
 	Enemy.apply(this);
 	this.Species = "Trog";
-	this.Experience = 50;
+	this.Exp = 40;
 	this.Gold = 25;
 	this.Health = 5;
 	this.Mana = 0;
 	this.BaseDefense = 0;
+	this.AddDrop(new HP10Potion(), 10);
+	this.AddDrop(new WoodenStick(), 5);
+	this.AddDrop(new TatteredClothes(), 5);
+	this.AddDrop(new Ring(), 5);
 };
 
 Trog.prototype = new Enemy();
@@ -1059,12 +1127,15 @@ var Spider = function() {
 	Enemy.apply(this);
 	this.Species = "Spider";
 	this.Level = 3;
-	this.Experience = 70;
+	this.Exp = 60;
 	this.BaseAttack = 2;
 	this.Gold = 25;
 	this.Health = 7;
 	this.Mana = 0;
-
+	this.AddDrop(new HP10Potion(), 15);
+	this.AddDrop(new WoodenStick(), 5);
+	this.AddDrop(new TatteredClothes(), 5);
+	this.AddDrop(new Ring(), 5);
 	this.Color = 0x000000;
 };
 
@@ -1075,11 +1146,15 @@ var Bat = function() {
 	Enemy.apply(this);
 	this.Species = "Bat";
 	this.Level = 5;
-	this.Experience = 90;
+	this.Exp = 90;
 	this.Gold = 25;
 	this.BaseAttack = 3;
 	this.Health = 10;
 	this.Mana = 0;
+	this.AddDrop(new HP10Potion(), 20);
+	this.AddDrop(new WoodenStick(), 10);
+	this.AddDrop(new TatteredClothes(), 10);
+	this.AddDrop(new Ring(), 10);
 };
 
 Bat.prototype = new Enemy();
@@ -1090,12 +1165,16 @@ var Goblin = function() {
 	Enemy.apply(this);
 	this.Species = "Goblin";
 	this.Level = 7;
-	this.Experience = 150;
+	this.Exp = 125;
 	this.Gold = 25;
 	this.BaseAttack = 3;
 	this.BaseDefense = 2;
 	this.Health = 15;
 	this.Mana = 0;
+	this.AddDrop(new HP10Potion(), 20);
+	this.AddDrop(new WoodenStick(), 15);
+	this.AddDrop(new TatteredClothes(), 15);
+	this.AddDrop(new Ring(), 15);
 };
 
 Goblin.prototype = new Enemy();
@@ -1107,7 +1186,7 @@ var GiantSpider = function() {
 	this.Level = 10;
 	this.BaseAttack = 5;
 	this.BaseDefense = 3;
-	this.Experience = 200;
+	this.Exp = 200;
 	this.Health = 20;
 
 	this.Color = 0xffffff;
@@ -1147,9 +1226,9 @@ var GiantSpider = function() {
 	}
 
 	this.GiveAction("Bite");
+	this.AddDrop(new BronzeSword(), 20);
 };
 
-GiantSpider.prototype = new Spider();
 GiantSpider.prototype.constructor = GiantSpider;
 var HeroClass = {
 	SCRUB: 0,
@@ -1176,7 +1255,6 @@ var Hero = function(pName) {
 	this.Name = pName || "";
 
 	this.image = null;
-	this
 
 	this.Draw = function() {
 		//debugger;
@@ -1197,7 +1275,7 @@ var Hero = function(pName) {
 				}
 
 				Game.ScaleEntity(this.entity);
-				Lynx.Scene.Layers[1].AddEntity(this.entity);
+				Lynx.Scene.Layers[2].AddEntity(this.entity);
 
 			} else {
 				if (this.image) {
@@ -1209,15 +1287,15 @@ var Hero = function(pName) {
 				}
 			}
 		}
-	}
+	};
 
 	Object.defineProperty(this, "Experience", {
 		get: function() {
 			return totalExp;
 		},
 		set: function(pValue) {
-			totalExp += pValue;
-			this.expGainedInDungeon += pValue;
+			totalExp = pValue;
+			console.log('Gained: ' + pValue + " Total: " + totalExp);
 			if (totalExp >= nextLevelExp) {
 				this.totalExp -= nextLevelExp;
 				nextLevelExp = nextLevelExp * 1.5;
@@ -1231,6 +1309,7 @@ var Hero = function(pName) {
 	//Start AI
 	this.NotifyKill = function(pEntityKilled) {
 		this.Experience += pEntityKilled.Exp;
+		this.expGainedInDungeon += pEntityKilled.Exp;
 	};
 
 	this.LevelUp = function() {
@@ -1253,7 +1332,7 @@ var Hero = function(pName) {
 			}
 		});
 
-		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
+		Lynx.Scene.Layers[2].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
 };
@@ -1271,6 +1350,7 @@ var Mage = function(pName) {
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
 	this.HeroType = "MAGE";
+	this.image = Lynx.AM.Get("mage").Asset;
 
 	this.GiveAction("Fireblast");
 
@@ -1287,6 +1367,15 @@ var Mage = function(pName) {
 				if (!this.OnCooldown("Fireblast")) {
 					this.UseAction("Fireblast", this.CurrentTarget);
 					continue;
+				};
+				if (!this.OnCooldown("HP 10 Potion")) {
+					//Only try to use if health is at 30%
+					if (this.HealthDelta >= this.Health * 0.7) {
+						var result = this.UseItem("HP 10 Potion", this);
+						if (result) {
+							continue;
+						}
+					}
 				};
 
 
@@ -1325,7 +1414,7 @@ var Warrior = function(pName) {
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
-	this.image = Lynx.AM.Get('fencer').Asset;
+	this.image = Lynx.AM.Get('warrior').Asset;
 
 	this.GiveAction("Heavy Attack");
 
@@ -1400,19 +1489,19 @@ World.Rooms = {
 
 	//Finds a room whose origin cooridinates match [x,y]
 	findRoom: function(x, y) {
-		foundRoom = _.find(this.content, function(room) {
+		var foundRoom = _.find(this.content, function(room) {
 			if (room.x === x && room.y === y) {
 				return true;
 			}
 		});
 		return foundRoom;
 	}
-}
+};
 
 //This is the base RoomType type.
 var EmptyRoom = function(parent) {
 	this.parent = parent;
-	this.destroy = function() {}
+	this.destroy = function() {};
 	this.Color = 0xDEADBE;
 };
 
@@ -1435,27 +1524,15 @@ var Room = function(x, y) {
 	var type = new EmptyRoom(this); //The type of room this is.
 	this.mobs = []; //A list of creatures in the room.
 
-	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, World.Rooms.roomSize * 0.8, World.Rooms.roomSize * 0.8);
+	this.entity = new Lynx.CE(World.Rooms.roomSize * x, World.Rooms.roomSize * y, World.Rooms.roomSize, World.Rooms.roomSize);
 	this.entity.Color = 0xDEADBE;
-	Lynx.Scene.Layers[0].AddEntity(this.entity);
 
-	//Add hallway
-	var middle = Math.floor((World.Rooms.roomSize * 0.8) / 2);
-	var hallWidth = Math.floor(6);
-	var hallLength = Math.floor(10);
-	var hallWOffset = (middle - Math.floor(hallWidth / 2));
-	var hallHOffset = (World.Rooms.roomSize - hallLength);
+	this.background = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, World.Rooms.roomSize, World.Rooms.roomSize);
+	this.background.Texture = Lynx.AM.Get('nesw-room').Asset;
 
-	var hallColor = 0xFFFFFF;
+	Lynx.Scene.Layers[0].AddElement(this.entity);
+	Lynx.Scene.Layers[1].AddEntity(this.background);
 
-	this.nHall = new Lynx.Entity(World.Rooms.roomSize * x + hallWOffset, World.Rooms.roomSize * y - hallLength, hallWidth, hallLength);
-	this.nHall.Color = hallColor;
-	this.sHall = new Lynx.Entity(World.Rooms.roomSize * x + hallWOffset, World.Rooms.roomSize * y + hallHOffset, hallWidth, hallLength);
-	this.sHall.Color = hallColor;
-	this.eHall = new Lynx.Entity(World.Rooms.roomSize * x + hallHOffset, World.Rooms.roomSize * y + hallWOffset, hallLength, hallWidth);
-	this.eHall.Color = hallColor;
-	this.wHall = new Lynx.Entity(World.Rooms.roomSize * x - hallLength, World.Rooms.roomSize * y + hallWOffset, hallLength, hallWidth);
-	this.wHall.Color = hallColor;
 
 	Object.defineProperty(this, "type", {
 		get: function() {
@@ -1479,17 +1556,17 @@ var Room = function(x, y) {
 		if (this.North) {
 			dirs.push('n');
 		}
-		if (this.South) {
-			dirs.push('s');
-		}
 		if (this.East) {
 			dirs.push('e');
+		}
+		if (this.South) {
+			dirs.push('s');
 		}
 		if (this.West) {
 			dirs.push('w');
 		}
 		return dirs;
-	}
+	};
 
 	//Picks a random exit from this room and returns that room.
 	this.randomExit = function() {
@@ -1508,17 +1585,8 @@ var Room = function(x, y) {
 			return this.West;
 		}
 		return false;
-	}
+	};
 
-	// this.getType = function()
-	// this.setType = function(roomType) {
-	// 	if (roomType.prototype instanceof EmptyRoom) {
-	// 		if (this.type) {
-	// 			this.type.destroy();
-	// 		}
-	// 		this.type = new roomType();
-	// 	}
-	// };
 
 	//This add a room or creates a connection to an already existing room in the specified direction.
 	this.addRoom = function(direction) {
@@ -1530,7 +1598,7 @@ var Room = function(x, y) {
 		if (direction === "n" || direction === "north") {
 			if (this.North === null) {
 				//Check to see if thee is a room in that direction that this room isn't yet connected to.
-				var foundRoom = World.Rooms.findRoom(x, y - 1)
+				var foundRoom = World.Rooms.findRoom(x, y - 1);
 				if (foundRoom) {
 					this.North = foundRoom;
 					foundRoom.South = this;
@@ -1539,16 +1607,15 @@ var Room = function(x, y) {
 					this.North = newRoom;
 					newRoom.South = this;
 				}
-				Lynx.Scene.Layers[0].AddEntity(this.nHall);
 
 			} else {
-				error = "Room to the North already exists."
+				error = "Room to the North already exists.";
 			}
 
 		} else if (direction === "s" || direction === "south") {
 
 			if (this.South === null) {
-				var foundRoom = World.Rooms.findRoom(x, y + 1)
+				var foundRoom = World.Rooms.findRoom(x, y + 1);
 				if (foundRoom) {
 					this.South = foundRoom;
 					foundRoom.North = this;
@@ -1557,14 +1624,14 @@ var Room = function(x, y) {
 					this.South = newRoom;
 					newRoom.North = this;
 				}
-				Lynx.Scene.Layers[0].AddEntity(this.sHall);
+
 			} else {
-				error = "Room to the South already exists."
+				error = "Room to the South already exists.";
 			}
 
 		} else if (direction === "e" || direction === "east") {
 			if (this.East === null) {
-				var foundRoom = World.Rooms.findRoom(x + 1, y)
+				var foundRoom = World.Rooms.findRoom(x + 1, y);
 				if (foundRoom) {
 					this.East = foundRoom;
 					foundRoom.West = this;
@@ -1573,14 +1640,14 @@ var Room = function(x, y) {
 					this.East = newRoom;
 					newRoom.West = this;
 				}
-				Lynx.Scene.Layers[0].AddEntity(this.eHall);
+
 			} else {
-				error = "Room to the East already exists."
+				error = "Room to the East already exists.";
 			}
 		} else if (direction === "w" || direction === "west") {
 
 			if (this.West === null) {
-				var foundRoom = World.Rooms.findRoom(x - 1, y)
+				var foundRoom = World.Rooms.findRoom(x - 1, y);
 				if (foundRoom) {
 					this.West = foundRoom;
 					foundRoom.East = this;
@@ -1589,7 +1656,7 @@ var Room = function(x, y) {
 					this.West = newRoom;
 					newRoom.East = this;
 				}
-				Lynx.Scene.Layers[0].AddEntity(this.wHall);
+
 			} else {
 				error = "Room to the West already exists.";
 			}
@@ -1603,13 +1670,23 @@ var Room = function(x, y) {
 			delete newRoom;
 			return false;
 		}
+
+		var roomAssetName = this.getMovableDirs().join('') + "-room";
+		this.background.Texture = Lynx.AM.Get(roomAssetName).Asset;
+
 		if (newRoom) {
 			//newRoom.type = new EmptyRoom(this);
+			var roomAssetName = newRoom.getMovableDirs().join('') + "-room";
+			newRoom.background.Texture = Lynx.AM.Get(roomAssetName).Asset;
+
 			newRoom.depth = this.depth + 1;
 			newRoom.id = World.Rooms.content.length;
 			World.Rooms.push(newRoom);
+
 			return newRoom;
 		} else if (foundRoom) {
+			var roomAssetName = foundRoom.getMovableDirs().join('') + "-room";
+			foundRoom.background.Texture = Lynx.AM.Get(roomAssetName).Asset;
 			return foundRoom
 		} else
 			return false;
@@ -1622,7 +1699,6 @@ walk = function(room, maxGain) {
 	var gained = 0;
 
 	var createRooms = function(room, depth) {
-		debugger;
 		if (!room || gained >= maxGain) {
 			return;
 		}
@@ -1661,13 +1737,82 @@ walk = function(room, maxGain) {
 	Game.ScaleAllEntities();
 
 };
+//The entrance to the dungeon.  It spawns heros.
+var EntranceRoom = function(parent) {
+	NodeRoom.apply(this, [parent]);
+	var originalDestroy = this.destroy;
+	//Need to destory RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
+		_.each(this.timers, function(timer) {
+			clearInterval(timer.timer);
+		});
+		originalDestroy();
+	};
+	this.timers = [];
+
+	this.Color = 0xFF0000;
+
+	this.potionsGiven = 3;
+
+	this.maxSpawnedEntities = 3;
+	this.canSpawnEntities = [Warrior, Mage];
+	this.spawnCooldown = 2000;
+
+	this.spawnedEntities = [];
+
+	this.HeroSpawner = function(newEntityToSpawn, maxSpawn) {
+		var mobCount = 0;
+		var entityToSpawn;
+
+		//IF there is no specified newEntityToSpawn, we pick one at random from
+		//canSpawnEntities.
+		if (!newEntityToSpawn) {
+			entityToSpawn = _.sample(this.canSpawnEntities);
+			maxSpawn = this.maxSpawnedEntities;
+			mobCount = this.spawnedEntities.length;
+		} else {
+			entityToSpawn = newEntityToSpawn;
+			_.each(this.spawnedEntities, function(mob) {
+				if (mob instanceof entityToSpawn) {
+					mobCount++;
+				}
+			});
+		}
+		//Now that we've determined what to spawn, let's see if we should.
+		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
+			if (mobCount < maxSpawn) {
+				var newEntity = World.Entities.createEntity(entityToSpawn);
+				newEntity.SetRoom(this.parent);
+				newEntity.spawnedRoom = this;
+
+				newEntity.GiveItem(new HP10Potion(), this.potionsGiven);
+
+				this.spawnedEntities.push(newEntity);
+				console.log('A new ' + newEntity.HeroType + ' entered the dungeon!');
+				return newEntity;
+			} else {
+				return false;
+			}
+		}
+	};
+
+	this.timers.push({
+		name: 'Warrior',
+		timer: setInterval(this.HeroSpawner.bind(this, Warrior, 3), 25000)
+	});
+
+	this.timers.push({
+		name: 'Mage',
+		timer: setInterval(this.HeroSpawner.bind(this, Mage, 2), 30000)
+	});
+};
 var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
 
 	var originalDestroy = this.destroy;
 	this.destroy = function() {
 		originalDestroy();
-	}
+	};
 
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
@@ -1681,7 +1826,7 @@ var NodeRoom = function(parent) {
 		if (!newEntityToSpawn) {
 			entityToSpawn = _.sample(this.canSpawnEntities);
 			maxSpawn = this.maxSpawnedEntities;
-			mobCount = this.spawnedEntities.length
+			mobCount = this.spawnedEntities.length;
 		} else {
 			entityToSpawn = newEntityToSpawn;
 			_.each(this.spawnedEntities, function(mob) {
@@ -1707,73 +1852,6 @@ var NodeRoom = function(parent) {
 		}
 	};
 };
-
-//The entrance to the dungeon.  It spawns heros.
-var EntranceRoom = function(parent) {
-	NodeRoom.apply(this, [parent]);
-	var originalDestroy = this.destroy;
-	//Need to destory RoomTypes or these Intervals will go haywire.
-	this.destroy = function() {
-		_.each(this.timers, function(timer) {
-			clearInterval(timer.timer);
-		});
-		originalDestroy();
-	}
-	this.timers = [];
-
-	this.Color = 0xFF0000;
-
-	this.maxSpawnedEntities = 3;
-	this.canSpawnEntities = [Warrior, Mage];
-	this.spawnCooldown = 2000;
-
-	this.spawnedEntities = [];
-
-	this.HeroSpawner = function(newEntityToSpawn, maxSpawn) {
-		var mobCount = 0;
-		var entityToSpawn;
-
-		//IF there is no specified newEntityToSpawn, we pick one at random from
-		//canSpawnEntities.
-		if (!newEntityToSpawn) {
-			entityToSpawn = _.sample(this.canSpawnEntities);
-			maxSpawn = this.maxSpawnedEntities;
-			mobCount = this.spawnedEntities.length
-		} else {
-			entityToSpawn = newEntityToSpawn;
-			_.each(this.spawnedEntities, function(mob) {
-				if (mob instanceof entityToSpawn) {
-					mobCount++;
-				}
-			});
-		}
-		//Now that we've determined what to spawn, let's see if we should.
-		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
-			if (mobCount < maxSpawn) {
-				var newEntity = World.Entities.createEntity(entityToSpawn);
-				newEntity.SetRoom(this.parent);
-				newEntity.spawnedRoom = this;
-
-				this.spawnedEntities.push(newEntity);
-				console.log('A new ' + newEntity.HeroType + ' entered the dungeon!');
-				return newEntity;
-			} else {
-				return false;
-			}
-		}
-	};
-
-	this.timers.push({
-		name: 'Warrior',
-		timer: setInterval(this.HeroSpawner.bind(this, Warrior, 3), 6000)
-	});
-
-	this.timers.push({
-		name: 'Mage',
-		timer: setInterval(this.HeroSpawner.bind(this, Mage, 2), 5000)
-	});
-}
-
 NodeRoom.prototype = new EmptyRoom();
 NodeRoom.prototype.constructor = NodeRoom;
 
@@ -1783,8 +1861,8 @@ var TrogRoom = function(parent) {
 	//Need to destpry RoomTypes or these Intervals will go haywire.
 	this.destroy = function() {
 		clearInterval(this.timer);
-		originalDestroy()
-	}
+		originalDestroy();
+	};
 	this.Color = 0xee3300;
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
@@ -1801,8 +1879,9 @@ var SpiderRoom = function(parent) {
 	this.destroy = function() {
 		clearInterval(this.timer);
 		clearInterval(this.timer2);
-		originalDestroy()
-	}
+		originalDestroy();
+	};
+
 	this.Color = 0xee0033;
 	this.maxSpawnedEntities = 6;
 	this.canSpawnEntities = [GiantSpider];
@@ -1818,7 +1897,7 @@ var TreasureRoom = function(parent) {
 	this.destroy = function() {
 		//clearInterval(this.timer);
 		originalDestroy();
-	}
+	};
 
 	this.Color = 0xF2D70C;
 
@@ -1829,10 +1908,10 @@ var TreasureRoom = function(parent) {
 	//A Hero has entered the Treasure Room!!! Rejoice!
 	this.Ascend = function(hero) {
 		World.Stats.heroesAscended++;
-		World.Stats.Experience += hero.expGainedInDungeon + 1;
+		World.Stats.Experience += hero.expGainedInDungeon;
 		World.Stats.fame += hero.Level;
 
-		Lynx.Scene.Layers[1].RemoveEntity(hero.entity);
+		Lynx.Scene.Layers[2].RemoveEntity(hero.entity);
 
 		console.log(hero.Name + " has Ascended!");
 
@@ -1914,8 +1993,8 @@ var HP10Potion = function() {
 // Weapons
 //--------------------------
 
-var WoodenSword = function () {
-	Item.call(this, "Wooden Sword");
+var WoodenStick = function () {
+	Item.call(this, "Wooden Stick");
 
 	this.Type |= ItemType.EQUIPABLE;
 	this.EquipSlot = EquipSlot.WEAPON;
@@ -1924,10 +2003,25 @@ var WoodenSword = function () {
 		pHero.BaseAttack += 2;
 	};
 
-	this.UnEquip = function (pHero) {
+	this.Unequip = function (pHero) {
 		pHero.BaseAttack -= 2;
 	};
 };
+
+var BronzeSword = function(){
+	Item.call(this, "Bronze Sword");
+	this.Rating = 1;
+	
+	this.Type |= ItemType.EQUIPABLE;
+	this.EquipSlot = EquipSlot.WEAPON;
+	this.Equip = function (pHero) {
+		pHero.BaseAttack += 4;
+	};
+	
+	this.Unequip = function (pHero) {
+		phero.BaseAttack -= 4;
+	};
+}
 
 var World = World || {};
 
@@ -1938,6 +2032,17 @@ World.Stats = new function() {
 	//What are these?  WHO KNOWS!?!
 	var fame = 0;
 	var peril = 0;
+
+	var nextLevelExp = 100;
+	Object.defineProperty(this, "nextLevelExp", {
+		set: function(pValue) {
+			nextLevelExp = pValue;
+			//UI.Out.Level = pValue
+		},
+		get: function() {
+			return nextLevelExp;
+		}
+	});
 
 	var level = 1;
 	Object.defineProperty(this, "level", {
@@ -1955,6 +2060,12 @@ World.Stats = new function() {
 		set: function(pValue) {
 			dungeonExp = pValue;
 			UI.Out.Experience = pValue
+			UI.Out.ExperienceBar = Math.floor((dungeonExp / nextLevelExp) * 100);
+
+			if (dungeonExp >= nextLevelExp) {
+				World.LevelUp();
+			}
+
 		},
 		get: function() {
 			return dungeonExp;
@@ -2030,6 +2141,18 @@ World.Stats = new function() {
 World.LevelUp = function() {
 	var level = World.Stats.level;
 	level++;
+
+
+	World.Stats.Experience -= World.Stats.nextLevelExp;
+	World.Stats.nextLevelExp = World.Stats.nextLevelExp * 2;
+
+	// totalExp += pValue;
+	// this.expGainedInDungeon += pValue;
+	// if (totalExp >= nextLevelExp) {
+	// 	this.totalExp -= nextLevelExp;
+	// 	nextLevelExp = nextLevelExp * 1.5;
+	// }
+
 
 	var tRoom = World.TreasureRoom;
 

@@ -24,6 +24,15 @@ var Mage = function(pName) {
 					this.UseAction("Fireblast", this.CurrentTarget);
 					continue;
 				};
+				if (!this.OnCooldown("HP 10 Potion")) {
+					//Only try to use if health is at 30%
+					if (this.HealthDelta >= this.Health * 0.7) {
+						var result = this.UseItem("HP 10 Potion", this);
+						if (result) {
+							continue;
+						}
+					}
+				};
 
 
 			} else {

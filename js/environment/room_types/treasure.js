@@ -5,7 +5,7 @@ var TreasureRoom = function(parent) {
 	this.destroy = function() {
 		//clearInterval(this.timer);
 		originalDestroy();
-	}
+	};
 
 	this.Color = 0xF2D70C;
 
@@ -16,10 +16,10 @@ var TreasureRoom = function(parent) {
 	//A Hero has entered the Treasure Room!!! Rejoice!
 	this.Ascend = function(hero) {
 		World.Stats.heroesAscended++;
-		World.Stats.Experience += hero.expGainedInDungeon + 1;
+		World.Stats.Experience += hero.expGainedInDungeon;
 		World.Stats.fame += hero.Level;
 
-		Lynx.Scene.Layers[1].RemoveEntity(hero.entity);
+		Lynx.Scene.Layers[2].RemoveEntity(hero.entity);
 
 		console.log(hero.Name + " has Ascended!");
 

@@ -23,7 +23,6 @@ var Hero = function(pName) {
 	this.Name = pName || "";
 
 	this.image = null;
-	this
 
 	this.Draw = function() {
 		//debugger;
@@ -44,7 +43,7 @@ var Hero = function(pName) {
 				}
 
 				Game.ScaleEntity(this.entity);
-				Lynx.Scene.Layers[1].AddEntity(this.entity);
+				Lynx.Scene.Layers[2].AddEntity(this.entity);
 
 			} else {
 				if (this.image) {
@@ -56,15 +55,15 @@ var Hero = function(pName) {
 				}
 			}
 		}
-	}
+	};
 
 	Object.defineProperty(this, "Experience", {
 		get: function() {
 			return totalExp;
 		},
 		set: function(pValue) {
-			totalExp += pValue;
-			this.expGainedInDungeon += pValue;
+			totalExp = pValue;
+			console.log('Gained: ' + pValue + " Total: " + totalExp);
 			if (totalExp >= nextLevelExp) {
 				this.totalExp -= nextLevelExp;
 				nextLevelExp = nextLevelExp * 1.5;
@@ -78,6 +77,7 @@ var Hero = function(pName) {
 	//Start AI
 	this.NotifyKill = function(pEntityKilled) {
 		this.Experience += pEntityKilled.Exp;
+		this.expGainedInDungeon += pEntityKilled.Exp;
 	};
 
 	this.LevelUp = function() {
@@ -100,7 +100,7 @@ var Hero = function(pName) {
 			}
 		});
 
-		Lynx.Scene.Layers[1].RemoveEntity(this.entity);
+		Lynx.Scene.Layers[2].RemoveEntity(this.entity);
 		this.RemoveFromGame();
 	};
 };

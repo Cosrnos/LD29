@@ -21,8 +21,25 @@ Game = {
 
 	LoadAssets: function(pCallback) {
 		//Queue assets here
+
 		Lynx.AM.QueueImage('warrior', 'assets/warrior.png');
 		Lynx.AM.QueueImage('mage', 'assets/mage.png');
+		Lynx.AM.QueueImage('e-room', 'assets/DungeonWalls/1-E.png');
+		Lynx.AM.QueueImage('w-room', 'assets/DungeonWalls/1-W.png');
+		Lynx.AM.QueueImage('n-room', 'assets/DungeonWalls/1-N.png');
+		Lynx.AM.QueueImage('s-room', 'assets/DungeonWalls/1-S.png');
+		Lynx.AM.QueueImage('ne-room', 'assets/DungeonWalls/2-NE.png');
+		Lynx.AM.QueueImage('es-room', 'assets/DungeonWalls/2-ES.png');
+		Lynx.AM.QueueImage('ew-room', 'assets/DungeonWalls/2-EW.png');
+		Lynx.AM.QueueImage('ns-room', 'assets/DungeonWalls/2-NS.png');
+		Lynx.AM.QueueImage('nw-room', 'assets/DungeonWalls/2-NW.png');
+		Lynx.AM.QueueImage('sw-room', 'assets/DungeonWalls/2-SW.png');
+		Lynx.AM.QueueImage('esw-room', 'assets/DungeonWalls/3-ESW.png');
+		Lynx.AM.QueueImage('nes-room', 'assets/DungeonWalls/3-NES.png');
+		Lynx.AM.QueueImage('new-room', 'assets/DungeonWalls/3-NEW.png');
+		Lynx.AM.QueueImage('nsw-room', 'assets/DungeonWalls/3-NSW.png');
+		Lynx.AM.QueueImage('nesw-room', 'assets/DungeonWalls/4-NESW.png');
+
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
@@ -33,35 +50,35 @@ Game = {
 
 	SetupScene: function() {
 		Lynx.Scene.On("Keyboard.Press.W", function() {
-			Game.CameraVY -= 1
+			Game.CameraVY -= 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.W", function() {
-			Game.CameraVY += 1
+			Game.CameraVY += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Press.S", function() {
-			Game.CameraVY += 1
+			Game.CameraVY += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.S", function() {
-			Game.CameraVY -= 1
+			Game.CameraVY -= 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Press.A", function() {
-			Game.CameraVX -= 1
+			Game.CameraVX -= 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.A", function() {
-			Game.CameraVX += 1
+			Game.CameraVX += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Press.D", function() {
-			Game.CameraVX += 1
+			Game.CameraVX += 1;
 		});
 
 		Lynx.Scene.On("Keyboard.Release.D", function() {
-			Game.CameraVX -= 1
+			Game.CameraVX -= 1;
 		});
 
 		Lynx.Scene.On("Update", function() {
@@ -83,8 +100,19 @@ Game = {
 			var e = Lynx.Scene.Entities[i];
 			e.Scale = Game.Scale;
 		}
+
+		_.each(Lynx.Scene.Layers, function(layer) {
+			_.each(layer.Elements, function(element) {
+				element.Scale = Game.Scale;
+			});
+		});
 	},
 	Ready: function() {
+
+		Lynx.Scene.AddLayer();
+		Lynx.Scene.AddLayer();
+
+
 		Lynx.Scene.Camera.X = -Lynx.Scene.Width / 2 + 200;
 		Lynx.Scene.Camera.Y = -Lynx.Scene.Height / 2 + 150;
 		var entranceRoom = new Room(0, 0);
@@ -100,7 +128,7 @@ Game = {
 		//World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
 
 		var john = World.Entities.createEntity(Warrior);
-		john.Name = "John"
+		john.Name = "John";
 		john.GiveItem(new HP10Potion(), 4);
 		john.EquipItem(new WoodenStick());
 		john.BaseDefense = 10;
@@ -108,12 +136,10 @@ Game = {
 		john.SetRoom(World.Rooms.content[0]);
 
 		var hugo = World.Entities.createEntity(GiantSpider);
-		hugo.Name = "Giant Spider"
+		hugo.Name = "Giant Spider";
 		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
 
-
-		Lynx.Scene.AddLayer();
 
 		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
@@ -134,14 +160,14 @@ Game = {
 			}
 
 			if (event.wheelDelta > 0) {
-				Game.Scale += (event.wheelDelta * 0.001)
+				Game.Scale += (event.wheelDelta * 0.001);
 			} else {
-				Game.Scale -= (event.wheelDelta * -0.001)
+				Game.Scale -= (event.wheelDelta * -0.001);
 			}
 			if (Game.Scale > 5)
 				Game.Scale = 5;
 			if (Game.Scale < 0.5)
-				Game.Scale = 0.5
+				Game.Scale = 0.5;
 
 			if (Game.ActiveMenu === UI.RoomMenu) {
 				//				Game.ActiveMenu.Scale = Game.Scale;
@@ -175,7 +201,7 @@ Game = {
 		//Scale entities to default scale
 		Game.ScaleAllEntities();
 
-		UI.Out.UpdateExpbar(500000, 2000000);
+		//UI.Out.UpdateExpbar(500000, 2000000);
 		welcomeMessage.Show();
 	}
 };

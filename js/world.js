@@ -8,6 +8,17 @@ World.Stats = new function() {
 	var fame = 0;
 	var peril = 0;
 
+	var nextLevelExp = 100;
+	Object.defineProperty(this, "nextLevelExp", {
+		set: function(pValue) {
+			nextLevelExp = pValue;
+			//UI.Out.Level = pValue
+		},
+		get: function() {
+			return nextLevelExp;
+		}
+	});
+
 	var level = 1;
 	Object.defineProperty(this, "level", {
 		set: function(pValue) {
@@ -24,6 +35,12 @@ World.Stats = new function() {
 		set: function(pValue) {
 			dungeonExp = pValue;
 			UI.Out.Experience = pValue
+			UI.Out.ExperienceBar = Math.floor((dungeonExp / nextLevelExp) * 100);
+
+			if (dungeonExp >= nextLevelExp) {
+				World.LevelUp();
+			}
+
 		},
 		get: function() {
 			return dungeonExp;
@@ -99,6 +116,18 @@ World.Stats = new function() {
 World.LevelUp = function() {
 	var level = World.Stats.level;
 	level++;
+
+
+	World.Stats.Experience -= World.Stats.nextLevelExp;
+	World.Stats.nextLevelExp = World.Stats.nextLevelExp * 2;
+
+	// totalExp += pValue;
+	// this.expGainedInDungeon += pValue;
+	// if (totalExp >= nextLevelExp) {
+	// 	this.totalExp -= nextLevelExp;
+	// 	nextLevelExp = nextLevelExp * 1.5;
+	// }
+
 
 	var tRoom = World.TreasureRoom;
 
