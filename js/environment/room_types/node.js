@@ -1,15 +1,15 @@
-var NodeRoom = function (parent) {
+var NodeRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
 
 	var originalDestroy = this.destroy;
-	this.destroy = function () {
+	this.destroy = function() {
 		originalDestroy();
 	};
 
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
-	this.Spawner = function (newEntityToSpawn, maxSpawn) {
+	this.Spawner = function(newEntityToSpawn, maxSpawn) {
 		var mobCount = 0;
 		var entityToSpawn;
 
@@ -21,7 +21,7 @@ var NodeRoom = function (parent) {
 			mobCount = this.spawnedEntities.length;
 		} else {
 			entityToSpawn = newEntityToSpawn;
-			_.each(this.spawnedEntities, function (mob) {
+			_.each(this.spawnedEntities, function(mob) {
 				if (mob instanceof entityToSpawn) {
 					mobCount++;
 				}
@@ -46,11 +46,11 @@ var NodeRoom = function (parent) {
 NodeRoom.prototype = new EmptyRoom();
 NodeRoom.prototype.constructor = NodeRoom;
 
-var TrogRoom = function (parent) {
+var TrogRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
 	var originalDestroy = this.destroy;
 	//Need to destpry RoomTypes or these Intervals will go haywire.
-	this.destroy = function () {
+	this.destroy = function() {
 		clearInterval(this.timer);
 		originalDestroy();
 	};
@@ -64,11 +64,11 @@ var TrogRoom = function (parent) {
 //TrogRoom.prototype = new NodeRoom();
 //TrogRoom.prototype.constructor = TrogRoom;
 
-var SpiderRoom = function (parent) {
+var SpiderRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
 	var originalDestroy = this.destroy;
-	//Need to destpry RoomTypes or these Intervals will go haywire.
-	this.destroy = function () {
+	//Need to destroy RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
 		clearInterval(this.timer);
 		clearInterval(this.timer2);
 		originalDestroy();
@@ -83,11 +83,11 @@ var SpiderRoom = function (parent) {
 	this.timer2 = setInterval(this.Spawner.bind(this, Spider, 5), 5000);
 };
 
-var BatRoom = function (parent) {
+var BatRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
 	var originalDestroy = this.destroy;
 	//Need to destpry RoomTypes or these Intervals will go haywire.
-	this.destroy = function () {
+	this.destroy = function() {
 		clearInterval(this.timer);
 		originalDestroy();
 	};
@@ -100,11 +100,11 @@ var BatRoom = function (parent) {
 	this.timer = setInterval(this.Spawner.bind(this, Bat, 1), 4500);
 };
 
-var GoblinRoom = function (parent) {
+var GoblinRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
 	var originalDestroy = this.destroy;
 	//Need to destpry RoomTypes or these Intervals will go haywire.
-	this.destroy = function () {
+	this.destroy = function() {
 		clearInterval(this.timer);
 		originalDestroy();
 	};
@@ -114,5 +114,5 @@ var GoblinRoom = function (parent) {
 	this.canSpawnEntities = [Goblin];
 	this.spawnCooldown = 10000;
 
-	this.timer = setInterval(this.Spawner.bind(this, Bat, 1), 10000);
+	this.timer = setInterval(this.Spawner.bind(this, Goblin, 1), 10000);
 };

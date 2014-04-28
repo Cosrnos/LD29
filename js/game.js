@@ -5,22 +5,22 @@ Game = {
 	Scale: 1,
 	TutorialProgress: 0,
 
-	Start: function () {
+	Start: function() {
 		this.Initialize();
-		this.LoadAssets((function () {
-			this.LoadComponents((function () {
+		this.LoadAssets((function() {
+			this.LoadComponents((function() {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function () {
+	Initialize: function() {
 		//Set Globals here
 		//Open preloader if needed
 	},
 
-	LoadAssets: function (pCallback) {
+	LoadAssets: function(pCallback) {
 		//Queue assets here
 
 		Lynx.AM.QueueImage('warrior', 'assets/warrior.png');
@@ -66,6 +66,7 @@ Game = {
 		Lynx.AM.QueueImage("goblinNode", "assets/dgTiles/goblinNode.png");
 		Lynx.AM.QueueImage("trog", "assets/trog.png");
 		Lynx.AM.QueueImage("spider", "assets/spider.png");
+		Lynx.AM.QueueImage("spider-giant", "assets/giant-spider.png");
 		Lynx.AM.QueueImage("goblin", "assets/goblin.png");
 		Lynx.AM.QueueImage("bat", "assets/bat.png");
 
@@ -76,53 +77,53 @@ Game = {
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function (pCallback) {
+	LoadComponents: function(pCallback) {
 		Lynx.CM.Load("Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function () {
-		Lynx.Scene.On("Keyboard.Press.W", function () {
+	SetupScene: function() {
+		Lynx.Scene.On("Keyboard.Press.W", function() {
 			Game.CameraVY -= 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.W", function () {
+		Lynx.Scene.On("Keyboard.Release.W", function() {
 			Game.CameraVY = 0;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Keyboard.Press.S", function () {
+		Lynx.Scene.On("Keyboard.Press.S", function() {
 			Game.CameraVY += 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.S", function () {
+		Lynx.Scene.On("Keyboard.Release.S", function() {
 			Game.CameraVY -= 1;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Keyboard.Press.A", function () {
+		Lynx.Scene.On("Keyboard.Press.A", function() {
 			Game.CameraVX -= 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.A", function () {
+		Lynx.Scene.On("Keyboard.Release.A", function() {
 			Game.CameraVX = 0;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Keyboard.Press.D", function () {
+		Lynx.Scene.On("Keyboard.Press.D", function() {
 			Game.CameraVX += 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.D", function () {
+		Lynx.Scene.On("Keyboard.Release.D", function() {
 			Game.CameraVX = 0;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Update", function () {
+		Lynx.Scene.On("Update", function() {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
 			if (Game.ActiveMenu === UI.RoomMenu) {
@@ -133,22 +134,22 @@ Game = {
 
 		Lynx.Start();
 	},
-	ScaleEntity: function (entity) {
+	ScaleEntity: function(entity) {
 		entity.Scale = Game.Scale;
 	},
-	ScaleAllEntities: function () {
+	ScaleAllEntities: function() {
 		for (var i = 0; i < Lynx.Scene.Entities.length; i++) {
 			var e = Lynx.Scene.Entities[i];
 			e.Scale = Game.Scale;
 		}
 
-		_.each(Lynx.Scene.Layers, function (layer) {
-			_.each(layer.Elements, function (element) {
+		_.each(Lynx.Scene.Layers, function(layer) {
+			_.each(layer.Elements, function(element) {
 				element.Scale = Game.Scale;
 			});
 		});
 	},
-	Ready: function () {
+	Ready: function() {
 
 		Lynx.Scene.AddLayer();
 		Lynx.Scene.AddLayer();
@@ -184,8 +185,8 @@ Game = {
 */
 
 		john.BaseSpeed = 2;
-		Lynx.Scene.On("Update", function () {
-			_.each(World.Entities.content, function (entity) {
+		Lynx.Scene.On("Update", function() {
+			_.each(World.Entities.content, function(entity) {
 				if (entity) {
 					entity.Think();
 					if (entity.Draw) {
@@ -196,7 +197,7 @@ Game = {
 			return true;
 		});
 
-		window.addEventListener("mousewheel", function (event) {
+		window.addEventListener("mousewheel", function(event) {
 			if (Game.ActiveMenu !== null) {
 				return;
 			}
@@ -235,7 +236,7 @@ Game = {
 
 		});
 
-		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
+		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
 			if (Game.TutorialProgress === 0)
 				return true;
