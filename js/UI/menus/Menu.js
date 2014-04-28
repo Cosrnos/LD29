@@ -45,6 +45,8 @@ var Menu = function (pName, pClose) {
 	var Option = function (pName, pClickCallback, pParent) {
 		var that = {};
 		that.Parent = pParent;
+		that.Show = true;
+		that.Name = pName;
 
 		that.Element = document.createElement("button");
 		that.Element.innerHTML = pName;
@@ -113,7 +115,8 @@ var Menu = function (pName, pClose) {
 		element.appendChild(menuHead);
 
 		for (var i = 0; i < options.length; i++) {
-			element.appendChild(options[i].Element);
+			if(options[i].Show)
+				element.appendChild(options[i].Element);
 		}
 		if (pClose) {
 			element.appendChild(new Option("Close", function () {

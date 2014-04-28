@@ -1,19 +1,21 @@
 // Mage
 //--------------------------
 
-var Mage = function(pName) {
+var Scout = function(pName) {
 	Hero.apply(this);
-	this.Class = HeroClass.Mage;
-	this.Name = pName || "Mage";
-	this.HeroType = "MAGE";
-	this.image = Lynx.AM.Get("mage").Asset;
+	this.Class = HeroClass.Scout;
+	this.Name = pName || "Scout";
+	this.HeroType = "SCOUT";
+	this.image = Lynx.AM.Get("scout").Asset;
 
-	this.GiveAction("Fireblast");
+	//this.GiveAction("Fireblast");
+
+	var move = (Object.create(ScoutMoveAction));
+	this.actions.push(move);
 
 	this.LevelUp = function() {
-		this.Health += 2;
-		this.BaseAttack += 1;
-		this.BaseMagic += 2;
+		this.Health += 1;
+		this.BaseAttack += (1 % 2); //Gain Attack every other level.
 		Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
 	};
 
@@ -27,10 +29,10 @@ var Mage = function(pName) {
 					continue;
 				}
 
-				if (!this.OnCooldown("Fireblast")) {
-					this.UseAction("Fireblast", this.CurrentTarget);
-					continue;
-				};
+				// if (!this.OnCooldown("Fireblast")) {
+				// 	this.UseAction("Fireblast", this.CurrentTarget);
+				// 	continue;
+				// };
 				if (!this.OnCooldown("HP 10 Potion")) {
 					//Only try to use if health is at 30%
 					if (this.HealthDelta >= this.Health * 0.7) {
@@ -56,8 +58,8 @@ var Mage = function(pName) {
 					this.GetRoom().type.Ascend(this);
 				}
 
-				if (!this.OnCooldown("HeroMove")) {
-					this.UseAction("HeroMove");
+				if (!this.OnCooldown("ScoutMoveAction")) {
+					this.UseAction("ScoutMoveAction");
 					continue;
 				}
 			}
@@ -66,5 +68,5 @@ var Mage = function(pName) {
 	};
 };
 
-Mage.prototype = new Hero();
-Mage.prototype.constructor = Mage;
+Scout.prototype = new Hero();
+Scout.prototype.constructor = Scout;

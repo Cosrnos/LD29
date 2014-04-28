@@ -11,6 +11,12 @@ var Warrior = function(pName) {
 
 	this.GiveAction("Heavy Attack");
 
+	this.LevelUp = function() {
+		this.Health += 2;
+		this.BaseAttack += 2;
+		Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
+	};
+
 	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {

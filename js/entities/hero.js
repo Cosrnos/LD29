@@ -23,39 +23,39 @@ var Hero = function(pName) {
 	this.Name = pName || "";
 
 	this.image = null;
+	this.xOffSet = 31;
+	// this.Draw = function() {
+	// 	//debugger;
+	// 	var currentRoom = this.GetRoom();
+	// 	if (currentRoom) {
+	// 		if (!this.entity) {
+	// 			//this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+	// 			if (this.image) {
+	// 				this.entity = new Lynx.Entity(this.image);
+	// 				this.entity.Height = 10;
+	// 				this.entity.Width = 10;
+	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
+	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+	// 			} else {
+	// 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 31, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+	// 				//this.entity.Color = this.Color;
+	// 				this.entity.Color = 0x009933;
+	// 			}
 
-	this.Draw = function() {
-		//debugger;
-		var currentRoom = this.GetRoom();
-		if (currentRoom) {
-			if (!this.entity) {
-				//this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-				if (this.image) {
-					this.entity = new Lynx.Entity(this.image);
-					this.entity.Height = 10;
-					this.entity.Width = 10;
-					this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
-					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-				} else {
-					this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 31, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-					//this.entity.Color = this.Color;
-					this.entity.Color = 0x009933;
-				}
+	// 			Game.ScaleEntity(this.entity);
+	// 			Lynx.Scene.Layers[2].AddEntity(this.entity);
 
-				Game.ScaleEntity(this.entity);
-				Lynx.Scene.Layers[2].AddEntity(this.entity);
-
-			} else {
-				if (this.image) {
-					this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
-					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-				} else {
-					this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
-					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-				}
-			}
-		}
-	};
+	// 		} else {
+	// 			if (this.image) {
+	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
+	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+	// 			} else {
+	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
+	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+	// 			}
+	// 		}
+	// 	}
+	// };
 
 	Object.defineProperty(this, "Experience", {
 		get: function() {
@@ -63,7 +63,7 @@ var Hero = function(pName) {
 		},
 		set: function(pValue) {
 			totalExp = pValue;
-			console.log('Gained: ' + pValue + " Total: " + totalExp);
+
 			if (totalExp >= nextLevelExp) {
 				this.totalExp -= nextLevelExp;
 				nextLevelExp = nextLevelExp * 1.5;

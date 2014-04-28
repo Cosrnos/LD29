@@ -3,6 +3,7 @@ Game = {
 	CameraVY: 0,
 	ActiveMenu: null,
 	Scale: 1,
+	TutorialProgress: 0,
 
 	Start: function() {
 		this.Initialize();
@@ -24,6 +25,22 @@ Game = {
 
 		Lynx.AM.QueueImage('warrior', 'assets/warrior.png');
 		Lynx.AM.QueueImage('mage', 'assets/mage.png');
+		Lynx.AM.QueueImage('scout', 'assets/scout.png');
+		// Lynx.AM.QueueImage('e-room', 'assets/DungeonWalls/d-E.png');
+		// Lynx.AM.QueueImage('w-room', 'assets/DungeonWalls/d-W.png');
+		// Lynx.AM.QueueImage('n-room', 'assets/DungeonWalls/d-N.png');
+		// Lynx.AM.QueueImage('s-room', 'assets/DungeonWalls/d-S.png');
+		// Lynx.AM.QueueImage('ne-room', 'assets/DungeonWalls/d-NE.png');
+		// Lynx.AM.QueueImage('es-room', 'assets/DungeonWalls/d-ES.png');
+		// Lynx.AM.QueueImage('ew-room', 'assets/DungeonWalls/d-EW.png');
+		// Lynx.AM.QueueImage('ns-room', 'assets/DungeonWalls/d-NS.png');
+		// Lynx.AM.QueueImage('nw-room', 'assets/DungeonWalls/d-NW.png');
+		// Lynx.AM.QueueImage('sw-room', 'assets/DungeonWalls/d-SW.png');
+		// Lynx.AM.QueueImage('esw-room', 'assets/DungeonWalls/d-ESW.png');
+		// Lynx.AM.QueueImage('nes-room', 'assets/DungeonWalls/d-NES.png');
+		// Lynx.AM.QueueImage('new-room', 'assets/DungeonWalls/d-NEW.png');
+		// Lynx.AM.QueueImage('nsw-room', 'assets/DungeonWalls/d-NSW.png');
+		// Lynx.AM.QueueImage('nesw-room', 'assets/DungeonWalls/d-NESW.png');
 		Lynx.AM.QueueImage('e-room', 'assets/DungeonWalls/1-E.png');
 		Lynx.AM.QueueImage('w-room', 'assets/DungeonWalls/1-W.png');
 		Lynx.AM.QueueImage('n-room', 'assets/DungeonWalls/1-N.png');
@@ -134,12 +151,13 @@ Game = {
 		john.BaseDefense = 10;
 
 		john.SetRoom(World.Rooms.content[0]);
-
+		World.Stats.lira = 15;
+		/*
 		var hugo = World.Entities.createEntity(GiantSpider);
 		hugo.Name = "Giant Spider";
 		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
-
+*/
 
 		john.BaseSpeed = 2;
 		Lynx.Scene.On("Update", function() {
@@ -187,13 +205,31 @@ Game = {
 			//Test for Room Menu
 			var room = World.Rooms.findRoom(Math.floor(gamePos.X / (World.Rooms.roomSize * Game.Scale)), Math.floor(gamePos.Y / (World.Rooms.roomSize * Game.Scale)));
 			if (typeof room !== 'undefined') {
+				if (Game.TutorialProgress === 0 && !(room.type instanceof EmptyRoom))
+					return true;
+
 				UI.RoomMenu.Target = room;
 				if (room.type instanceof EmptyRoom)
 					UI.RoomMenu.NodeChange.Element.innerHTML = "Add Node &raquo;";
 				else
 					UI.RoomMenu.NodeChange.Element.innerHTML = "Change Node &raquo;";
+
+				if (room.type instanceof TreasureRoom || room.type instanceof EntranceRoom)
+					UI.RoomMenu.NodeOption.Show = false;
+				else
+					UI.RoomMenu.NodeOption.Show = true;
+
+				if (room.type instanceof EmptyRoom || room.type instanceof TreasureRoom || room.type instanceof EntranceRoom)
+					UI.RoomMenu.RemoveNodeOption.Show = false;
+				else
+					UI.RoomMenu.RemoveNodeOption.Show = true;
+
 				UI.RoomMenu.Name = "Room #" + room.id;
 				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
+				if (Game.TutorialProgress === 0) {
+					tutorialAboutNodes.savePos(pMousePosition.X, pMousePosition.Y);
+					tutorialAboutNodes.Show();
+				}
 				return true;
 			}
 		});

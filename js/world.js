@@ -8,7 +8,7 @@ World.Stats = new function() {
 	var fame = 0;
 	var peril = 0;
 
-	var nextLevelExp = 100;
+	var nextLevelExp = 200;
 	Object.defineProperty(this, "nextLevelExp", {
 		set: function(pValue) {
 			nextLevelExp = pValue;
@@ -18,6 +18,30 @@ World.Stats = new function() {
 			return nextLevelExp;
 		}
 	});
+
+	var lira = 0;
+
+	Object.defineProperty(this, "lira", {
+		get: function() {
+			return lira;
+		},
+		set: function(pValue) {
+			lira = pValue;
+			UI.Out.Lira = pValue
+		}
+	});
+
+	var doma = 0;
+	Object.defineProperty(this, "doma", {
+		get: function() {
+			return doma;
+		},
+		set: function(pValue) {
+			doma = pValue;
+			UI.Out.Doma = pValue;
+		}
+	});
+
 
 	var level = 1;
 	Object.defineProperty(this, "level", {
@@ -51,7 +75,6 @@ World.Stats = new function() {
 	Object.defineProperty(this, "heroesDied", {
 		set: function(pValue) {
 			heroesDied = pValue;
-			UI.Out.Doma = pValue
 		},
 		get: function() {
 			return heroesDied;
@@ -62,7 +85,6 @@ World.Stats = new function() {
 	Object.defineProperty(this, "heroesAscended", {
 		set: function(pValue) {
 			heroesAscended = pValue;
-			UI.Out.Lira = pValue
 		},
 		get: function() {
 			return heroesAscended;
@@ -128,6 +150,16 @@ World.LevelUp = function() {
 	// 	nextLevelExp = nextLevelExp * 1.5;
 	// }
 
+	//At level 5, adds the ability to attract Scouts!
+	if (level === 5) {
+
+		var entrance = World.Rooms.content[0].type;
+		debugger;
+		entrance.timers.push({
+			name: 'Scout',
+			timer: setInterval(entrance.HeroSpawner.bind(entrance, Scout, 1), 30000)
+		});
+	}
 
 	var tRoom = World.TreasureRoom;
 
@@ -182,6 +214,9 @@ World.Entities = {
 		if (delEntity instanceof Enemy) {
 			World.Stats.mobsDied++;
 		} else if (delEntity instanceof Hero) {
+			if (delEntity.expGainedInDungeon > 0)
+				World.Stats.doma++;
+
 			World.Stats.heroesDied++;
 		}
 

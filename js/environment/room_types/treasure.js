@@ -15,6 +15,9 @@ var TreasureRoom = function(parent) {
 
 	//A Hero has entered the Treasure Room!!! Rejoice!
 	this.Ascend = function(hero) {
+		if(hero.expGainedInDungeon > 0)
+			World.Stats.lira++;
+		
 		World.Stats.heroesAscended++;
 		World.Stats.Experience += hero.expGainedInDungeon;
 		World.Stats.fame += hero.Level;

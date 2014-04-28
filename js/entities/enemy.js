@@ -8,21 +8,9 @@ var Enemy = function() {
 	this.Color = 0x0000ff;
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
-	this.Draw = function() {
-		//debugger;
-		var currentRoom = this.GetRoom();
-		if (currentRoom) {
-			if (!this.entity) {
-				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 7, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 3, 4, 4);
-				this.entity.Color = this.Color;
-				Game.ScaleEntity(this.entity);
-				Lynx.Scene.Layers[2].AddEntity(this.entity);
-			} else {
-				this.entity.X = World.Rooms.roomSize * currentRoom.x + 7;
-				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 3;
-			}
-		}
-	}
+
+	this.xOffSet = 7; //Enemys line up on the left side of a room.
+
 
 	this.AddDrop = function(pItem, pChance) {
 		var drop = Object.create(pItem);

@@ -40,6 +40,41 @@ var Entity = function() {
 
 	this.lastMoveDirection = null;
 
+	this.xOffSet = 0;
+
+	this.Draw = function() {
+		//debugger;
+		var currentRoom = this.GetRoom();
+		if (currentRoom) {
+			if (!this.entity) {
+				//this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				if (this.image) {
+					this.entity = new Lynx.Entity(this.image);
+					this.entity.Height = 10;
+					this.entity.Width = 10;
+					this.entity.X = World.Rooms.roomSize * currentRoom.x + this.xOffSet;
+					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 2;
+				} else {
+					this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + this.xOffSet, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 5, 4, 4);
+					//this.entity.Color = this.Color;
+					this.entity.Color = 0x009933;
+				}
+
+				Game.ScaleEntity(this.entity);
+				Lynx.Scene.Layers[2].AddEntity(this.entity);
+
+			} else {
+				if (this.image) {
+					this.entity.X = World.Rooms.roomSize * currentRoom.x + this.xOffSet;
+					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 2;
+				} else {
+					this.entity.X = World.Rooms.roomSize * currentRoom.x + this.xOffSet;
+					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 5;
+				}
+			}
+		}
+	};
+
 	//Stupid Move Function.  Picks a random direction and goes.
 	this.Move = function(direction) {
 		var self = this;
@@ -211,8 +246,8 @@ var Entity = function() {
 	this.GiveItem = function(pItem, pQuantity) {
 		for (var i = 0; i < pQuantity; i++) {
 			this.items.push(pItem);
-			if((pItem.type & ItemType.EQUIPABLE) !== 0){
-				if(pItem.Rating > this.Equipment[pItem.EquipSlot].Rating){
+			if ((pItem.type & ItemType.EQUIPABLE) !== 0) {
+				if (pItem.Rating > this.Equipment[pItem.EquipSlot].Rating) {
 					this.EquipItem(pItem);
 				}
 			}
