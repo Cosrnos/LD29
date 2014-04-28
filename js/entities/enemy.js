@@ -237,3 +237,79 @@ var GiantSpider = function() {
 };
 GiantSpider.prototype = new Enemy();
 GiantSpider.prototype.constructor = GiantSpider;
+
+
+var BlobMan = function() {
+	Enemy.apply(this);
+	this.Species = "BlobMan";
+	this.Level = 1;
+	this.Exp = 25;
+	this.Gold = 20;
+	this.BaseAttack = 2;
+	this.BaseDefense = 0;
+	this.Health = 5;
+	this.Mana = 0;
+	this.AddDrop(new HP10Potion(), 20);
+	this.image = Lynx.AM.Get("blobman").Asset;
+	this.blobSize = 1;
+	this.entityScaleMultiplier = 0.8;
+	this.isBlobbing = false;
+
+	this.Brain = function() {
+		var thinking = true;
+		var self = this;
+		while (thinking) {
+			if (this.CurrentTarget !== null) {
+				if (!this.OnCooldown("Attack")) {
+					this.UseAction("Attack", this.CurrentTarget);
+					continue;
+				}
+			} else {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa instanceof Hero
+				});
+				if (typeof heroInRoom !== 'undefined') {
+					this.CurrentTarget = heroInRoom;
+					continue;
+				}
+
+				var otherBlobInRoom = _.find(this.GetRoom().mobs, function(pa) {
+					return pa !== self && pa instanceof BlobMan;
+				});
+				if (otherBlobInRoom) {
+					//Don't combine if they will get too large.
+
+					var otherBlobSize = otherBlobInRoom.blobSize;
+					if (this.blobSize + otherBlobSize <= 4 && otherBlobInRoom.isBlobbing === false) {
+						console.log("Blobbing!")
+						this.isBlobbing = true;
+						debugger;
+						this.blobSize += otherBlobSize;
+						this.Level += otherBlobSize;
+						this.Exp += otherBlobSize * 12;
+						this.Gold += otherBlobSize * 7;
+						this.BaseAttack += otherBlobSize;
+						this.Health += otherBlobSize * 4;
+						this.entityScaleMultiplier = (1 + (this.blobSize * 0.1));
+						Lynx.Scene.Layers[2].RemoveEntity(otherBlobInRoom.entity);
+						otherBlobInRoom.RemoveFromGame();
+						this.isBlobbing = false;
+						continue;
+					}
+				}
+
+				if (!this.OnCooldown("Move")) {
+					if (!this.CurrentTarget) {
+						this.UseAction("Move");
+						continue;
+					}
+				}
+			}
+
+			thinking = false;
+		}
+	}
+};
+
+BlobMan.prototype = new Enemy();
+BlobMan.prototype.constructor = BlobMan;

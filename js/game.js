@@ -65,13 +65,15 @@ Game = {
 		Lynx.AM.QueueImage("trogNode", "assets/dgTiles/trogNode.png");
 		Lynx.AM.QueueImage("spiderNode", "assets/dgTiles/spiderNode.png");
 		Lynx.AM.QueueImage("goblinNode", "assets/dgTiles/goblinNode.png");
+		Lynx.AM.QueueImage("blobmanNode", "assets/dgTiles/blobNode.png");
+		Lynx.AM.QueueImage("blobman", "assets/trogs/trog-1-s.png");
 		Lynx.AM.QueueImage("trog", "assets/trog.png");
 		Lynx.AM.QueueImage("spider", "assets/spider.png");
 		Lynx.AM.QueueImage("spider-giant", "assets/giant-spider.png");
 		Lynx.AM.QueueImage("goblin", "assets/goblin.png");
 		Lynx.AM.QueueImage("bat", "assets/bat.png");
 
-		Lynx.AM.QueueAudio("soundClick", "assets/sounds/click.wav");
+		Lynx.AM.QueueAudio("soundClick", "assets/sounds/click2.wav");
 		Lynx.AM.QueueAudio("soundAscent", "assets/sounds/ascent.wav");
 		Lynx.AM.QueueAudio("soundDeath", "assets/sounds/death.wav");
 		Lynx.AM.QueueAudio("soundBgm", "assets/sounds/bgm.mp3");
@@ -231,7 +233,7 @@ Game = {
 			Game.ScaleAllEntities();
 		}, false);
 		var cursor = "auto";
-		Lynx.Scene.On("MouseEvents.Move", function (pMousePosition) {
+		Lynx.Scene.On("MouseEvents.Move", function(pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
 			if (Game.ActiveMenu !== null) {
 				if (cursor === "pointer") {

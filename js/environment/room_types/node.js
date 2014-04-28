@@ -97,7 +97,7 @@ var BatRoom = function(parent) {
 	this.canSpawnEntities = [Bat];
 	this.spawnCooldown = 6000;
 
-	this.timer = setInterval(this.Spawner.bind(this, Bat, 1), 4500);
+	this.timer = setInterval(this.Spawner.bind(this, Bat, 5), 4500);
 };
 
 var GoblinRoom = function(parent) {
@@ -114,5 +114,20 @@ var GoblinRoom = function(parent) {
 	this.canSpawnEntities = [Goblin];
 	this.spawnCooldown = 10000;
 
-	this.timer = setInterval(this.Spawner.bind(this, Goblin, 1), 10000);
+	this.timer = setInterval(this.Spawner.bind(this, Goblin, 3), 10000);
+};
+
+
+var BlobmanRoom = function(parent) {
+	NodeRoom.apply(this, [parent]);
+	var originalDestroy = this.destroy;
+	//Need to destroy RoomTypes or these Intervals will go haywire.
+	this.destroy = function() {
+		clearInterval(this.timer);
+		originalDestroy();
+	};
+
+	this.Texture = Lynx.AM.Get("blobmanNode").Asset;
+
+	this.timer = setInterval(this.Spawner.bind(this, BlobMan, 4), 7500);
 };

@@ -69,6 +69,9 @@ var Entity = function() {
 
 			} else {
 				if (this.image) {
+					var scaleFactor = 10 / this.image.height;
+					this.entity.Height = Math.floor(10 * this.entityScaleMultiplier);
+					this.entity.Width = Math.floor(this.image.width * scaleFactor * this.entityScaleMultiplier);
 					this.entity.X = World.Rooms.roomSize * currentRoom.x + this.xOffSet;
 					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 2;
 				} else {
