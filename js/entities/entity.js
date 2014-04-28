@@ -211,6 +211,11 @@ var Entity = function() {
 	this.GiveItem = function(pItem, pQuantity) {
 		for (var i = 0; i < pQuantity; i++) {
 			this.items.push(pItem);
+			if((pItem.type & ItemType.EQUIPABLE) !== 0){
+				if(pItem.Rating > this.Equipment[pItem.EquipSlot].Rating){
+					this.EquipItem(pItem);
+				}
+			}
 		}
 	};
 

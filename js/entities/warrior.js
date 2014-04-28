@@ -7,7 +7,7 @@ var Warrior = function(pName) {
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
-	this.image = Lynx.AM.Get('fencer').Asset;
+	this.image = Lynx.AM.Get('warrior').Asset;
 
 	this.GiveAction("Heavy Attack");
 

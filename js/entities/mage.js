@@ -6,6 +6,7 @@ var Mage = function(pName) {
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
 	this.HeroType = "MAGE";
+	this.image = Lynx.AM.Get("mage").Asset;
 
 	this.GiveAction("Fireblast");
 

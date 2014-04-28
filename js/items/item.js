@@ -6,7 +6,7 @@ var Item = function(pName) {
 	this.Cost = 1;
 	this.Equip = function(pHero) {};
 	this.Unequip = function(pHero) {};
-
+	this.Rating = 0;
 	this.Cooldown = 1000;
 	this.CanUseAt = 0;
 };

@@ -21,7 +21,8 @@ Game = {
 
 	LoadAssets: function(pCallback) {
 		//Queue assets here
-		Lynx.AM.QueueImage('fencer', 'assets/fencer.png');
+		Lynx.AM.QueueImage('warrior', 'assets/warrior.png');
+		Lynx.AM.QueueImage('mage', 'assets/mage.png');
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
@@ -101,7 +102,7 @@ Game = {
 		var john = World.Entities.createEntity(Warrior);
 		john.Name = "John"
 		john.GiveItem(new HP10Potion(), 4);
-		john.EquipItem(new WoodenSword());
+		john.EquipItem(new WoodenStick());
 		john.BaseDefense = 10;
 
 		john.SetRoom(World.Rooms.content[0]);
