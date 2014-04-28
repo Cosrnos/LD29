@@ -1618,56 +1618,40 @@ var Room = function(x, y) {
 
 
 //This creates a kinda-random dungeon, starting from 'room'
-walk = function(room, maxDepth, minRooms, depth) {
+walk = function(room, maxGain) {
+	var gained = 0;
 
-	var createRooms = function(room, maxDepth, depth) {
-		if (depth >= maxDepth || !room) {
+	var createRooms = function(room, depth) {
+		debugger;
+		if (!room || gained >= maxGain) {
 			return;
 		}
-		//Sometime create a corridor three rooms long.
-		if (Math.random() >= 0.8) {
-
-			var direction = _.sample(['n', 's', 'w', 'e']);
-			var x = 0;
-			newRoom = room.addRoom(direction);
-			while (newRoom && x < 3) {
-				x += 1;
-				newRoom = newRoom.addRoom(direction);
-			}
-			if (newRoom) {
-				createRooms(newRoom, maxDepth, depth + 1);
-			}
-		}
-		//debugger;
 		//Randomly create rooms in each direction.
-		if (Math.random() >= 0.6) {
-			if (room.addRoom('n')) {
-				createRooms(room.North, maxDepth, depth + 1);
-			}
-		}
-		if (Math.random() >= 0.6) {
-			if (room.addRoom('s')) {
-				createRooms(room.South, maxDepth, depth + 1);
-			}
-		}
-		if (Math.random() >= 0.6) {
-			if (room.addRoom('e')) {
-				createRooms(room.East, maxDepth, depth + 1);
-			}
-		}
-		if (Math.random() >= 0.6) {
-			if (room.addRoom('w')) {
-				createRooms(room.West, maxDepth, depth + 1);
+		var dir = _.sample(['n', 's', 'w', 'e']);
+
+		if (gained < maxGain) {
+			if (room.addRoom(dir)) {
+				gained++;
+
+				if (dir === 'n') {
+					createRooms(room.North, depth + 1);
+				} else if (dir === 's') {
+					createRooms(room.South, depth + 1);
+				} else if (dir === 'e') {
+					createRooms(room.East, depth + 1);
+				} else if (dir === 'w') {
+					createRooms(room.West, depth + 1);
+				}
 			}
 		}
 	}
 
-	var initialRoomNum = World.Rooms.content.length;
-	createRooms(room, maxDepth, depth);
-	while (World.Rooms.content.length < minRooms) {
+	//var initialRoomNum = World.Rooms.content.length;
+	createRooms(room, 0);
+	while (gained < maxGain) {
 		//var randRoom = _.sample(World.Rooms.content);
 
-		createRooms(room, maxDepth, depth);
+		createRooms(room, 0);
 
 		var randRoom = room.randomExit();
 		if (randRoom) {
@@ -2045,20 +2029,33 @@ World.Stats = new function() {
 
 World.LevelUp = function() {
 	var level = World.Stats.level;
+	level++;
 
 	var tRoom = World.TreasureRoom;
 
-	walk(World.Rooms.content[0], 4, World.Rooms.content.length + 2, 0);
-	walk(tRoom, 5, World.Rooms.content.length + 7, 0);
+	if (level <= 5) {
+		walk(World.Rooms.content[0], 1);
+		walk(tRoom, level - 2);
+	} else {
+		walk(World.Rooms.content[0], 1);
+		walk(_.sample(World.Rooms.content), 2);
+		walk(tRoom, level - 5);
+	}
+
+
 
 	var newTRoom = _.max(World.Rooms.content, function(room) {
 		return Math.sqrt(room.x * room.x + room.y * room.y + room.id);
 	});
-	newTRoom.type = tRoom.type;
-	newTRoom.type.parent = newTRoom;
-	tRoom.type = new EmptyRoom();
 
-	World.TreasureRoom = newTRoom;
+	//Make sure the treasure room actually changed locations
+	if (newTRoom !== tRoom) {
+		newTRoom.type = tRoom.type;
+		newTRoom.type.parent = newTRoom;
+		tRoom.type = new EmptyRoom();
+
+		World.TreasureRoom = newTRoom;
+	}
 	World.Stats.level += 1;
 
 
