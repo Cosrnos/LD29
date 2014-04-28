@@ -1,7 +1,7 @@
 // Mage
 //--------------------------
 
-var Mage = function(pName) {
+var Mage = function (pName) {
 	Hero.apply(this);
 	this.Class = HeroClass.Mage;
 	this.Name = pName || "Mage";
@@ -10,14 +10,15 @@ var Mage = function(pName) {
 
 	this.GiveAction("Fireblast");
 
-	this.LevelUp = function() {
+	this.LevelUp = function () {
 		this.Health += 2;
 		this.BaseAttack += 1;
 		this.BaseMagic += 2;
-		Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
+		if (!this.SPAWNING)
+			Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
 	};
 
-	this.Brain = function() {
+	this.Brain = function () {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -43,7 +44,7 @@ var Mage = function(pName) {
 
 
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
+				var enemyInRoom = _.find(this.GetRoom().mobs, function (pa) {
 					return pa instanceof Enemy
 				});
 				if (typeof enemyInRoom !== 'undefined') {

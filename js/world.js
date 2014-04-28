@@ -1,6 +1,6 @@
 var World = World || {};
 
-World.Stats = new function() {
+World.Stats = new function () {
 
 
 
@@ -10,11 +10,11 @@ World.Stats = new function() {
 
 	var nextLevelExp = 200;
 	Object.defineProperty(this, "nextLevelExp", {
-		set: function(pValue) {
+		set: function (pValue) {
 			nextLevelExp = pValue;
 			//UI.Out.Level = pValue
 		},
-		get: function() {
+		get: function () {
 			return nextLevelExp;
 		}
 	});
@@ -22,10 +22,10 @@ World.Stats = new function() {
 	var lira = 0;
 
 	Object.defineProperty(this, "lira", {
-		get: function() {
+		get: function () {
 			return lira;
 		},
-		set: function(pValue) {
+		set: function (pValue) {
 			lira = pValue;
 			UI.Out.Lira = pValue
 		}
@@ -33,10 +33,10 @@ World.Stats = new function() {
 
 	var doma = 0;
 	Object.defineProperty(this, "doma", {
-		get: function() {
+		get: function () {
 			return doma;
 		},
-		set: function(pValue) {
+		set: function (pValue) {
 			doma = pValue;
 			UI.Out.Doma = pValue;
 		}
@@ -45,18 +45,18 @@ World.Stats = new function() {
 
 	var level = 1;
 	Object.defineProperty(this, "level", {
-		set: function(pValue) {
+		set: function (pValue) {
 			level = pValue;
 			UI.Out.Level = pValue
 		},
-		get: function() {
+		get: function () {
 			return level;
 		}
 	});
 
 	var dungeonExp = 0;
 	Object.defineProperty(this, "Experience", {
-		set: function(pValue) {
+		set: function (pValue) {
 			dungeonExp = pValue;
 			UI.Out.Experience = pValue
 			UI.Out.ExperienceBar = Math.floor((dungeonExp / nextLevelExp) * 100);
@@ -66,78 +66,82 @@ World.Stats = new function() {
 			}
 
 		},
-		get: function() {
+		get: function () {
 			return dungeonExp;
 		}
 	});
 
 	var heroesDied = 0;
 	Object.defineProperty(this, "heroesDied", {
-		set: function(pValue) {
+		set: function (pValue) {
 			heroesDied = pValue;
 		},
-		get: function() {
+		get: function () {
 			return heroesDied;
 		}
 	});
 
 	var heroesAscended = 0;
 	Object.defineProperty(this, "heroesAscended", {
-		set: function(pValue) {
+		set: function (pValue) {
 			heroesAscended = pValue;
 		},
-		get: function() {
+		get: function () {
 			return heroesAscended;
 		}
 	});
 
 	var dungeonGold = 0;
 	Object.defineProperty(this, "dungeonGold", {
-		set: function(pValue) {
+		set: function (pValue) {
 			dungeonGold = pValue;
 			//UI.Out.Experience = pValue
 		},
-		get: function() {
+		get: function () {
 			return dungeonGold;
 		}
 	});
 	var mobsSpawned = 0;
 	Object.defineProperty(this, "mobsSpawned", {
-		set: function(pValue) {
+		set: function (pValue) {
 			mobsSpawned = pValue;
 			//UI.Out.Experience = pValue
 		},
-		get: function() {
+		get: function () {
 			return mobsSpawned;
 		}
 	});
 
 	var mobsDied = 0;
 	Object.defineProperty(this, "mobsDied", {
-		set: function(pValue) {
+		set: function (pValue) {
 			mobsDied = pValue;
 			//UI.Out.Experience = pValue
 		},
-		get: function() {
+		get: function () {
 			return mobsDied;
 		}
 	});
 
 	var heroesSpawned = 0;
 	Object.defineProperty(this, "heroesSpawned", {
-		set: function(pValue) {
+		set: function (pValue) {
 			heroesSpawned = pValue;
 			//UI.Out.Experience = pValue
 		},
-		get: function() {
+		get: function () {
 			return heroesSpawned;
 		}
 	});
 }
 
-World.LevelUp = function() {
+World.LevelUp = function () {
 	var level = World.Stats.level;
 	level++;
+
+	if (Game.TutorialProgress === 3) {
+		tutorialLevelUp.Show();
+	}
 
 
 	World.Stats.Experience -= World.Stats.nextLevelExp;
@@ -154,7 +158,7 @@ World.LevelUp = function() {
 	if (level === 5) {
 
 		var entrance = World.Rooms.content[0].type;
-		debugger;
+
 		entrance.timers.push({
 			name: 'Scout',
 			timer: setInterval(entrance.HeroSpawner.bind(entrance, Scout, 1), 30000)
@@ -174,7 +178,7 @@ World.LevelUp = function() {
 
 
 
-	var newTRoom = _.max(World.Rooms.content, function(room) {
+	var newTRoom = _.max(World.Rooms.content, function (room) {
 		return Math.sqrt(room.x * room.x + room.y * room.y + room.id);
 	});
 
@@ -195,7 +199,7 @@ World.Entities = {
 	content: [],
 	ascendedHeroes: [],
 	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
-	createEntity: function(entityClass) {
+	createEntity: function (entityClass) {
 		var newEntity = new entityClass();
 		this.content.push(newEntity);
 
@@ -207,7 +211,7 @@ World.Entities = {
 
 		return newEntity;
 	},
-	removeEntity: function(delEntity) {
+	removeEntity: function (delEntity) {
 		//Remove it from it's current room.
 		//debugger;
 
@@ -222,38 +226,38 @@ World.Entities = {
 
 		var currentRoom = delEntity.GetRoom();
 		if (currentRoom) {
-			_.remove(currentRoom.mobs, function(entity) {
+			_.remove(currentRoom.mobs, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the spawned list in the room in which it was spawed.
 		if (delEntity.spawnedRoom) {
-			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
+			_.remove(delEntity.spawnedRoom.spawnedEntities, function (entity) {
 				return entity === delEntity;
 			});
 		}
 		//Remove it from the global enitites registry.
-		_.remove(this.content, function(entity) {
+		_.remove(this.content, function (entity) {
 			return entity === delEntity;
 		});
 	},
-	ascendHero: function(ascHero) {
+	ascendHero: function (ascHero) {
 		this.ascendedHeroes.push(ascHero);
 
 		var currentRoom = ascHero.GetRoom();
 		if (currentRoom) {
-			_.remove(currentRoom.mobs, function(entity) {
+			_.remove(currentRoom.mobs, function (entity) {
 				return entity === ascHero;
 			});
 		}
 		//Remove it from the spawned list in the room in which it was spawed.
 		if (ascHero.spawnedRoom) {
-			_.remove(ascHero.spawnedRoom.spawnedEntities, function(entity) {
+			_.remove(ascHero.spawnedRoom.spawnedEntities, function (entity) {
 				return entity === ascHero;
 			});
 		}
 		//Remove it from the global enitites registry.
-		_.remove(this.content, function(entity) {
+		_.remove(this.content, function (entity) {
 			return entity === ascHero;
 		});
 	},

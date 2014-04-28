@@ -11,7 +11,7 @@ var EntranceRoom = function (parent) {
 	};
 	this.timers = [];
 
-	this.Color = 0xFF0000;
+	this.Texture = Lynx.AM.Get("entranceTile").Asset;
 
 	this.potionsGiven = 3;
 
@@ -49,6 +49,7 @@ var EntranceRoom = function (parent) {
 				var newEntity = World.Entities.createEntity(entityToSpawn);
 				newEntity.SetRoom(this.parent);
 				newEntity.spawnedRoom = this;
+				newEntity.SPAWNING = true;
 
 				newEntity.GiveItem(new HP10Potion(), this.potionsGiven);
 
@@ -56,7 +57,8 @@ var EntranceRoom = function (parent) {
 				newEntity.Experience = Math.abs(this.randomDist(Math.pow(2, World.Stats.level - 1) * 50, World.Stats.level * 50) - 50);
 
 				this.spawnedEntities.push(newEntity);
-				console.log('A new ' + newEntity.HeroType + ' entered the dungeon!');
+				newEntity.SPAWNING = false;
+				console.log('A level ' + newEntity.Level + ' ' + newEntity.HeroType + ' entered the dungeon!');
 				return newEntity;
 			} else {
 				return false;

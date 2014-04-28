@@ -119,6 +119,7 @@ var Trog = function () {
 	this.AddDrop(new WoodenStick(), 5);
 	this.AddDrop(new TatteredClothes(), 5);
 	this.AddDrop(new Ring(), 5);
+	this.image = Lynx.AM.Get("trog").Asset;
 };
 
 Trog.prototype = new Enemy();
@@ -138,7 +139,7 @@ var Spider = function () {
 	this.AddDrop(new WoodenStick(), 5);
 	this.AddDrop(new TatteredClothes(), 5);
 	this.AddDrop(new Ring(), 5);
-	this.Color = 0x000000;
+	this.image = Lynx.AM.Get("spider").Asset;
 };
 
 Spider.prototype = new Enemy();
@@ -157,6 +158,7 @@ var Bat = function () {
 	this.AddDrop(new HP10Potion(), 20);
 	this.AddDrop(new WoodenStick(), 10);
 	this.AddDrop(new TatteredClothes(), 10);
+	this.image = Lynx.AM.Get("bat").Asset;
 	this.AddDrop(new Ring(), 10);
 };
 
@@ -178,6 +180,7 @@ var Goblin = function () {
 	this.AddDrop(new WoodenStick(), 15);
 	this.AddDrop(new TatteredClothes(), 15);
 	this.AddDrop(new Ring(), 15);
+	this.image = Lynx.AM.Get("goblin").Asset;
 };
 
 Goblin.prototype = new Enemy();

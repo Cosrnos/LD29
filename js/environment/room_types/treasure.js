@@ -1,23 +1,23 @@
-var TreasureRoom = function(parent) {
+var TreasureRoom = function (parent) {
 	EmptyRoom.apply(this, [parent]);
 
 	var originalDestroy = this.destroy;
-	this.destroy = function() {
+	this.destroy = function () {
 		//clearInterval(this.timer);
 		originalDestroy();
 	};
 
-	this.Color = 0xF2D70C;
+	this.Texture = Lynx.AM.Get("rewardTile").Asset;
 
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [];
 
 	//A Hero has entered the Treasure Room!!! Rejoice!
-	this.Ascend = function(hero) {
-		if(hero.expGainedInDungeon > 0)
+	this.Ascend = function (hero) {
+		if (hero.expGainedInDungeon > 0)
 			World.Stats.lira++;
-		
+
 		World.Stats.heroesAscended++;
 		World.Stats.Experience += hero.expGainedInDungeon;
 		World.Stats.fame += hero.Level;
@@ -29,7 +29,7 @@ var TreasureRoom = function(parent) {
 		World.Entities.ascendHero(hero);
 	};
 
-	this.Spawner = function() {
+	this.Spawner = function () {
 		var entityToSpawn = _.sample(this.canSpawnEntities);
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
@@ -38,7 +38,6 @@ var TreasureRoom = function(parent) {
 				newEntity.spawnedRoom = this;
 
 				this.spawnedEntities.push(newEntity);
-				console.log('Spawned a ' + newEntity.Species);
 				return newEntity;
 			} else {
 				return false;

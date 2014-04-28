@@ -1,7 +1,7 @@
 // Mage
 //--------------------------
 
-var Scout = function(pName) {
+var Scout = function (pName) {
 	Hero.apply(this);
 	this.Class = HeroClass.Scout;
 	this.Name = pName || "Scout";
@@ -13,13 +13,14 @@ var Scout = function(pName) {
 	var move = (Object.create(ScoutMoveAction));
 	this.actions.push(move);
 
-	this.LevelUp = function() {
+	this.LevelUp = function () {
 		this.Health += 1;
 		this.BaseAttack += (1 % 2); //Gain Attack every other level.
-		Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
+		if (!this.SPAWNING)
+			Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
 	};
 
-	this.Brain = function() {
+	this.Brain = function () {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -45,7 +46,7 @@ var Scout = function(pName) {
 
 
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
+				var enemyInRoom = _.find(this.GetRoom().mobs, function (pa) {
 					return pa instanceof Enemy
 				});
 				if (typeof enemyInRoom !== 'undefined') {

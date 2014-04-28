@@ -57,11 +57,23 @@ Game = {
 		Lynx.AM.QueueImage('nsw-room', 'assets/DungeonWalls/3-NSW.png');
 		Lynx.AM.QueueImage('nesw-room', 'assets/DungeonWalls/4-NESW.png');
 
+		Lynx.AM.QueueImage("emptyRoomTile", "assets/dgTiles/empty_room.png");
+		Lynx.AM.QueueImage("entranceTile", "assets/dgTiles/entranceTile.png");
+		Lynx.AM.QueueImage("rewardTile", "assets/dgTiles/rewardTile.png");
+		Lynx.AM.QueueImage("batNode", "assets/dgTiles/batNode.png");
+		Lynx.AM.QueueImage("trogNode", "assets/dgTiles/trogNode.png");
+		Lynx.AM.QueueImage("spiderNode", "assets/dgTiles/spiderNode.png");
+		Lynx.AM.QueueImage("goblinNode", "assets/dgTiles/goblinNode.png");
+		Lynx.AM.QueueImage("trog", "assets/trog.png");
+		Lynx.AM.QueueImage("spider", "assets/spider.png");
+		Lynx.AM.QueueImage("goblin", "assets/goblin.png");
+		Lynx.AM.QueueImage("bat", "assets/bat.png");
+
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
 	LoadComponents: function (pCallback) {
-		Lynx.CM.Load("Tracker", "Timer", "KeyboardEvents", "MouseEvents");
+		Lynx.CM.Load("Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
@@ -71,7 +83,9 @@ Game = {
 		});
 
 		Lynx.Scene.On("Keyboard.Release.W", function () {
-			Game.CameraVY += 1;
+			Game.CameraVY = 0;
+			if (Game.TutorialProgress === 0)
+				tutorialFirstScreen.Show();
 		});
 
 		Lynx.Scene.On("Keyboard.Press.S", function () {
@@ -80,6 +94,8 @@ Game = {
 
 		Lynx.Scene.On("Keyboard.Release.S", function () {
 			Game.CameraVY -= 1;
+			if (Game.TutorialProgress === 0)
+				tutorialFirstScreen.Show();
 		});
 
 		Lynx.Scene.On("Keyboard.Press.A", function () {
@@ -87,7 +103,9 @@ Game = {
 		});
 
 		Lynx.Scene.On("Keyboard.Release.A", function () {
-			Game.CameraVX += 1;
+			Game.CameraVX = 0;
+			if (Game.TutorialProgress === 0)
+				tutorialFirstScreen.Show();
 		});
 
 		Lynx.Scene.On("Keyboard.Press.D", function () {
@@ -95,7 +113,9 @@ Game = {
 		});
 
 		Lynx.Scene.On("Keyboard.Release.D", function () {
-			Game.CameraVX -= 1;
+			Game.CameraVX = 0;
+			if (Game.TutorialProgress === 0)
+				tutorialFirstScreen.Show();
 		});
 
 		Lynx.Scene.On("Update", function () {
@@ -196,6 +216,9 @@ Game = {
 
 		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
+			if (Game.TutorialProgress === 0)
+				return true;
+
 			if (Game.ActiveMenu !== null) {
 				if (Game.ActiveMenu.Disposed) {
 					Game.ActiveMenu = null;
@@ -205,7 +228,7 @@ Game = {
 			//Test for Room Menu
 			var room = World.Rooms.findRoom(Math.floor(gamePos.X / (World.Rooms.roomSize * Game.Scale)), Math.floor(gamePos.Y / (World.Rooms.roomSize * Game.Scale)));
 			if (typeof room !== 'undefined') {
-				if (Game.TutorialProgress === 0 && !(room.type instanceof EmptyRoom))
+				if (Game.TutorialProgress === 1 && !(room.type instanceof EmptyRoom))
 					return true;
 
 				UI.RoomMenu.Target = room;
@@ -226,7 +249,7 @@ Game = {
 
 				UI.RoomMenu.Name = "Room #" + room.id;
 				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
-				if (Game.TutorialProgress === 0) {
+				if (Game.TutorialProgress === 1) {
 					tutorialAboutNodes.savePos(pMousePosition.X, pMousePosition.Y);
 					tutorialAboutNodes.Show();
 				}

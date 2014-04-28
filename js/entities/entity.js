@@ -1,6 +1,6 @@
 var World = World || {};
 
-var Entity = function() {
+var Entity = function () {
 
 
 	this.items = [];
@@ -22,6 +22,8 @@ var Entity = function() {
 	this.InCombat = false;
 	this.CurrentTarget = null;
 
+	this.SPAWNING = false;
+
 	this.Health = 10;
 	this.HealthDelta = 0;
 	this.Mana = 0;
@@ -42,7 +44,7 @@ var Entity = function() {
 
 	this.xOffSet = 0;
 
-	this.Draw = function() {
+	this.Draw = function () {
 		//debugger;
 		var currentRoom = this.GetRoom();
 		if (currentRoom) {
@@ -50,8 +52,9 @@ var Entity = function() {
 				//this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
 				if (this.image) {
 					this.entity = new Lynx.Entity(this.image);
+					var scaleFactor = 10 / this.image.height;
 					this.entity.Height = 10;
-					this.entity.Width = 10;
+					this.entity.Width = Math.floor(this.image.width * scaleFactor);
 					this.entity.X = World.Rooms.roomSize * currentRoom.x + this.xOffSet;
 					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 2;
 				} else {
@@ -76,7 +79,7 @@ var Entity = function() {
 	};
 
 	//Stupid Move Function.  Picks a random direction and goes.
-	this.Move = function(direction) {
+	this.Move = function (direction) {
 		var self = this;
 		var currentRoom = this.GetRoom();
 		var moveToRoom = null;
@@ -110,13 +113,13 @@ var Entity = function() {
 		}
 	}
 
-	this.SetRoom = function(pRoom) {
+	this.SetRoom = function (pRoom) {
 		var self = this;
 		//var currentRoom = this.getRoom()
 		if (pRoom instanceof Room) {
 
 			if (this.CurrentRoom) {
-				_.remove(this.CurrentRoom.mobs, function(mob) {
+				_.remove(this.CurrentRoom.mobs, function (mob) {
 					return mob === self;
 				});
 			}
@@ -126,20 +129,20 @@ var Entity = function() {
 
 	};
 
-	this.GetRoom = function(pRoom) {
+	this.GetRoom = function (pRoom) {
 		return this.CurrentRoom;
 	};
 
 	//Properties
 	Object.defineProperty(this, "Alive", {
-		get: function() {
+		get: function () {
 			return this.Health > this.HealthDelta;
 		}
 	});
 
 	//Start AI
 
-	this.Think = function() {
+	this.Think = function () {
 		//See what's on cooldown and when we can use it next
 		if (!this.Alive)
 			return false;
@@ -148,11 +151,11 @@ var Entity = function() {
 		this.Brain.call(this);
 	};
 
-	this.Brain = function() {
+	this.Brain = function () {
 		//Individual AI Logic goes here.
 	};
 
-	this.__updateCooldowns = function() {
+	this.__updateCooldowns = function () {
 		var makeAvailable = [];
 		var now = Date.now();
 		for (var i = 0; i < this.cooldowns.length; i++) {
@@ -167,22 +170,22 @@ var Entity = function() {
 		}
 	};
 
-	this.Idle = function() {};
+	this.Idle = function () {};
 
-	this.Run = function() {};
+	this.Run = function () {};
 
-	this.OnCooldown = function(pName) {
+	this.OnCooldown = function (pName) {
 		return (typeof _.find(this.cooldowns, {
 			Name: pName
 		}) !== 'undefined');
 	};
 
-	this.UseAction = function(pName, pTarget) {
+	this.UseAction = function (pName, pTarget) {
 		if (!this.Alive || this.OnCooldown(pName)) {
 			return false;
 		}
 
-		var actionObject = _.find(this.actions, function(pA) {
+		var actionObject = _.find(this.actions, function (pA) {
 			return pA.Name == pName;
 		});
 
@@ -199,7 +202,7 @@ var Entity = function() {
 		return false;
 	};
 
-	this.GiveAction = function(pAction) {
+	this.GiveAction = function (pAction) {
 		if (!pAction.hasOwnProperty("Name")) {
 			//Try finding it on a global level
 			var ta = _.find(Actions, {
@@ -211,7 +214,7 @@ var Entity = function() {
 			}
 		}
 
-		if (typeof _.find(this.actions, function(pA) {
+		if (typeof _.find(this.actions, function (pA) {
 			return pA.Name === pAction.Name;
 		}) !== 'undefined') {
 			return false;
@@ -222,7 +225,7 @@ var Entity = function() {
 	};
 
 	//End AI
-	this.TakeDamage = function(pDamage, pAttacker) {
+	this.TakeDamage = function (pDamage, pAttacker) {
 		//TODO: Fix Defense algorithm
 		if (!this.Alive) {
 			//return;
@@ -239,11 +242,11 @@ var Entity = function() {
 		}
 	};
 
-	this.NotifyKill = function(pAttacker) {
+	this.NotifyKill = function (pAttacker) {
 
 	};
 
-	this.GiveItem = function(pItem, pQuantity) {
+	this.GiveItem = function (pItem, pQuantity) {
 		for (var i = 0; i < pQuantity; i++) {
 			this.items.push(pItem);
 			if ((pItem.type & ItemType.EQUIPABLE) !== 0) {
@@ -254,7 +257,7 @@ var Entity = function() {
 		}
 	};
 
-	this.HasItem = function(pItemName, pQuantity) {
+	this.HasItem = function (pItemName, pQuantity) {
 		var totalCount = 0;
 		pQuantity = pQuantity || 1;
 
@@ -271,7 +274,7 @@ var Entity = function() {
 		return false;
 	};
 
-	this.TakeItem = function(pItemName, pQuantity) {
+	this.TakeItem = function (pItemName, pQuantity) {
 		var toRemove = 0;
 		pQuantity = pQuantity || 1;
 
@@ -294,7 +297,7 @@ var Entity = function() {
 		return true;
 	};
 
-	this.UseItem = function(pItemName) {
+	this.UseItem = function (pItemName) {
 		if (!this.Alive || this.OnCooldown(pItemName)) {
 			return false;
 		}
@@ -322,7 +325,7 @@ var Entity = function() {
 		return false;
 	};
 
-	this.EquipItem = function(pEquip) {
+	this.EquipItem = function (pEquip) {
 		if ((pEquip.Type & ItemType.EQUIPABLE) === 0) {
 			return;
 		}
@@ -335,11 +338,11 @@ var Entity = function() {
 		pEquip.Equip(this);
 	};
 
-	this.RemoveFromGame = function() {
+	this.RemoveFromGame = function () {
 		World.Entities.removeEntity(this);
 	};
 
-	this.Kill = function() {
+	this.Kill = function () {
 		//Lynx.Log("Entity " + this.Name + " has been killed!");
 		this.RemoveFromGame();
 		//World.Entities.splice(World.Entities.indexOf(this), 1);

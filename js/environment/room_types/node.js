@@ -36,7 +36,6 @@ var NodeRoom = function (parent) {
 				newEntity.spawnedRoom = this;
 
 				this.spawnedEntities.push(newEntity);
-				console.log('Spawned a ' + newEntity.Species);
 				return newEntity;
 			} else {
 				return false;
@@ -56,6 +55,7 @@ var TrogRoom = function (parent) {
 		originalDestroy();
 	};
 	this.Color = 0xee3300;
+	this.Texture = Lynx.AM.Get("trogNode").Asset;
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Trog];
 	this.spawnCooldown = 5000;
@@ -74,7 +74,7 @@ var SpiderRoom = function (parent) {
 		originalDestroy();
 	};
 
-	this.Color = 0xee0033;
+	this.Texture = Lynx.AM.Get("spiderNode").Asset;
 	this.maxSpawnedEntities = 6;
 	this.canSpawnEntities = [Spider, GiantSpider];
 	this.spawnCooldown = 10000;
@@ -92,7 +92,7 @@ var BatRoom = function (parent) {
 		originalDestroy();
 	};
 
-	this.Color = 0xfbaf5d;
+	this.Texture = Lynx.AM.Get("batNode").Asset;
 	this.maxSpawnedEntities = 5;
 	this.canSpawnEntities = [Bat];
 	this.spawnCooldown = 6000;
@@ -109,7 +109,7 @@ var GoblinRoom = function (parent) {
 		originalDestroy();
 	};
 
-	this.Color = 0x406618;
+	this.Texture = Lynx.AM.Get("goblinNode").Asset;
 	this.maxSpawnedEntities = 3;
 	this.canSpawnEntities = [Goblin];
 	this.spawnCooldown = 10000;

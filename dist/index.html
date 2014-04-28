@@ -139,9 +139,8 @@
 			z-index: 2;
 			color: #fff;
 		}
-
-		#fader-container{
-			background: rgba(0,0,0,0.8);
+		#fader-container {
+			background: rgba(0, 0, 0, 0.8);
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -150,7 +149,7 @@
 			display: block;
 			visibility: hidden;
 		}
-		#messageBox{
+		#messageBox {
 			width: 950px;
 			padding: 25px 50px 50px 50px;
 			margin: 00 auto;
@@ -159,10 +158,10 @@
 			top: 10%;
 			border-radius: 25px;
 			background: #fff;
-			color:#333;
+			color: #333;
 			z-index: 99;
 		}
-		#messageBox h3{
+		#messageBox h3 {
 			margin: 0px;
 			font-size: 32px;
 			padding: 0px 0px -10px 0px;
@@ -171,7 +170,7 @@
 			border-bottom: 2px solid #333;
 			letter-spacing: 1px;
 		}
-		#messageBlock{
+		#messageBlock {
 			width: 95%;
 			margin: 00 auto;
 			margin-top: 25px;
@@ -182,7 +181,7 @@
 			overflow-x: hidden;
 			overflow-y: auto;
 		}
-		#messageBox>button{
+		#messageBox>button {
 			background: #333;
 			color: #fff;
 			font-size: 18px;
@@ -196,8 +195,7 @@
 			margin-top: 25px;
 			outline: none;
 		}
-
-		#messageBox>button:hover{
+		#messageBox>button:hover {
 			background: #666;
 			cursor: pointer;
 		}
@@ -208,6 +206,7 @@
 		window.addEventListener("load", function load(event) {
 			Lynx.LogTarget = "console";
 			Lynx.DisableCache = true;
+			Lynx.DisableWebGL = true;
 			//Lynx.Debug = true;
 			Lynx.Load(function() {
 				Viewport = new Lynx.Viewport("viewport-container");
@@ -217,7 +216,7 @@
 					Game.Start();
 				};
 				gameSource.async = false;
-				gameSource.src = "js/main.js";
+				gameSource.src = "js/main.js?a=" + Date.now();
 				document.body.appendChild(gameSource);
 			});
 		}, false);
@@ -247,7 +246,7 @@
 					</div>
 					<div class="amount">
 						<span id="stat-exp-out">0</span>
-						 xp
+						xp
 					</div>
 				</div>
 			</li>

@@ -9,7 +9,7 @@ UI.AddNodeMenu.TrogOption = UI.AddNodeMenu.AddOption("Trogs (2 Lira)", function 
 	}
 	World.Stats.lira -= 2;
 	this.type = new TrogRoom(this);
-	if (Game.TutorialProgress === 1)
+	if (Game.TutorialProgress === 2)
 		tutorialAfterSpawnTrog.Show();
 	return true;
 });
