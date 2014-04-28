@@ -30,9 +30,9 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 	var currentFrame = -1;
 	var frameInterval = 4;
 	
-	Object.defineProperty(this, "X", {
+	Object.defineProperty(that, "X", {
 		get: function () {
-			return x * this.Scale;
+			return x * that.Scale;
 		},
 		set: function (pX) {
 			if (isNaN(pX)) {
@@ -43,27 +43,27 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 		}
 	});
 
-	Object.defineProperty(this, "Y", {
+	Object.defineProperty(that, "Y", {
 		get: function () {
-			return y * this.Scale;
+			return y * that.Scale;
 		},
 		set: function (pY) {
 			y = pY;
 		}
 	});
 
-	Object.defineProperty(this, "Width", {
+	Object.defineProperty(that, "Width", {
 		get: function () {
-			return width * this.Scale;
+			return width * that.Scale;
 		},
 		set: function (pWidth) {
 			width = pWidth;
 		}
 	});
 
-	Object.defineProperty(this, "Height", {
+	Object.defineProperty(that, "Height", {
 		get: function () {
-			return height * this.Scale;
+			return height * that.Scale;
 		},
 		set: function (pHeight) {
 			height = pHeight;
@@ -79,33 +79,33 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 	/**
 	 * Description: Translates the element to the given coordinates
 	 *
-	 * @this {Lynx.CanvasElement}
+	 * @that {Lynx.CanvasElement}
 	 */
 	that.Translate = (function (pX, pY) {
 		if (isNaN(pX) || isNaN(pY)) {
 			return false;
 		}
-		this.X = pX;
-		this.Y = pY;
+		that.X = pX;
+		that.Y = pY;
 	}).bind(that);
 
 	/**
 	 * Description: Moves the element by the given coordinates
 	 *
-	 * @this {Lynx.CanvasElement}
+	 * @that {Lynx.CanvasElement}
 	 */
 	that.Move = (function (pX, pY) {
 		if (isNaN(pX) || isNaN(pY)) {
 			return false;
 		}
-		this.X += pX;
-		this.Y += pY;
+		that.X += pX;
+		that.Y += pY;
 	}).bind(that);
 
 	/**
 	 * Description: A property for the objects color.
 	 *
-	 * @this {Lynx.CanvasElement}
+	 * @that {Lynx.CanvasElement}
 	 */
 	Object.defineProperty(that, "Color", {
 		get: function () {
@@ -125,7 +125,7 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 		}
 	});
 	
-	Object.defineProperty(this, "Scale",{
+	Object.defineProperty(that, "Scale",{
 		get: function(){ return scale; },
 		set:(function(pFactor){
 		scale = pFactor;
@@ -133,7 +133,7 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 		this.Width = width;
 		this.X = x;
 		this.Y = y;
-	}).bind(this)
+	}).bind(that)
 	});
 		
 	/**
