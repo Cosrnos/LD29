@@ -29,7 +29,7 @@ UI.RoomMenu.KillOption = UI.RoomMenu.AddOption("Wipe All Enemies (2 Doma) ", fun
 	//Only remove doma if we actually killed somehthing.
 	if (killCount > 0) {
 		if (!Game.Muted)
-			Lynx.AM.Get("soundClick").Asset.play();
+			Lynx.AM.Get("soundWipe").Asset.play();
 		Lynx.Log("You wiped out " + killCount + " dungeon dwellers!");
 		World.Stats.doma -= 2;
 	}
