@@ -5,7 +5,7 @@ var HeroClass = {
 };
 
 //Basic Hero
-var Hero = function(pName) {
+var Hero = function (pName) {
 	Entity.apply(this);
 
 	this.Species = "Human";
@@ -26,10 +26,10 @@ var Hero = function(pName) {
 	this.xOffSet = 31; //Heros line up on the right side of the room.
 
 	Object.defineProperty(this, "Experience", {
-		get: function() {
+		get: function () {
 			return this.totalExp;
 		},
-		set: function(pValue) {
+		set: function (pValue) {
 			this.totalExp = pValue;
 
 			while (this.totalExp >= nextLevelExp) {
@@ -43,12 +43,12 @@ var Hero = function(pName) {
 
 
 	//Start AI
-	this.NotifyKill = function(pEntityKilled) {
+	this.NotifyKill = function (pEntityKilled) {
 		this.Experience += pEntityKilled.Exp;
 		this.expGainedInDungeon += pEntityKilled.Exp;
 	};
 
-	this.LevelUp = function() {
+	this.LevelUp = function () {
 		this.Health += 2;
 		this.BaseAttack += 1;
 		Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
@@ -56,12 +56,13 @@ var Hero = function(pName) {
 
 	//End AI
 
-	this.Kill = function() {
+	this.Kill = function () {
 		Lynx.Log("Hero " + this.Name + " has been killed!");
+		Lynx.AM.Get("soundDeath").Asset.play();
 
 		//Get all entities that are attacking this hero and notifiy them of it's death.
 		var self = this;
-		_.each(World.Entities.content, function(mob) {
+		_.each(World.Entities.content, function (mob) {
 			if (mob.CurrentTarget === self) {
 				mob.CurrentTarget = null;
 				mob.NotifyKill(self);

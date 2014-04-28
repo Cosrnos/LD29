@@ -15,8 +15,10 @@ var TreasureRoom = function (parent) {
 
 	//A Hero has entered the Treasure Room!!! Rejoice!
 	this.Ascend = function (hero) {
-		if (hero.expGainedInDungeon > 0)
+		if (hero.expGainedInDungeon > 0) {
+			Lynx.AM.Get("soundAscent").Asset.play();
 			World.Stats.lira++;
+		}
 
 		World.Stats.heroesAscended++;
 		World.Stats.Experience += hero.expGainedInDungeon;

@@ -2,29 +2,29 @@ var Menu = function (pName, pClose) {
 	this.Target = null;
 	this.Disposed = true;
 	this.Name = pName;
-	
+
 	var x = 0;
 	var y = 0;
 	var scale = 1;
-	
+
 	Object.defineProperty(this, "X", {
-		get: function(){
+		get: function () {
 			return x * scale;
 		},
-		set: function(pX){
+		set: function (pX) {
 			x = pX;
 		}
 	});
-	
+
 	Object.defineProperty(this, "Y", {
-		get: function(){
+		get: function () {
 			return y * scale;
 		},
-		set: function(pY){
+		set: function (pY) {
 			y = pY;
 		}
 	});
-		
+
 	pClose = pClose || true;
 
 	var options = [];
@@ -70,6 +70,7 @@ var Menu = function (pName, pClose) {
 		};
 
 		that.Element.onclick = function (e) {
+			Lynx.AM.Get("soundClick").Asset.play();
 			if (pClickCallback.call(pParent.Target))
 				pParent.Hide();
 
@@ -115,7 +116,7 @@ var Menu = function (pName, pClose) {
 		element.appendChild(menuHead);
 
 		for (var i = 0; i < options.length; i++) {
-			if(options[i].Show)
+			if (options[i].Show)
 				element.appendChild(options[i].Element);
 		}
 		if (pClose) {
@@ -129,20 +130,20 @@ var Menu = function (pName, pClose) {
 		this.Disposed = false;
 		Game.ActiveMenu = this;
 	};
-	
+
 	Object.defineProperty(this, "Scale", {
-		get: function(){
+		get: function () {
 			return scale;
 		},
-		set: function(pValue){
+		set: function (pValue) {
 			scale = pValue;
 			this.CalculatePosition();
 		}
 	});
-	
-	this.CalculatePosition = function(){
+
+	this.CalculatePosition = function () {
 		element.style.top = this.Y + "px";
-		element.style.left = this.X + "px";	
+		element.style.left = this.X + "px";
 	};
 
 	this.Hide = function () {

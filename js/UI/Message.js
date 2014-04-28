@@ -1,47 +1,49 @@
-var Message = function(pHeader, pContent, pCallback)
-{
+var Message = function (pHeader, pContent, pCallback) {
 	this.Disposed = true;
-	
+
 	this.AcceptButton = {
 		Text: "Continue",
 		Callback: pCallback
 	};
-	
+
 	this.DenyButton = {
 		Text: "Cancel",
-		Callback: function(){}.bind,
+		Callback: function () {}.bind,
 		Show: false
 	};
-	
+
 	this.Header = pHeader;
 	this.Content = pContent;
-	
-	this.Show = function(){
+
+	this.Show = function () {
 		document.getElementById("messageHeader").innerHTML = this.Header;
 		document.getElementById("messageBlock").innerHTML = this.Content;
-		
+
 		document.getElementById("messageConfirm").innerHTML = this.AcceptButton.Text;
-		document.getElementById("messageConfirm").onclick = this.AcceptButton.Callback.bind(this);
-		
+		document.getElementById("messageConfirm").onclick = (function () {
+			Lynx.AM.Get("soundClick").Asset.play();
+			this.AcceptButton.Callback.call(this);
+		}).bind(this);
+
 		var deny = document.getElementById("messageCancel");
-		if(this.DenyButton.Show)
-		{
+		if (this.DenyButton.Show) {
 			deny.style.visibility = "visible";
-			deny.onclick = this.DenyButton.Callback.bind(this);
-		}
-		else
-		{
-			deny.style.visibility = "hidden";	
-			deny.onclick = function(){};
+			deny.onclick = (function () {
+				Lynx.AM.Get("soundClick").Asset.play();
+				this.DenyButton.Callback.call(this);
+			}).bind(this);
+		} else {
+			deny.style.visibility = "hidden";
+			deny.onclick = function () {};
 		}
 		document.getElementById("fader-container").style.visibility = "visible";
 		this.Disposed = false;
 		Game.ActiveMenu = this;
 	}
-	
-	this.Hide = function(){
+
+	this.Hide = function () {
 		document.getElementById("fader-container").style.visibility = "hidden";
 		this.Disposed = true;
 	};
-	
+
 };

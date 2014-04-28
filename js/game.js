@@ -69,6 +69,10 @@ Game = {
 		Lynx.AM.QueueImage("goblin", "assets/goblin.png");
 		Lynx.AM.QueueImage("bat", "assets/bat.png");
 
+		Lynx.AM.QueueAudio("soundClick", "assets/sounds/click.wav");
+		Lynx.AM.QueueAudio("soundAscent", "assets/sounds/ascent.wav");
+		Lynx.AM.QueueAudio("soundDeath", "assets/sounds/death.wav");
+
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
@@ -213,6 +217,23 @@ Game = {
 
 			Game.ScaleAllEntities();
 		}, false);
+		var cursor = "auto";
+		Lynx.Scene.On("MouseEvents.Move", function (pMousePosition) {
+			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
+			if (Game.ActiveMenu !== null) {
+				if (cursor === "pointer") {
+					document.getElementById("viewport-container").style.cursor = "auto";
+					cursor = "auto";
+				}
+				return true;
+			}
+			var room = World.Rooms.findRoom(Math.floor(gamePos.X / (World.Rooms.roomSize * Game.Scale)), Math.floor(gamePos.Y / (World.Rooms.roomSize * Game.Scale)));
+			if (typeof room !== 'undefined') {
+				document.getElementById("viewport-container").style.cursor = "pointer";
+				cursor = "pointer";
+			};
+
+		});
 
 		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
@@ -249,6 +270,7 @@ Game = {
 
 				UI.RoomMenu.Name = "Room #" + room.id;
 				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
+				Lynx.AM.Get("soundClick").Asset.play();
 				if (Game.TutorialProgress === 1) {
 					tutorialAboutNodes.savePos(pMousePosition.X, pMousePosition.Y);
 					tutorialAboutNodes.Show();
