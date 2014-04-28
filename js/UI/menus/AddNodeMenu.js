@@ -63,7 +63,7 @@ UI.AddNodeMenu.AddOption("Dark Knight (15 Lira)", function () {
 		return true;
 	}
 	World.Stats.lira -= 15;
-	this.type = new DarkKnightRoom();
+	this.type = new DarkKnightRoom(this);
 	return true;
 });
 

@@ -135,13 +135,16 @@ var BlobmanRoom = function (parent) {
 var DarkKnightRoom = function (parent) {
 	NodeRoom.apply(this, [parent]);
 	var originalDestroy = this.destroy;
-	//Need to destroy RoomTypes or these Intervals will go haywire.
+	//Need to destpry RoomTypes or these Intervals will go haywire.
 	this.destroy = function () {
 		clearInterval(this.timer);
 		originalDestroy();
 	};
 
 	this.Texture = Lynx.AM.Get("dkNode").Asset;
+	this.maxSpawnedEntities = 1;
+	this.canSpawnEntities = [DarkKnight];
+	this.spawnCooldown = 30000;
 
 	this.timer = setInterval(this.Spawner.bind(this, DarkKnight, 1), 90000);
 };

@@ -250,7 +250,7 @@ var DarkKnight = function () {
 	//	this.image = Lynx.AM.Get("").Assets;
 	this.GiveAction("DeathRay");
 	this.image = Lynx.AM.Get("dk").Asset;
-	this.Brain = function () {
+	this.Brain = (function () {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -264,7 +264,12 @@ var DarkKnight = function () {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				if (typeof this.GetRoom() === 'undefined') {
+					thinking = false;
+					continue;
+				}
+
+				var heroInRoom = _.find(this.CurrentRoom.mobs, function (pa) {
 					return pa instanceof Hero
 				});
 
@@ -283,8 +288,10 @@ var DarkKnight = function () {
 
 			thinking = false;
 		}
-	};
+	}).bind(this);
 };
+DarkKnight.prototype = new Enemy();
+DarkKnight.prototype.constructor = DarkKnight;
 
 var BlobMan = function () {
 	Enemy.apply(this);
