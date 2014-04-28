@@ -12,13 +12,13 @@
  *    Global Variables: Lynx.ComponentManager{}, Lynx.CM{}
  */
 
-Lynx.AssetManager = (function () {
+Lynx.AssetManager = (function() {
 	var that = new Lynx.Object();
 
 	var queue = [];
 	var assets = [];
 	var processing = false;
-	var queueFinishCallback = function () {};
+	var queueFinishCallback = function() {};
 
 	/**
 	 * Description: Gets the asset by name
@@ -27,7 +27,7 @@ Lynx.AssetManager = (function () {
 	 * @param {String} <pName> The name of the desired asset.
 	 * @return {Lynx.Asset || bool} Returns the asset or false if not found
 	 */
-	that.Get = function (pName) {
+	that.Get = function(pName) {
 		for (var i in assets) {
 			var a = assets[i];
 			if (a.Name == pName) {
@@ -46,7 +46,7 @@ Lynx.AssetManager = (function () {
 	 * @param {String} <pName> The given name to search for
 	 * @return {bool} True if queue or assets has an asset with pName
 	 */
-	that.Contains = function (pName) {
+	that.Contains = function(pName) {
 		var found = false;
 		for (var i in assets) {
 			if (assets[i].Name == pName) {
@@ -73,7 +73,7 @@ Lynx.AssetManager = (function () {
 	 * @this {Lynx.AssetManager}
 	 * @param {Lynx.Asset} <pAsset> The asset to add to the queue
 	 */
-	that.Queue = function (pAsset) {
+	that.Queue = function(pAsset) {
 		if (!this.Contains(pAsset.Name) && !processing) {
 			queue.push(pAsset);
 		}
@@ -86,7 +86,7 @@ Lynx.AssetManager = (function () {
 	 * @param {String} <pName> Asset Name/Reference
 	 * @param {String} <pFilepath> Location of the asset relative to the working directory
 	 */
-	that.QueueImage = function (pName, pFilepath) {
+	that.QueueImage = function(pName, pFilepath) {
 
 		if (typeof pFilepath === 'undefined' || pFilepath === "") {
 			pFilepath = pName;
@@ -106,7 +106,7 @@ Lynx.AssetManager = (function () {
 	 * @this {Lynx.AssetManager}
 	 * @param {String} <pPath> Location of the asset relative to the working directory
 	 */
-	that.QueueAudio = function (pName, pFilepath) {
+	that.QueueAudio = function(pName, pFilepath) {
 		if (typeof pFilepath === 'undefined' || pFilepath === "") {
 			pFilepath = pName;
 		}
@@ -125,7 +125,7 @@ Lynx.AssetManager = (function () {
 	 * @this {Lynx.AssetManager}
 	 * @param {String} <pPath> Location of the asset relative to the working directory
 	 */
-	that.QueueVideo = function (pName, pFilepath) {
+	that.QueueVideo = function(pName, pFilepath) {
 		if (typeof pFilepath === 'undefined' || pFilepath === "") {
 			pFilepath = pName;
 		}
@@ -144,7 +144,7 @@ Lynx.AssetManager = (function () {
 	 * @this {Lynx.AssetManager}
 	 * @param {String} <pPath> Location of the asset relative to the working directory
 	 */
-	that.QueueJSON = function (pName, pFilepath) {
+	that.QueueJSON = function(pName, pFilepath) {
 		if (typeof pFilepath === 'undefined' || pFilepath === "") {
 			pFilepath = pName;
 		}
@@ -165,7 +165,7 @@ Lynx.AssetManager = (function () {
 	 * @this {Lynx.AssetManager}
 	 * @param {Callback} <pCallback> Callback to be executed when all Assets have been loaded
 	 */
-	that.LoadQueue = function (pCallback) {
+	that.LoadQueue = function(pCallback) {
 		if (processing) {
 			return;
 		}
@@ -179,57 +179,57 @@ Lynx.AssetManager = (function () {
 		for (var x = 0; x < queue.length; x++) {
 			var i = queue[x];
 			switch (i.Type) {
-			case "img":
-				var img = new Image();
+				case "img":
+					var img = new Image();
 
-				img.addEventListener("load", (function () {
-					queueCallback(this);
-				}).bind(i), false);
+					img.addEventListener("load", (function() {
+						queueCallback(this);
+					}).bind(i), false);
 
-				img.src = i.Filepath;
-				i.Asset = img;
-				break;
-			case "audio":
-				var audio = new Audio();
+					img.src = i.Filepath;
+					i.Asset = img;
+					break;
+				case "audio":
+					var audio = new Audio();
 
-				audio.addEventListener("canplaythrough", (function () {
-					queueCallback(this);
-				}).bind(i), false);
+					audio.addEventListener("canplaythrough", (function() {
+						queueCallback(this);
+					}).bind(i), false);
 
-				audio.src = i.Filepath;
-				i.Asset = audio;
-				break;
-			case "video":
-				var video = new Video();
+					audio.src = i.Filepath;
+					i.Asset = audio;
+					break;
+				case "video":
+					var video = new Video();
 
-				video.addEventListener("canplay", (function () {
-					queueCallback(this);
-				}).bind(i), false);
+					video.addEventListener("canplay", (function() {
+						queueCallback(this);
+					}).bind(i), false);
 
-				video.src = i.Filepath;
-				i.Asset = video;
-				break;
-			case "json":
-				var client = new XMLHttpRequest();
-				client.open('get', i.Filepath);
-				client.addEventListener("readystatechange", (function () {
-					if (client.status == 200 && client.responseText != "") {
-						this.Asset = JSON.parse(client.responseText);
-						queueCallback(this)
-					}
-				}).bind(i));
-				client.send();
-				break;
-			default:
-				//No idea what this is, so we'll treat it as a file
-				//Probably not the best but it works for now ~Cosrnos
-				var client = new XMLHttpRequest();
-				client.open('GET', i.Filepath);
-				client.addEventListener("readystatechange", (function () {
-					queueCallback(this);
-				}).bind(i), false);
-				client.send();
-				break;
+					video.src = i.Filepath;
+					i.Asset = video;
+					break;
+				case "json":
+					var client = new XMLHttpRequest();
+					client.open('get', i.Filepath);
+					client.addEventListener("readystatechange", (function() {
+						if (client.status == 200 && client.responseText != "") {
+							this.Asset = JSON.parse(client.responseText);
+							queueCallback(this)
+						}
+					}).bind(i));
+					client.send();
+					break;
+				default:
+					//No idea what this is, so we'll treat it as a file
+					//Probably not the best but it works for now ~Cosrnos
+					var client = new XMLHttpRequest();
+					client.open('GET', i.Filepath);
+					client.addEventListener("readystatechange", (function() {
+						queueCallback(this);
+					}).bind(i), false);
+					client.send();
+					break;
 			}
 		}
 
@@ -242,7 +242,7 @@ Lynx.AssetManager = (function () {
 	 * @this {Lynx.AssetManager}
 	 * @return {int} Amount of items to be loaded
 	 */
-	that.QueueCount = function () {
+	that.QueueCount = function() {
 		return queue.length;
 	};
 
@@ -253,7 +253,7 @@ Lynx.AssetManager = (function () {
 	 * @return {bool} True if loading assets.
 	 */
 	Object.defineProperty(that, "IsProcessing", {
-		get: function () {
+		get: function() {
 			return processing;
 		}
 	});
@@ -293,7 +293,7 @@ Lynx.AssetManager = (function () {
  * @object
  * @this {Lynx.Asset}
  */
-Lynx.Asset = function () {
+Lynx.Asset = function() {
 	return {
 		Name: "",
 		Filepath: "",

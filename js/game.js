@@ -21,6 +21,7 @@ Game = {
 
 	LoadAssets: function(pCallback) {
 		//Queue assets here
+		Lynx.AM.QueueImage('fencer', 'assets/fencer.png');
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
@@ -73,18 +74,33 @@ Game = {
 
 		Lynx.Start();
 	},
+	ScaleEntity: function(entity) {
+		entity.Scale = Game.Scale;
+	},
+	ScaleAllEntities: function() {
+		for (var i = 0; i < Lynx.Scene.Entities.length; i++) {
+			var e = Lynx.Scene.Entities[i];
+			e.Scale = Game.Scale;
+		}
+	},
 	Ready: function() {
-
-		var entranceRoom = new Room(8, 5);
+		Lynx.Scene.Camera.X = -Lynx.Scene.Width / 2 + 200;
+		Lynx.Scene.Camera.Y = -Lynx.Scene.Height / 2 + 150;
+		var entranceRoom = new Room(0, 0);
 		entranceRoom.type = new EntranceRoom(entranceRoom);
 
 		World.Rooms.push(entranceRoom);
+		entranceRoom.addRoom('e').addRoom('e').addRoom('e');
+		var lastRoom = _.last(World.Rooms.content);
+		lastRoom.type = new TreasureRoom(lastRoom);
 
-		walk(World.Rooms.content[0], 5, 5, 0);
-		World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
+		World.TreasureRoom = lastRoom;
+		//walk(World.Rooms.content[0], 5, 5, 0);
+		//World.Rooms.hashMap[8][5].entity.Color = 0xFF0000;
 
 		var john = World.Entities.createEntity(Warrior);
 		john.Name = "John"
+		john.GiveItem(new HP10Potion(), 4);
 		john.EquipItem(new WoodenSword());
 		john.BaseDefense = 10;
 
@@ -110,32 +126,27 @@ Game = {
 			});
 			return true;
 		});
-		
-		window.addEventListener("mousewheel", function(event){
-			if(Game.ActiveMenu !== null){
+
+		window.addEventListener("mousewheel", function(event) {
+			if (Game.ActiveMenu !== null) {
 				return;
 			}
-	
-			if(event.wheelDelta > 0){				
+
+			if (event.wheelDelta > 0) {
 				Game.Scale += (event.wheelDelta * 0.001)
-			}
-			else
-			{
+			} else {
 				Game.Scale -= (event.wheelDelta * -0.001)
 			}
-			if(Game.Scale > 5)
+			if (Game.Scale > 5)
 				Game.Scale = 5;
-			if(Game.Scale < 0.5)
+			if (Game.Scale < 0.5)
 				Game.Scale = 0.5
-				
-			if(Game.ActiveMenu === UI.RoomMenu){
-//				Game.ActiveMenu.Scale = Game.Scale;
+
+			if (Game.ActiveMenu === UI.RoomMenu) {
+				//				Game.ActiveMenu.Scale = Game.Scale;
 			}
-							
-			for(var i = 0; i < Lynx.Scene.Entities.length; i++){
-				var e = Lynx.Scene.Entities[i];
-				e.Scale = Game.Scale;
-			}
+
+			Game.ScaleAllEntities();
 		}, false);
 
 		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
@@ -159,97 +170,11 @@ Game = {
 				return true;
 			}
 		});
-		
+
 		//Scale entities to default scale
-		for(var i = 0; i < Lynx.Scene.Entities.length; i++){
-			var e = Lynx.Scene.Entities[i];
-			e.Scale = Game.Scale;
-		}		
-		UI.Out.UpdateExpbar(500000,2000000);		
+		Game.ScaleAllEntities();
+
+		UI.Out.UpdateExpbar(500000, 2000000);
 		welcomeMessage.Show();
 	}
 };
-var World = World || {};
-
-World.Stats = {
-	heroesSpawned: 0,
-	heroesDied: 0,
-	heroesAscended: 0,
-
-	dungeonExp: 0,
-	dungeonGold: 0,
-
-	mobsDied: 0,
-	mobsSpawned: 0,
-
-	//What are these?  WHO KNOWS!?!
-	fame: 0,
-	peril: 0,
-}
-
-World.Entities = {
-	content: [],
-	ascendedHeroes: [],
-	//USE THIS WHENEVER YOU CREATE AN ENTITY!!!!!
-	createEntity: function(entityClass) {
-		var newEntity = new entityClass();
-		this.content.push(newEntity);
-
-		if (newEntity instanceof Enemy) {
-			World.Stats.mobsSpawned++;
-		} else if (newEntity instanceof Hero) {
-			World.Stats.heroesSpawned++;
-		}
-
-
-
-		return newEntity;
-	},
-	removeEntity: function(delEntity) {
-		//Remove it from it's current room.
-		//debugger;
-
-		if (delEntity instanceof Enemy) {
-			World.Stats.mobsDied++;
-		} else if (delEntity instanceof Hero) {
-			World.Stats.heroesDied++;
-		}
-
-		var currentRoom = delEntity.GetRoom();
-		if (currentRoom) {
-			_.remove(currentRoom.mobs, function(entity) {
-				return entity === delEntity;
-			});
-		}
-		//Remove it from the spawned list in the room in which it was spawed.
-		if (delEntity.spawnedRoom) {
-			_.remove(delEntity.spawnedRoom.spawnedEntities, function(entity) {
-				return entity === delEntity;
-			});
-		}
-		//Remove it from the global enitites registry.
-		_.remove(this.content, function(entity) {
-			return entity === delEntity;
-		});
-	},
-	ascendHero: function(ascHero) {
-		this.ascendedHeroes.push(ascHero);
-
-		var currentRoom = ascHero.GetRoom();
-		if (currentRoom) {
-			_.remove(currentRoom.mobs, function(entity) {
-				return entity === ascHero;
-			});
-		}
-		//Remove it from the spawned list in the room in which it was spawed.
-		if (ascHero.spawnedRoom) {
-			_.remove(ascHero.spawnedRoom.spawnedEntities, function(entity) {
-				return entity === ascHero;
-			});
-		}
-		//Remove it from the global enitites registry.
-		_.remove(this.content, function(entity) {
-			return entity === ascHero;
-		});
-	},
-}

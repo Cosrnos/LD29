@@ -13,6 +13,7 @@ var Enemy = function() {
 			if (!this.entity) {
 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 5, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
 				this.entity.Color = this.Color;
+				Game.ScaleEntity(this.entity);
 				Lynx.Scene.Layers[1].AddEntity(this.entity);
 			} else {
 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 5;
@@ -107,6 +108,8 @@ var Spider = function() {
 	this.Gold = 25;
 	this.Health = 7;
 	this.Mana = 0;
+
+	this.Color = 0x000000;
 };
 
 Spider.prototype = new Enemy();

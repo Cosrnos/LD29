@@ -23,6 +23,8 @@ var Mage = function(pName) {
 					this.UseAction("Fireblast", this.CurrentTarget);
 					continue;
 				};
+
+
 			} else {
 				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Enemy

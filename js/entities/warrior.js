@@ -7,6 +7,8 @@ var Warrior = function(pName) {
 	this.Class = HeroClass.WARRIOR;
 	this.Name = pName || "WARRIOR";
 
+	this.image = Lynx.AM.Get('fencer').Asset;
+
 	this.GiveAction("Heavy Attack");
 
 	this.Brain = function() {
@@ -22,6 +24,17 @@ var Warrior = function(pName) {
 					this.UseAction("Heavy Attack", this.CurrentTarget);
 					continue;
 				}
+
+				if (!this.OnCooldown("HP 10 Potion")) {
+					//Only try to use if health is at 30%
+					if (this.HealthDelta >= this.Health * 0.7) {
+						var result = this.UseItem("HP 10 Potion", this);
+						if (result) {
+							continue;
+						}
+					}
+				};
+
 			} else {
 				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Enemy

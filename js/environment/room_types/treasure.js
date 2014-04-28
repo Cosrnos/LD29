@@ -11,12 +11,12 @@ var TreasureRoom = function(parent) {
 
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
-	this.canSpawnEntities = [],
+	this.canSpawnEntities = [];
 
 	//A Hero has entered the Treasure Room!!! Rejoice!
 	this.Ascend = function(hero) {
 		World.Stats.heroesAscended++;
-		World.Stats.experience += hero.expGainedInDungeon;
+		World.Stats.Experience += hero.expGainedInDungeon + 1;
 		World.Stats.fame += hero.Level;
 
 		Lynx.Scene.Layers[1].RemoveEntity(hero.entity);

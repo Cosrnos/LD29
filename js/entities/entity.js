@@ -3,7 +3,7 @@ var World = World || {};
 var Entity = function() {
 
 
-	var items = [];
+	this.items = [];
 	var att = (Object.create(AttackAction));
 	this.actions = [];
 	this.actions.push(att);
@@ -194,11 +194,11 @@ var Entity = function() {
 		}
 
 		var realHit = Math.floor(pDamage - this.BaseDefense);
-		if (realHit < 0) {
-			realHit = 0;
+		if (realHit <= 0) {
+			realHit = 1;
 		}
 		this.HealthDelta += realHit;
-		debugger;
+
 		if (this.HealthDelta >= this.Health) {
 			this.Kill();
 		}
@@ -210,7 +210,7 @@ var Entity = function() {
 
 	this.GiveItem = function(pItem, pQuantity) {
 		for (var i = 0; i < pQuantity; i++) {
-			items.push(pItem);
+			this.items.push(pItem);
 		}
 	};
 
@@ -218,8 +218,8 @@ var Entity = function() {
 		var totalCount = 0;
 		pQuantity = pQuantity || 1;
 
-		for (var i = 0; i < items.length; i++) {
-			if (items[i].Name === pItemName) {
+		for (var i = 0; i < this.items.length; i++) {
+			if (this.items[i].Name === pItemName) {
 				totalCount++;
 
 				if (totalCount >= pQuantity) {
@@ -235,8 +235,8 @@ var Entity = function() {
 		var toRemove = 0;
 		pQuantity = pQuantity || 1;
 
-		for (var i = 0; i < items.length; i++) {
-			if (items[i].Name === pItemName) {
+		for (var i = 0; i < this.items.length; i++) {
+			if (this.items[i].Name === pItemName) {
 				toRemove.push;
 				if (toRemove.length === pQuantity)
 					break;
@@ -248,31 +248,38 @@ var Entity = function() {
 		}
 
 		for (var x = 0; x < toRemove.length; x++) {
-			items.splice(toRemove[x], 1);
+			this.items.splice(toRemove[x], 1);
 		}
 
 		return true;
 	};
 
 	this.UseItem = function(pItemName) {
-		if (!this.Alive) {
+		if (!this.Alive || this.OnCooldown(pItemName)) {
 			return false;
 		}
 
 		var item = -1;
-		for (var i = 0; i < items.length; i++) {
-			if (items[i].Name === pItemName) {
-				item = items[i];
+		for (var i = 0; i < this.items.length; i++) {
+			if (this.items[i].Name === pItemName) {
+				item = this.items[i];
 				break;
 			}
 		}
 
-		if (item !== -1 && (item.Type & ItemType.USABLE) !== 0 && item.Cost <= this.ActionPoints) {
-			this.ActionPoints -= item.Cost;
+		if (item !== -1 && (item.Type & ItemType.USABLE) !== 0) {
 			item.Use(this);
+			item.CanUseAt = Date.now() + Math.floor(item.Cooldown / this.BaseSpeed);
 			Lynx.Log("Hero " + this.Name + " has used a(n) " + item.Name);
-			items.splice(item, 1);
+
+			this.items.splice(item, 1);
+			available.splice(available.indexOf(item), 1);
+			this.cooldowns.push(item);
+			return true;
+
 		}
+
+		return false;
 	};
 
 	this.EquipItem = function(pEquip) {

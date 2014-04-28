@@ -22,17 +22,38 @@ var Hero = function(pName) {
 	this.lastMoveDir = null;
 	this.Name = pName || "";
 
+	this.image = null;
+	this
+
 	this.Draw = function() {
 		//debugger;
 		var currentRoom = this.GetRoom();
 		if (currentRoom) {
 			if (!this.entity) {
-				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-				this.entity.Color = 0x009933;
+				//this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+				if (this.image) {
+					this.entity = new Lynx.Entity(this.image);
+					this.entity.Height = 10;
+					this.entity.Width = 10;
+					this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
+					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+				} else {
+					this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 31, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
+					//this.entity.Color = this.Color;
+					this.entity.Color = 0x009933;
+				}
+
+				Game.ScaleEntity(this.entity);
 				Lynx.Scene.Layers[1].AddEntity(this.entity);
+
 			} else {
-				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
-				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+				if (this.image) {
+					this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
+					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+				} else {
+					this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
+					this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
+				}
 			}
 		}
 	}

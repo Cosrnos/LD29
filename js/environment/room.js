@@ -31,6 +31,7 @@ World.Rooms = {
 var EmptyRoom = function(parent) {
 	this.parent = parent;
 	this.destroy = function() {}
+	this.Color = 0xDEADBE;
 };
 
 var Room = function(x, y) {
@@ -39,6 +40,8 @@ var Room = function(x, y) {
 	//position of this room.
 	this.x = x;
 	this.y = y;
+
+	this.depth = 0;
 
 	//Links to other rooms.
 	this.North = null;
@@ -52,17 +55,17 @@ var Room = function(x, y) {
 
 	this.entity = new Lynx.Entity(World.Rooms.roomSize * x, World.Rooms.roomSize * y, World.Rooms.roomSize * 0.8, World.Rooms.roomSize * 0.8);
 	this.entity.Color = 0xDEADBE;
-	Lynx.Scene.AddEntity(this.entity);
+	Lynx.Scene.Layers[0].AddEntity(this.entity);
 
 	//Add hallway
 	var middle = Math.floor((World.Rooms.roomSize * 0.8) / 2);
 	var hallWidth = Math.floor(6);
 	var hallLength = Math.floor(10);
-	var hallWOffset = (middle - Math.floor(hallWidth /2));
+	var hallWOffset = (middle - Math.floor(hallWidth / 2));
 	var hallHOffset = (World.Rooms.roomSize - hallLength);
-	
+
 	var hallColor = 0xFFFFFF;
-	
+
 	this.nHall = new Lynx.Entity(World.Rooms.roomSize * x + hallWOffset, World.Rooms.roomSize * y - hallLength, hallWidth, hallLength);
 	this.nHall.Color = hallColor;
 	this.sHall = new Lynx.Entity(World.Rooms.roomSize * x + hallWOffset, World.Rooms.roomSize * y + hallHOffset, hallWidth, hallLength);
@@ -106,6 +109,25 @@ var Room = function(x, y) {
 		return dirs;
 	}
 
+	//Picks a random exit from this room and returns that room.
+	this.randomExit = function() {
+		var dir = _.sample(this.getMovableDirs());
+
+		if (dir === 'n') {
+			return this.North;
+		}
+		if (dir === 's') {
+			return this.South;
+		}
+		if (dir === 'e') {
+			return this.East;
+		}
+		if (dir === 'w') {
+			return this.West;
+		}
+		return false;
+	}
+
 	// this.getType = function()
 	// this.setType = function(roomType) {
 	// 	if (roomType.prototype instanceof EmptyRoom) {
@@ -135,7 +157,7 @@ var Room = function(x, y) {
 					this.North = newRoom;
 					newRoom.South = this;
 				}
-				Lynx.Scene.AddEntity(this.nHall);
+				Lynx.Scene.Layers[0].AddEntity(this.nHall);
 
 			} else {
 				error = "Room to the North already exists."
@@ -153,7 +175,7 @@ var Room = function(x, y) {
 					this.South = newRoom;
 					newRoom.North = this;
 				}
-				Lynx.Scene.AddEntity(this.sHall);
+				Lynx.Scene.Layers[0].AddEntity(this.sHall);
 			} else {
 				error = "Room to the South already exists."
 			}
@@ -169,7 +191,7 @@ var Room = function(x, y) {
 					this.East = newRoom;
 					newRoom.West = this;
 				}
-				Lynx.Scene.AddEntity(this.eHall);
+				Lynx.Scene.Layers[0].AddEntity(this.eHall);
 			} else {
 				error = "Room to the East already exists."
 			}
@@ -185,7 +207,7 @@ var Room = function(x, y) {
 					this.West = newRoom;
 					newRoom.East = this;
 				}
-				Lynx.Scene.AddEntity(this.wHall);
+				Lynx.Scene.Layers[0].AddEntity(this.wHall);
 			} else {
 				error = "Room to the West already exists.";
 			}
@@ -201,6 +223,7 @@ var Room = function(x, y) {
 		}
 		if (newRoom) {
 			//newRoom.type = new EmptyRoom(this);
+			newRoom.depth = this.depth + 1;
 			newRoom.id = World.Rooms.content.length;
 			World.Rooms.push(newRoom);
 			return newRoom;
@@ -219,7 +242,7 @@ walk = function(room, maxDepth, minRooms, depth) {
 		if (depth >= maxDepth || !room) {
 			return;
 		}
-		//Sometime create a coridor three rooms long.
+		//Sometime create a corridor three rooms long.
 		if (Math.random() >= 0.8) {
 
 			var direction = _.sample(['n', 's', 'w', 'e']);
@@ -261,8 +284,14 @@ walk = function(room, maxDepth, minRooms, depth) {
 	createRooms(room, maxDepth, depth);
 	while (World.Rooms.content.length < minRooms) {
 		//var randRoom = _.sample(World.Rooms.content);
+
 		createRooms(room, maxDepth, depth);
 
+		var randRoom = room.randomExit();
+		if (randRoom) {
+			room = randRoom;
+		}
 	}
+	Game.ScaleAllEntities();
 
 };

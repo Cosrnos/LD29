@@ -1,11 +1,14 @@
-var Item = function (pName) {
+var Item = function(pName) {
 	this.Name = pName;
 	this.Type = ItemType.JUNK;
 	this.EquipSlot = EquipSlot.NONE;
-	this.Use = function (pHero) {};
+	this.Use = function(pHero) {};
 	this.Cost = 1;
-	this.Equip = function (pHero) {};
-	this.Unequip = function (pHero) {};
+	this.Equip = function(pHero) {};
+	this.Unequip = function(pHero) {};
+
+	this.Cooldown = 1000;
+	this.CanUseAt = 0;
 };
 
 var ItemType = {

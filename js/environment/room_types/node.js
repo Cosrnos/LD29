@@ -9,10 +9,28 @@ var NodeRoom = function(parent) {
 	this.maxSpawnedEntities = 0;
 	this.spawnedEntities = [];
 	this.canSpawnEntities = [],
-	this.Spawner = function() {
-		var entityToSpawn = _.sample(this.canSpawnEntities);
+	this.Spawner = function(newEntityToSpawn, maxSpawn) {
+		var mobCount = 0;
+		var entityToSpawn;
+
+		//IF there is no specified newEntityToSpawn, we pick one at random from
+		//canSpawnEntities.
+		if (!newEntityToSpawn) {
+			entityToSpawn = _.sample(this.canSpawnEntities);
+			maxSpawn = this.maxSpawnedEntities;
+			mobCount = this.spawnedEntities.length
+		} else {
+			entityToSpawn = newEntityToSpawn;
+			_.each(this.spawnedEntities, function(mob) {
+				if (mob instanceof entityToSpawn) {
+					mobCount++;
+				}
+			});
+		}
+
+		//Now that we've determined what to spawn, let's see if we should.
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
-			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+			if (mobCount < maxSpawn) {
 				var newEntity = World.Entities.createEntity(entityToSpawn);
 				newEntity.SetRoom(this.parent);
 				newEntity.spawnedRoom = this;
@@ -33,10 +51,14 @@ var EntranceRoom = function(parent) {
 	var originalDestroy = this.destroy;
 	//Need to destory RoomTypes or these Intervals will go haywire.
 	this.destroy = function() {
-		clearInterval(this.timer);
-		originalDestroy()
+		_.each(this.timers, function(timer) {
+			clearInterval(timer.timer);
+		});
+		originalDestroy();
 	}
-	this.Color = 0xFF00FF;
+	this.timers = [];
+
+	this.Color = 0xFF0000;
 
 	this.maxSpawnedEntities = 3;
 	this.canSpawnEntities = [Warrior, Mage];
@@ -44,11 +66,27 @@ var EntranceRoom = function(parent) {
 
 	this.spawnedEntities = [];
 
-	this.HeroSpawner = function() {
-		var entityToSpawn = _.sample(this.canSpawnEntities);
-		//debugger;
+	this.HeroSpawner = function(newEntityToSpawn, maxSpawn) {
+		var mobCount = 0;
+		var entityToSpawn;
+
+		//IF there is no specified newEntityToSpawn, we pick one at random from
+		//canSpawnEntities.
+		if (!newEntityToSpawn) {
+			entityToSpawn = _.sample(this.canSpawnEntities);
+			maxSpawn = this.maxSpawnedEntities;
+			mobCount = this.spawnedEntities.length
+		} else {
+			entityToSpawn = newEntityToSpawn;
+			_.each(this.spawnedEntities, function(mob) {
+				if (mob instanceof entityToSpawn) {
+					mobCount++;
+				}
+			});
+		}
+		//Now that we've determined what to spawn, let's see if we should.
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
-			if (this.spawnedEntities.length < this.maxSpawnedEntities) {
+			if (mobCount < maxSpawn) {
 				var newEntity = World.Entities.createEntity(entityToSpawn);
 				newEntity.SetRoom(this.parent);
 				newEntity.spawnedRoom = this;
@@ -62,7 +100,15 @@ var EntranceRoom = function(parent) {
 		}
 	};
 
-	this.timer = setInterval(this.HeroSpawner.bind(this), this.spawnCooldown);
+	this.timers.push({
+		name: 'Warrior',
+		timer: setInterval(this.HeroSpawner.bind(this, Warrior, 3), 6000)
+	});
+
+	this.timers.push({
+		name: 'Mage',
+		timer: setInterval(this.HeroSpawner.bind(this, Mage, 2), 5000)
+	});
 }
 
 NodeRoom.prototype = new EmptyRoom();
@@ -91,12 +137,14 @@ var SpiderRoom = function(parent) {
 	//Need to destpry RoomTypes or these Intervals will go haywire.
 	this.destroy = function() {
 		clearInterval(this.timer);
+		clearInterval(this.timer2);
 		originalDestroy()
 	}
 	this.Color = 0xee0033;
-	this.maxSpawnedEntities = 2;
+	this.maxSpawnedEntities = 6;
 	this.canSpawnEntities = [GiantSpider];
 	this.spawnCooldown = 10000;
 
-	this.timer = setInterval(this.Spawner.bind(this), this.spawnCooldown);
+	this.timer = setInterval(this.Spawner.bind(this, GiantSpider, 1), 10000);
+	this.timer2 = setInterval(this.Spawner.bind(this, Spider, 5), 5000);
 };
