@@ -1306,7 +1306,7 @@ ScoutMoveAction.Use = function (pEntity) {
 		pEntity.Move(_.sample(directions));
 	}
 };
-var Enemy = function () {
+var Enemy = function() {
 	Entity.apply(this);
 	var move = (Object.create(MoveAction));
 	this.actions.push(move);
@@ -1320,18 +1320,18 @@ var Enemy = function () {
 	this.xOffSet = 7; //Enemies line up on the left side of a room.
 
 
-	this.AddDrop = function (pItem, pChance) {
+	this.AddDrop = function(pItem, pChance) {
 		var drop = Object.create(pItem);
 		pItem.Chance = pChance;
 		this.Drops.push(pItem);
 	};
 
-	this.TakeDamage = function (pAmount, pAttacker) {
+	this.TakeDamage = function(pAmount, pAttacker) {
 		originalTakeDamage.call(this, pAmount, pAttacker);
 		this.CurrentTarget = pAttacker;
 	}
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -1340,7 +1340,7 @@ var Enemy = function () {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Hero
 				});
 				if (typeof heroInRoom !== 'undefined') {
@@ -1358,11 +1358,11 @@ var Enemy = function () {
 		}
 	}
 
-	this.Kill = function () {
+	this.Kill = function() {
 		Lynx.Log("Enemy " + this.Species + " has been killed!");
 
 		var self = this;
-		var attackers = _.filter(World.Entities.content, function (mob) {
+		var attackers = _.filter(World.Entities.content, function(mob) {
 			return mob.CurrentTarget === self;
 		});
 
@@ -1373,17 +1373,17 @@ var Enemy = function () {
 		//divies it up.
 		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * (numAttackers - 1)));
 
-		_.each(attackers, (function (pAttacker) {
+		_.each(attackers, (function(pAttacker) {
 			if (this.Drops.length > 0) {
 				var totalChance = this.Drops.length * 100;
 				var dropChance = 0;
 				var currentChanceRate = 0;
-				_.each(this.Drops, function (pDrop) {
+				_.each(this.Drops, function(pDrop) {
 					dropChance += pDrop.Chance;
 				});
 				var roll = Math.floor(Math.random() * totalChance);
 
-				_.each(this.Drops, function (pDrop) {
+				_.each(this.Drops, function(pDrop) {
 					if (roll <= pDrop.Chance + currentChanceRate) {
 						//Drop found.
 						pAttacker.GiveItem(Object.create(pDrop));
@@ -1413,12 +1413,12 @@ Enemy.prototype.constructor = Enemy;
 //-----------------------------
 
 //Level 1-5
-var Trog = function () {
+var Trog = function() {
 	Enemy.apply(this);
 	this.Species = "Trog";
 	this.Exp = 25;
 	this.Gold = 25;
-	this.Health = 5;
+	this.Health = 6;
 	this.Mana = 0;
 	this.BaseAttack = 2;
 	this.BaseDefense = 0;
@@ -1432,15 +1432,15 @@ var Trog = function () {
 Trog.prototype = new Enemy();
 Trog.prototype.constructor = Trog;
 
-var Spider = function () {
+var Spider = function() {
 	Enemy.apply(this);
 	this.Species = "Spider";
 	this.Level = 3;
 	this.Exp = 40;
-	this.BaseAttack = 2;
+	this.BaseAttack = 3;
 	this.BaseDefense = 1;
 	this.Gold = 25;
-	this.Health = 10;
+	this.Health = 11;
 	this.Mana = 0;
 	this.AddDrop(new HP10Potion(), 15);
 	this.AddDrop(new WoodenStick(), 5);
@@ -1452,7 +1452,7 @@ var Spider = function () {
 Spider.prototype = new Enemy();
 Spider.prototype.constructor = Spider;
 
-var Bat = function () {
+var Bat = function() {
 	Enemy.apply(this);
 	this.Species = "Bat";
 	this.Level = 5;
@@ -1460,7 +1460,7 @@ var Bat = function () {
 	this.Gold = 25;
 	this.BaseAttack = 4;
 	this.BaseDefense = 2;
-	this.Health = 15;
+	this.Health = 17;
 	this.Mana = 0;
 	this.AddDrop(new HP10Potion(), 20);
 	this.AddDrop(new WoodenStick(), 10);
@@ -1473,7 +1473,7 @@ Bat.prototype = new Enemy();
 Bat.prototype.constructor = Bat;
 
 //Level 6-10
-var Goblin = function () {
+var Goblin = function() {
 	Enemy.apply(this);
 	this.Species = "Goblin";
 	this.Level = 7;
@@ -1481,7 +1481,7 @@ var Goblin = function () {
 	this.Gold = 25;
 	this.BaseAttack = 4;
 	this.BaseDefense = 2;
-	this.Health = 15;
+	this.Health = 19;
 	this.Mana = 0;
 	this.AddDrop(new HP10Potion(), 20);
 	this.AddDrop(new WoodenStick(), 15);
@@ -1493,14 +1493,14 @@ var Goblin = function () {
 Goblin.prototype = new Enemy();
 Goblin.prototype.constructor = Goblin;
 
-var GiantSpider = function () {
+var GiantSpider = function() {
 	Enemy.apply(this);
 	this.Species = "Giant Spider";
 	this.Level = 10;
 	this.BaseAttack = 5;
 	this.BaseDefense = 3;
 	this.Exp = 100;
-	this.Health = 20;
+	this.Health = 23;
 
 	this.GiveAction("Bite");
 	this.AddDrop(new BronzeSword(), 20);
@@ -1509,7 +1509,7 @@ var GiantSpider = function () {
 	this.entityScaleMultiplier = 1.5;
 	this.image = Lynx.AM.Get("spider-giant").Asset;
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -1523,7 +1523,7 @@ var GiantSpider = function () {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Hero
 				});
 				if (typeof heroInRoom !== 'undefined') {
@@ -1546,7 +1546,7 @@ var GiantSpider = function () {
 GiantSpider.prototype = new Enemy();
 GiantSpider.prototype.constructor = GiantSpider;
 
-var DarkKnight = function () {
+var DarkKnight = function() {
 	Enemy.apply(this);
 	this.Species = "Dark Knight";
 	this.Level = 15;
@@ -1554,12 +1554,12 @@ var DarkKnight = function () {
 	this.Gold = 200;
 	this.BaseAttack = 5;
 	this.BaseDefense = 3;
-	this.Health = 25;
+	this.Health = 28;
 	this.AddDrop(new HP10Potion(), 100);
 	//	this.image = Lynx.AM.Get("").Assets;
 	this.GiveAction("DeathRay");
 	this.image = Lynx.AM.Get("dk").Asset;
-	this.Brain = (function () {
+	this.Brain = (function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -1578,7 +1578,7 @@ var DarkKnight = function () {
 					continue;
 				}
 
-				var heroInRoom = _.find(this.CurrentRoom.mobs, function (pa) {
+				var heroInRoom = _.find(this.CurrentRoom.mobs, function(pa) {
 					return pa instanceof Hero
 				});
 
@@ -1602,15 +1602,15 @@ var DarkKnight = function () {
 DarkKnight.prototype = new Enemy();
 DarkKnight.prototype.constructor = DarkKnight;
 
-var BlobMan = function () {
+var BlobMan = function() {
 	Enemy.apply(this);
 	this.Species = "BlobMan";
-	this.Level = 1;
+	this.Level = 2;
 	this.Exp = 25;
 	this.Gold = 20;
 	this.BaseAttack = 2;
-	this.BaseDefense = 0;
-	this.Health = 5;
+	this.BaseDefense = 1;
+	this.Health = 10;
 	this.Mana = 0;
 	this.AddDrop(new HP10Potion(), 20);
 	this.image = Lynx.AM.Get("blobman").Asset;
@@ -1618,7 +1618,7 @@ var BlobMan = function () {
 	this.entityScaleMultiplier = 0.8;
 	this.isBlobbing = false;
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		var self = this;
 		while (thinking) {
@@ -1628,7 +1628,7 @@ var BlobMan = function () {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Hero
 				});
 				if (typeof heroInRoom !== 'undefined') {
@@ -1636,7 +1636,7 @@ var BlobMan = function () {
 					continue;
 				}
 
-				var otherBlobInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var otherBlobInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa !== self && pa instanceof BlobMan;
 				});
 				if (otherBlobInRoom) {
@@ -1675,7 +1675,6 @@ var BlobMan = function () {
 
 BlobMan.prototype = new Enemy();
 BlobMan.prototype.constructor = BlobMan;
-
 var HeroClass = {
 	SCRUB: 0,
 	WARRIOR: 1,
@@ -1844,26 +1843,27 @@ Mage.prototype.constructor = Mage;
 // Mage
 //--------------------------
 
-var Scout = function (pName) {
+var Scout = function(pName) {
 	Hero.apply(this);
 	this.Class = HeroClass.Scout;
 	this.Name = pName || "Scout";
 	this.HeroType = "SCOUT";
 	this.image = Lynx.AM.Get("scout").Asset;
+	this.entityScaleMultiplier = 1.3; //He's too small, otherwise.
 
 	//this.GiveAction("Fireblast");
 
 	var move = (Object.create(ScoutMoveAction));
 	this.actions.push(move);
 
-	this.LevelUp = function () {
+	this.LevelUp = function() {
 		this.Health += 1;
 		this.BaseAttack += (1 % 2); //Gain Attack every other level.
 		if (!this.SPAWNING)
 			Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
 	};
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -1889,7 +1889,7 @@ var Scout = function (pName) {
 
 
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Enemy
 				});
 				if (typeof enemyInRoom !== 'undefined') {
@@ -1914,11 +1914,10 @@ var Scout = function (pName) {
 
 Scout.prototype = new Hero();
 Scout.prototype.constructor = Scout;
-
 // Warrior
 //--------------------------
 
-var Warrior = function (pName) {
+var Warrior = function(pName) {
 	Hero.apply(this);
 	this.HeroType = "WARRIOR";
 	this.Class = HeroClass.WARRIOR;
@@ -1928,14 +1927,14 @@ var Warrior = function (pName) {
 
 	this.GiveAction("Heavy Attack");
 
-	this.LevelUp = function () {
+	this.LevelUp = function() {
 		this.Health += 2;
-		this.BaseAttack += 2;
+		this.BaseAttack += 1;
 		if (!this.SPAWNING)
 			Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
 	};
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -1960,7 +1959,7 @@ var Warrior = function (pName) {
 				};
 
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Enemy
 				});
 				if (typeof enemyInRoom !== 'undefined') {
@@ -1986,7 +1985,6 @@ var Warrior = function (pName) {
 
 Warrior.prototype = new Hero();
 Warrior.prototype.constructor = Warrior;
-
 World.Rooms = {
 
 	content: [], //Array that contains all the rooms.
@@ -2258,12 +2256,12 @@ walk = function(room, maxGain) {
 
 };
 //The entrance to the dungeon.  It spawns heros.
-var EntranceRoom = function (parent) {
+var EntranceRoom = function(parent) {
 	NodeRoom.apply(this, [parent]);
 	var originalDestroy = this.destroy;
 	//Need to destory RoomTypes or these Intervals will go haywire.
-	this.destroy = function () {
-		_.each(this.timers, function (timer) {
+	this.destroy = function() {
+		_.each(this.timers, function(timer) {
 			clearInterval(timer.timer);
 		});
 		originalDestroy();
@@ -2281,12 +2279,12 @@ var EntranceRoom = function (parent) {
 	//This should probablu go somewhere else.
 	//Generats Normal (Gaussian) Distributed Random Numbers
 	//Use to pick the level of heroes entering the dungeon.
-	this.randomDist = function (mean, stdev) {
+	this.randomDist = function(mean, stdev) {
 		var randomDist = (Math.random() * 2 - 1) + (Math.random() * 2 - 1) + (Math.random() * 2 - 1);
 		return Math.round(randomDist * stdev + mean);
 	}
 
-	this.HeroSpawner = function (newEntityToSpawn, maxSpawn) {
+	this.HeroSpawner = function(newEntityToSpawn, maxSpawn) {
 		var mobCount = 0;
 		var entityToSpawn;
 
@@ -2295,7 +2293,7 @@ var EntranceRoom = function (parent) {
 		} else {
 			entityToSpawn = newEntityToSpawn;
 			//Get the current count of 'entityToSpawn's.
-			_.each(this.spawnedEntities, function (mob) {
+			_.each(this.spawnedEntities, function(mob) {
 				if (mob instanceof entityToSpawn) {
 					mobCount++;
 				}
@@ -2313,7 +2311,11 @@ var EntranceRoom = function (parent) {
 				newEntity.GiveItem(new HP10Potion(), this.potionsGiven);
 
 				//I did this at 5:30 AM.  It might be stupid-crazy.  We'll see.
-				newEntity.Experience = Math.abs(this.randomDist(Math.pow(2, World.Stats.level - 1) * 50, World.Stats.level * 50) - 50);
+				//newEntity.Experience = Math.abs(this.randomDist(Math.pow(2, World.Stats.level - 1) * 50, World.Stats.level * 50) - 50);
+
+				//more different: more random.
+				newEntity.Experience = Math.floor(_.random(0, Math.pow(2, World.Stats.level) * 50) * .85);
+
 
 				this.spawnedEntities.push(newEntity);
 				newEntity.SPAWNING = false;
