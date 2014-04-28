@@ -24,13 +24,14 @@ UI.AddNodeMenu.AddOption("Spiders (4 Lira)", function () {
 	return true;
 });
 
-UI.AddNodeMenu.AddOption("Bats (6 Lira)", function () {
-	if (World.Stats.lira < 6) {
+UI.AddNodeMenu.AddOption("Blobman (3 Lira, 3 Doma)", function () {
+	if (World.Stats.lira < 3 || World.Stats.doma < 3) {
 		Lynx.Log("You don't have enough Lira for that action!");
 		return true;
 	}
-	World.Stats.lira -= 6;
-	this.type = new BatRoom(this);
+	World.Stats.lira -= 3;
+	World.Stats.doma -= 3;
+	this.type = new BlobmanRoom(this);
 	return true;
 });
 
@@ -44,6 +45,28 @@ UI.AddNodeMenu.AddOption("Goblin (4 Lira, 4 Doma)", function () {
 	this.type = new GoblinRoom(this);
 	return true;
 });
+
+UI.AddNodeMenu.AddOption("Bats (6 Lira)", function () {
+	if (World.Stats.lira < 6) {
+		Lynx.Log("You don't have enough Lira for that action!");
+		return true;
+	}
+	World.Stats.lira -= 6;
+	this.type = new BatRoom(this);
+	return true;
+});
+
+
+UI.AddNodeMenu.AddOption("Dark Knight (15 Lira)", function () {
+	if (World.Stats.lira < 15) {
+		Lynx.Log("You don't have enough resources for that action!");
+		return true;
+	}
+	World.Stats.lira -= 15;
+	this.type = new DarkKnightRoom();
+	return true;
+});
+
 /*
 UI.AddNodeMenu.AddOption("DBG Treasure", function () {
 	this.type = new TreasureRoom(this);

@@ -65,13 +65,17 @@ Game = {
 		Lynx.AM.QueueImage("trogNode", "assets/dgTiles/trogNode.png");
 		Lynx.AM.QueueImage("spiderNode", "assets/dgTiles/spiderNode.png");
 		Lynx.AM.QueueImage("goblinNode", "assets/dgTiles/goblinNode.png");
+		Lynx.AM.QueueImage("blobmanNode", "assets/dgTiles/blobNode.png");
+		Lynx.AM.QueueImage("blobman", "assets/blob.png");
 		Lynx.AM.QueueImage("trog", "assets/trog.png");
 		Lynx.AM.QueueImage("spider", "assets/spider.png");
 		Lynx.AM.QueueImage("spider-giant", "assets/giant-spider.png");
 		Lynx.AM.QueueImage("goblin", "assets/goblin.png");
 		Lynx.AM.QueueImage("bat", "assets/bat.png");
+		Lynx.AM.QueueImage("dk", "assets/dk.png");
+		Lynx.AM.QueueImage("dkNode", "assets/dgTiles/dkNode.png");
 
-		Lynx.AM.QueueAudio("soundClick", "assets/sounds/click.wav");
+		Lynx.AM.QueueAudio("soundClick", "assets/sounds/click2.wav");
 		Lynx.AM.QueueAudio("soundAscent", "assets/sounds/ascent.wav");
 		Lynx.AM.QueueAudio("soundDeath", "assets/sounds/death.wav");
 		Lynx.AM.QueueAudio("soundBgm", "assets/sounds/bgm.mp3");
@@ -127,7 +131,7 @@ Game = {
 
 		Lynx.Scene.On("Keyboard.Press.M", function () {
 			if (Game.Muted) {
-				Lynx.AM.Get("soundBgm").Asset.volume = 1;
+				Lynx.AM.Get("soundBgm").Asset.volume = 0.75;
 			} else {
 				Lynx.AM.Get("soundBgm").Asset.volume = 0;
 			}
