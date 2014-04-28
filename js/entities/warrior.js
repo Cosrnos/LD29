@@ -1,7 +1,7 @@
 // Warrior
 //--------------------------
 
-var Warrior = function (pName) {
+var Warrior = function(pName) {
 	Hero.apply(this);
 	this.HeroType = "WARRIOR";
 	this.Class = HeroClass.WARRIOR;
@@ -11,14 +11,14 @@ var Warrior = function (pName) {
 
 	this.GiveAction("Heavy Attack");
 
-	this.LevelUp = function () {
+	this.LevelUp = function() {
 		this.Health += 2;
-		this.BaseAttack += 2;
+		this.BaseAttack += 1;
 		if (!this.SPAWNING)
 			Lynx.Log("Hero " + this.Name + " Has leveled up! (" + this.Level + ")");
 	};
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -43,7 +43,7 @@ var Warrior = function (pName) {
 				};
 
 			} else {
-				var enemyInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var enemyInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Enemy
 				});
 				if (typeof enemyInRoom !== 'undefined') {
