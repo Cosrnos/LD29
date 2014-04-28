@@ -246,7 +246,7 @@ var DarkKnight = function () {
 	this.Gold = 200;
 	this.BaseAttack = 5;
 	this.BaseDefense = 4;
-	this.Health = 35;
+	this.Health = 30;
 	this.AddDrop(new HP10Potion(), 100);
 	//	this.image = Lynx.AM.Get("").Assets;
 	this.GiveAction("DeathRay");

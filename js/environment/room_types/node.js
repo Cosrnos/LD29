@@ -93,9 +93,9 @@ var BatRoom = function (parent) {
 	};
 
 	this.Texture = Lynx.AM.Get("batNode").Asset;
-	this.maxSpawnedEntities = 5;
+	this.maxSpawnedEntities = 4;
 	this.canSpawnEntities = [Bat];
-	this.spawnCooldown = 6000;
+	this.spawnCooldown = 8000;
 
 	this.timer = setInterval(this.Spawner.bind(this, Bat, 5), 4500);
 };
