@@ -97,6 +97,7 @@ var Enemy = function () {
 	};
 };
 
+
 Enemy.prototype = new Entity();
 Enemy.prototype.constructor = Enemy;
 
