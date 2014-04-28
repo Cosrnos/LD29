@@ -39,6 +39,10 @@ Lynx.Logger = (function LynxLogger() {
 		var cons = document.getElementById(that.LogDiv);
 		if (typeof cons != 'undefined') {
 			cons.appendChild(sp);
+			if (cons.children.length >= 20) {
+				while (cons.children.length > 20)
+					cons.removeChild(cons.children[0]);
+			}
 			cons.scrollTop += 18;
 		}
 

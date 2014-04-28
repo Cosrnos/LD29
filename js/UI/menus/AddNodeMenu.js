@@ -2,29 +2,51 @@ var UI = UI || {};
 
 UI.AddNodeMenu = new Menu("Add/Change Node", true);
 
-UI.AddNodeMenu.TrogOption = UI.AddNodeMenu.AddOption("Trogs (15 Lira)", function() {
-	if(World.Stats.lira < 15)
-	{
+UI.AddNodeMenu.TrogOption = UI.AddNodeMenu.AddOption("Trogs (2 Lira)", function () {
+	if (World.Stats.lira < 2) {
 		Lynx.Log("You don't have enough Lira for that action!");
 		return true;
 	}
-	World.Stats.lira -= 15;
+	World.Stats.lira -= 2;
 	this.type = new TrogRoom(this);
+	if (Game.TutorialProgress === 1)
+		tutorialAfterSpawnTrog.Show();
 	return true;
 });
 
-UI.AddNodeMenu.AddOption("Spiders (30 Lira)", function() {
-	if(World.Stats.lira < 30)
-	{
+UI.AddNodeMenu.AddOption("Spiders (4 Lira)", function () {
+	if (World.Stats.lira < 4) {
 		Lynx.Log("You don't have enough Lira for that action!");
 		return true;
 	}
-	World.Stats.lira -= 30;
+	World.Stats.lira -= 4;
 	this.type = new SpiderRoom(this);
 	return true;
 });
 
-UI.AddNodeMenu.AddOption("DBG Treasure", function() {
+UI.AddNodeMenu.AddOption("Bats (6 Lira)", function () {
+	if (World.Stats.lira < 6) {
+		Lynx.Log("You don't have enough Lira for that action!");
+		return true;
+	}
+	World.Stats.lira -= 6;
+	this.type = new BatRoom(this);
+	return true;
+});
+
+UI.AddNodeMenu.AddOption("Goblin (4 Lira, 6 Doma)", function () {
+	if (World.Stats.lira < 4 || World.Stats.doma < 6) {
+		Lynx.Log("You don't have enough Resources for that action!");
+		return true;
+	}
+	World.Stats.lira -= 4;
+	World.Stats.doma -= 6;
+	this.type = new GoblinRoom(this);
+	return true;
+});
+/*
+UI.AddNodeMenu.AddOption("DBG Treasure", function () {
 	this.type = new TreasureRoom(this);
 	return true;
 });
+*/
