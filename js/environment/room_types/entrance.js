@@ -15,30 +15,34 @@ var EntranceRoom = function(parent) {
 
 	this.potionsGiven = 3;
 
-	this.maxSpawnedEntities = 3;
-	this.canSpawnEntities = [Warrior, Mage];
 	this.spawnCooldown = 2000;
 
 	this.spawnedEntities = [];
+
+	//This should probablu go somewhere else.
+	//Generats Normal (Gaussian) Distributed Random Numbers
+	//Use to pick the level of heroes entering the dungeon.
+	this.randomDist = function(mean, stdev) {
+		var randomDist = (Math.random() * 2 - 1) + (Math.random() * 2 - 1) + (Math.random() * 2 - 1);
+		return Math.round(randomDist * stdev + mean);
+	}
 
 	this.HeroSpawner = function(newEntityToSpawn, maxSpawn) {
 		var mobCount = 0;
 		var entityToSpawn;
 
-		//IF there is no specified newEntityToSpawn, we pick one at random from
-		//canSpawnEntities.
 		if (!newEntityToSpawn) {
-			entityToSpawn = _.sample(this.canSpawnEntities);
-			maxSpawn = this.maxSpawnedEntities;
-			mobCount = this.spawnedEntities.length;
+			return false
 		} else {
 			entityToSpawn = newEntityToSpawn;
+			//Get the current count of 'entityToSpawn's.
 			_.each(this.spawnedEntities, function(mob) {
 				if (mob instanceof entityToSpawn) {
 					mobCount++;
 				}
 			});
 		}
+
 		//Now that we've determined what to spawn, let's see if we should.
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (mobCount < maxSpawn) {
@@ -47,6 +51,9 @@ var EntranceRoom = function(parent) {
 				newEntity.spawnedRoom = this;
 
 				newEntity.GiveItem(new HP10Potion(), this.potionsGiven);
+
+				//I did this at 5:30 AM.  It might be stupid-crazy.  We'll see.
+				newEntity.Experience = Math.abs(this.randomDist(Math.pow(2, World.Stats.level - 1) * 100, World.Stats.level * 100) - 50);
 
 				this.spawnedEntities.push(newEntity);
 				console.log('A new ' + newEntity.HeroType + ' entered the dungeon!');

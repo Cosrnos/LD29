@@ -13,7 +13,7 @@ var Hero = function(pName) {
 	this.Class = HeroClass.SCRUB;
 
 	this.expGainedInDungeon = 0; //This is the experience gained during this visit to the dungeon.
-	var totalExp = 0;
+	this.totalExp = 0;
 	var nextLevelExp = 100;
 
 	var move = (Object.create(HeroMoveAction));
@@ -23,48 +23,16 @@ var Hero = function(pName) {
 	this.Name = pName || "";
 
 	this.image = null;
-	this.xOffSet = 31;
-	// this.Draw = function() {
-	// 	//debugger;
-	// 	var currentRoom = this.GetRoom();
-	// 	if (currentRoom) {
-	// 		if (!this.entity) {
-	// 			//this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-	// 			if (this.image) {
-	// 				this.entity = new Lynx.Entity(this.image);
-	// 				this.entity.Height = 10;
-	// 				this.entity.Width = 10;
-	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
-	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-	// 			} else {
-	// 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 31, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-	// 				//this.entity.Color = this.Color;
-	// 				this.entity.Color = 0x009933;
-	// 			}
-
-	// 			Game.ScaleEntity(this.entity);
-	// 			Lynx.Scene.Layers[2].AddEntity(this.entity);
-
-	// 		} else {
-	// 			if (this.image) {
-	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
-	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-	// 			} else {
-	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
-	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-	// 			}
-	// 		}
-	// 	}
-	// };
+	this.xOffSet = 31; //Heros line up on the right side of the room.
 
 	Object.defineProperty(this, "Experience", {
 		get: function() {
-			return totalExp;
+			return this.totalExp;
 		},
 		set: function(pValue) {
-			totalExp = pValue;
+			this.totalExp = pValue;
 
-			if (totalExp >= nextLevelExp) {
+			while (this.totalExp >= nextLevelExp) {
 				this.totalExp -= nextLevelExp;
 				nextLevelExp = nextLevelExp * 1.5;
 				this.Level++;

@@ -1380,7 +1380,7 @@ var Hero = function(pName) {
 	this.Class = HeroClass.SCRUB;
 
 	this.expGainedInDungeon = 0; //This is the experience gained during this visit to the dungeon.
-	var totalExp = 0;
+	this.totalExp = 0;
 	var nextLevelExp = 100;
 
 	var move = (Object.create(HeroMoveAction));
@@ -1390,48 +1390,16 @@ var Hero = function(pName) {
 	this.Name = pName || "";
 
 	this.image = null;
-	this.xOffSet = 31;
-	// this.Draw = function() {
-	// 	//debugger;
-	// 	var currentRoom = this.GetRoom();
-	// 	if (currentRoom) {
-	// 		if (!this.entity) {
-	// 			//this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 35, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-	// 			if (this.image) {
-	// 				this.entity = new Lynx.Entity(this.image);
-	// 				this.entity.Height = 10;
-	// 				this.entity.Width = 10;
-	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
-	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-	// 			} else {
-	// 				this.entity = new Lynx.Entity(World.Rooms.roomSize * currentRoom.x + 31, World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1, 4, 4);
-	// 				//this.entity.Color = this.Color;
-	// 				this.entity.Color = 0x009933;
-	// 			}
-
-	// 			Game.ScaleEntity(this.entity);
-	// 			Lynx.Scene.Layers[2].AddEntity(this.entity);
-
-	// 		} else {
-	// 			if (this.image) {
-	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 28;
-	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-	// 			} else {
-	// 				this.entity.X = World.Rooms.roomSize * currentRoom.x + 31;
-	// 				this.entity.Y = World.Rooms.roomSize * currentRoom.y + currentRoom.mobs.indexOf(this) * 5 + 1;
-	// 			}
-	// 		}
-	// 	}
-	// };
+	this.xOffSet = 31; //Heros line up on the right side of the room.
 
 	Object.defineProperty(this, "Experience", {
 		get: function() {
-			return totalExp;
+			return this.totalExp;
 		},
 		set: function(pValue) {
-			totalExp = pValue;
+			this.totalExp = pValue;
 
-			if (totalExp >= nextLevelExp) {
+			while (this.totalExp >= nextLevelExp) {
 				this.totalExp -= nextLevelExp;
 				nextLevelExp = nextLevelExp * 1.5;
 				this.Level++;
@@ -1974,30 +1942,34 @@ var EntranceRoom = function(parent) {
 
 	this.potionsGiven = 3;
 
-	this.maxSpawnedEntities = 3;
-	this.canSpawnEntities = [Warrior, Mage];
 	this.spawnCooldown = 2000;
 
 	this.spawnedEntities = [];
+
+	//This should probablu go somewhere else.
+	//Generats Normal (Gaussian) Distributed Random Numbers
+	//Use to pick the level of heroes entering the dungeon.
+	this.randomDist = function(mean, stdev) {
+		var randomDist = (Math.random() * 2 - 1) + (Math.random() * 2 - 1) + (Math.random() * 2 - 1);
+		return Math.round(randomDist * stdev + mean);
+	}
 
 	this.HeroSpawner = function(newEntityToSpawn, maxSpawn) {
 		var mobCount = 0;
 		var entityToSpawn;
 
-		//IF there is no specified newEntityToSpawn, we pick one at random from
-		//canSpawnEntities.
 		if (!newEntityToSpawn) {
-			entityToSpawn = _.sample(this.canSpawnEntities);
-			maxSpawn = this.maxSpawnedEntities;
-			mobCount = this.spawnedEntities.length;
+			return false
 		} else {
 			entityToSpawn = newEntityToSpawn;
+			//Get the current count of 'entityToSpawn's.
 			_.each(this.spawnedEntities, function(mob) {
 				if (mob instanceof entityToSpawn) {
 					mobCount++;
 				}
 			});
 		}
+
 		//Now that we've determined what to spawn, let's see if we should.
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (mobCount < maxSpawn) {
@@ -2006,6 +1978,9 @@ var EntranceRoom = function(parent) {
 				newEntity.spawnedRoom = this;
 
 				newEntity.GiveItem(new HP10Potion(), this.potionsGiven);
+
+				//I did this at 5:30 AM.  It might be stupid-crazy.  We'll see.
+				newEntity.Experience = Math.abs(this.randomDist(Math.pow(2, World.Stats.level - 1) * 100, World.Stats.level * 100) - 50);
 
 				this.spawnedEntities.push(newEntity);
 				console.log('A new ' + newEntity.HeroType + ' entered the dungeon!');
