@@ -5,7 +5,7 @@ World.Rooms = {
 	roomSize: 50,
 
 	//Add a room to the room array
-	push: function (room) {
+	push: function(room) {
 		var x = room.x * this.roomSize;
 		var y = room.y * this.roomSize;
 
@@ -17,8 +17,8 @@ World.Rooms = {
 	},
 
 	//Finds a room whose origin cooridinates match [x,y]
-	findRoom: function (x, y) {
-		var foundRoom = _.find(this.content, function (room) {
+	findRoom: function(x, y) {
+		var foundRoom = _.find(this.content, function(room) {
 			if (room.x === x && room.y === y) {
 				return true;
 			}
@@ -28,13 +28,13 @@ World.Rooms = {
 };
 
 //This is the base RoomType type.
-var EmptyRoom = function (parent) {
+var EmptyRoom = function(parent) {
 	this.parent = parent;
-	this.destroy = function () {};
+	this.destroy = function() {};
 	this.Texture = Lynx.AM.Get("emptyRoomTile").Asset;
 };
 
-var Room = function (x, y) {
+var Room = function(x, y) {
 
 	this.id = 0;
 	//position of this room.
@@ -65,10 +65,10 @@ var Room = function (x, y) {
 
 
 	Object.defineProperty(this, "type", {
-		get: function () {
+		get: function() {
 			return type;
 		},
-		set: function (newRoom) {
+		set: function(newRoom) {
 			if (type) {
 				type.destroy();
 			}
@@ -84,7 +84,7 @@ var Room = function (x, y) {
 	});
 
 	//Returns an array of movable directions form this room.
-	this.getMovableDirs = function () {
+	this.getMovableDirs = function() {
 		var dirs = [];
 		if (this.North) {
 			dirs.push('n');
@@ -102,7 +102,7 @@ var Room = function (x, y) {
 	};
 
 	//Picks a random exit from this room and returns that room.
-	this.randomExit = function () {
+	this.randomExit = function() {
 		var dir = _.sample(this.getMovableDirs());
 
 		if (dir === 'n') {
@@ -122,7 +122,7 @@ var Room = function (x, y) {
 
 
 	//This add a room or creates a connection to an already existing room in the specified direction.
-	this.addRoom = function (direction) {
+	this.addRoom = function(direction) {
 		var newRoom;
 		var error = '';
 		var roomSize = World.Rooms.roomSize;
@@ -228,10 +228,10 @@ var Room = function (x, y) {
 
 
 //This creates a kinda-random dungeon, starting from 'room'
-walk = function (room, maxGain) {
+walk = function(room, maxGain) {
 	var gained = 0;
 
-	var createRooms = function (room, depth) {
+	var createRooms = function(room, depth) {
 		if (!room || gained >= maxGain) {
 			return;
 		}
@@ -258,8 +258,6 @@ walk = function (room, maxGain) {
 	//var initialRoomNum = World.Rooms.content.length;
 	createRooms(room, 0);
 	while (gained < maxGain) {
-		//var randRoom = _.sample(World.Rooms.content);
-
 		createRooms(room, 0);
 
 		var randRoom = room.randomExit();

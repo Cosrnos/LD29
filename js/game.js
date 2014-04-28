@@ -67,6 +67,7 @@ Game = {
 		Lynx.AM.QueueImage("goblinNode", "assets/dgTiles/goblinNode.png");
 		Lynx.AM.QueueImage("trog", "assets/trog.png");
 		Lynx.AM.QueueImage("spider", "assets/spider.png");
+		Lynx.AM.QueueImage("spider-giant", "assets/giant-spider.png");
 		Lynx.AM.QueueImage("goblin", "assets/goblin.png");
 		Lynx.AM.QueueImage("bat", "assets/bat.png");
 

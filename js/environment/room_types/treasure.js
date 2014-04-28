@@ -1,8 +1,8 @@
-var TreasureRoom = function (parent) {
+var TreasureRoom = function(parent) {
 	EmptyRoom.apply(this, [parent]);
 
 	var originalDestroy = this.destroy;
-	this.destroy = function () {
+	this.destroy = function() {
 		//clearInterval(this.timer);
 		originalDestroy();
 	};
@@ -14,7 +14,7 @@ var TreasureRoom = function (parent) {
 	this.canSpawnEntities = [];
 
 	//A Hero has entered the Treasure Room!!! Rejoice!
-	this.Ascend = function (hero) {
+	this.Ascend = function(hero) {
 		if (hero.expGainedInDungeon > 0) {
 			if (!Game.Muted)
 				Lynx.AM.Get("soundAscent").Asset.play();
@@ -32,7 +32,7 @@ var TreasureRoom = function (parent) {
 		World.Entities.ascendHero(hero);
 	};
 
-	this.Spawner = function () {
+	this.Spawner = function() {
 		var entityToSpawn = _.sample(this.canSpawnEntities);
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
 			if (this.spawnedEntities.length < this.maxSpawnedEntities) {

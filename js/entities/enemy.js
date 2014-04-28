@@ -1,4 +1,4 @@
-var Enemy = function () {
+var Enemy = function() {
 	Entity.apply(this);
 	var move = (Object.create(MoveAction));
 	this.actions.push(move);
@@ -9,21 +9,21 @@ var Enemy = function () {
 	var originalTakeDamage = this.TakeDamage;
 	//Add hallway
 
-	this.xOffSet = 7; //Enemys line up on the left side of a room.
+	this.xOffSet = 7; //Enemies line up on the left side of a room.
 
 
-	this.AddDrop = function (pItem, pChance) {
+	this.AddDrop = function(pItem, pChance) {
 		var drop = Object.create(pItem);
 		pItem.Chance = pChance;
 		this.Drops.push(pItem);
 	};
 
-	this.TakeDamage = function (pAmount, pAttacker) {
+	this.TakeDamage = function(pAmount, pAttacker) {
 		originalTakeDamage.call(this, pAmount, pAttacker);
 		this.CurrentTarget = pAttacker;
 	}
 
-	this.Brain = function () {
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -32,7 +32,7 @@ var Enemy = function () {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Hero
 				});
 				if (typeof heroInRoom !== 'undefined') {
@@ -50,11 +50,11 @@ var Enemy = function () {
 		}
 	}
 
-	this.Kill = function () {
+	this.Kill = function() {
 		Lynx.Log("Enemy " + this.Species + " has been killed!");
 
 		var self = this;
-		var attackers = _.filter(World.Entities.content, function (mob) {
+		var attackers = _.filter(World.Entities.content, function(mob) {
 			return mob.CurrentTarget === self;
 		});
 
@@ -65,17 +65,17 @@ var Enemy = function () {
 		//divies it up.
 		this.Exp = Math.ceil((this.Exp / numAttackers) * (1 + 0.25 * (numAttackers - 1)));
 
-		_.each(attackers, (function (pAttacker) {
+		_.each(attackers, (function(pAttacker) {
 			if (this.Drops.length > 0) {
 				var totalChance = this.Drops.length * 100;
 				var dropChance = 0;
 				var currentChanceRate = 0;
-				_.each(this.Drops, function (pDrop) {
+				_.each(this.Drops, function(pDrop) {
 					dropChance += pDrop.Chance;
 				});
 				var roll = Math.floor(Math.random() * totalChance);
 
-				_.each(this.Drops, function (pDrop) {
+				_.each(this.Drops, function(pDrop) {
 					if (roll <= pDrop.Chance + currentChanceRate) {
 						//Drop found.
 						pAttacker.GiveItem(Object.create(pDrop));
@@ -89,8 +89,6 @@ var Enemy = function () {
 
 			pAttacker.CurrentTarget = null;
 			pAttacker.NotifyKill(self);
-
-
 		}).bind(this));
 
 		Lynx.Scene.Layers[2].RemoveEntity(this.entity);
@@ -106,7 +104,7 @@ Enemy.prototype.constructor = Enemy;
 //-----------------------------
 
 //Level 1-5
-var Trog = function () {
+var Trog = function() {
 	Enemy.apply(this);
 	this.Species = "Trog";
 	this.Exp = 25;
@@ -125,7 +123,7 @@ var Trog = function () {
 Trog.prototype = new Enemy();
 Trog.prototype.constructor = Trog;
 
-var Spider = function () {
+var Spider = function() {
 	Enemy.apply(this);
 	this.Species = "Spider";
 	this.Level = 3;
@@ -145,7 +143,7 @@ var Spider = function () {
 Spider.prototype = new Enemy();
 Spider.prototype.constructor = Spider;
 
-var Bat = function () {
+var Bat = function() {
 	Enemy.apply(this);
 	this.Species = "Bat";
 	this.Level = 5;
@@ -166,7 +164,7 @@ Bat.prototype = new Enemy();
 Bat.prototype.constructor = Bat;
 
 //Level 6-10
-var Goblin = function () {
+var Goblin = function() {
 	Enemy.apply(this);
 	this.Species = "Goblin";
 	this.Level = 7;
@@ -186,7 +184,7 @@ var Goblin = function () {
 Goblin.prototype = new Enemy();
 Goblin.prototype.constructor = Goblin;
 
-var GiantSpider = function () {
+var GiantSpider = function() {
 	Enemy.apply(this);
 	this.Species = "Giant Spider";
 	this.Level = 10;
@@ -195,9 +193,15 @@ var GiantSpider = function () {
 	this.Exp = 100;
 	this.Health = 20;
 
-	this.Color = 0xffffff;
+	this.GiveAction("Bite");
+	this.AddDrop(new BronzeSword(), 20);
 
-	this.Brain = function () {
+	//this.Color = 0xffffff;
+	this.entityScaleMultiplier = 1.5;
+	this.image = Lynx.AM.Get("spider-giant").Asset;
+	debugger;
+
+	this.Brain = function() {
 		var thinking = true;
 		while (thinking) {
 			if (this.CurrentTarget !== null) {
@@ -211,7 +215,7 @@ var GiantSpider = function () {
 					continue;
 				}
 			} else {
-				var heroInRoom = _.find(this.GetRoom().mobs, function (pa) {
+				var heroInRoom = _.find(this.GetRoom().mobs, function(pa) {
 					return pa instanceof Hero
 				});
 				if (typeof heroInRoom !== 'undefined') {
@@ -230,9 +234,6 @@ var GiantSpider = function () {
 			thinking = false;
 		}
 	}
-
-	this.GiveAction("Bite");
-	this.AddDrop(new BronzeSword(), 20);
 };
-
+GiantSpider.prototype = new Enemy();
 GiantSpider.prototype.constructor = GiantSpider;
