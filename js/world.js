@@ -7,7 +7,28 @@ World.Stats = new function() {
 	//What are these?  WHO KNOWS!?!
 	var fame = 0;
 	var peril = 0;
-
+	var lira = 0;
+	var doma = 0;
+	Object.defineProperty(this, "lira", {
+		get: function(){
+			return lira;
+		},
+		set: function(pValue){
+			lira = pValue;
+			UI.Out.Lira = pValue			
+		}
+	});
+	
+	Object.defineProperty(this, "doma", {
+		get: function(){
+			return doma;
+		},
+		set: function(pValue){
+			doma = pValue;
+			UI.Out.Doma = pValue;
+		}
+	});
+	
 	var level = 1;
 	Object.defineProperty(this, "level", {
 		set: function(pValue) {
@@ -18,7 +39,7 @@ World.Stats = new function() {
 			return level;
 		}
 	});
-
+	
 	var dungeonExp = 0;
 	Object.defineProperty(this, "Experience", {
 		set: function(pValue) {
@@ -34,7 +55,6 @@ World.Stats = new function() {
 	Object.defineProperty(this, "heroesDied", {
 		set: function(pValue) {
 			heroesDied = pValue;
-			UI.Out.Doma = pValue
 		},
 		get: function() {
 			return heroesDied;
@@ -45,7 +65,6 @@ World.Stats = new function() {
 	Object.defineProperty(this, "heroesAscended", {
 		set: function(pValue) {
 			heroesAscended = pValue;
-			UI.Out.Lira = pValue
 		},
 		get: function() {
 			return heroesAscended;
@@ -153,6 +172,9 @@ World.Entities = {
 		if (delEntity instanceof Enemy) {
 			World.Stats.mobsDied++;
 		} else if (delEntity instanceof Hero) {
+			if(delEntity.expGainedInDungeon > 0)
+				World.Stats.doma++;
+			
 			World.Stats.heroesDied++;
 		}
 

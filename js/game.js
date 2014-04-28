@@ -3,6 +3,7 @@ Game = {
 	CameraVY: 0,
 	ActiveMenu: null,
 	Scale: 1,
+	TutorialProgress: 0,
 
 	Start: function() {
 		this.Initialize();
@@ -106,12 +107,13 @@ Game = {
 		john.BaseDefense = 10;
 
 		john.SetRoom(World.Rooms.content[0]);
-
+		World.Stats.lira = 15;
+/*
 		var hugo = World.Entities.createEntity(GiantSpider);
 		hugo.Name = "Giant Spider"
 		hugo.SetRoom(World.Rooms.content[0]);
 		john.CurrentTarget = hugo;
-
+*/
 
 		Lynx.Scene.AddLayer();
 
@@ -149,7 +151,7 @@ Game = {
 
 			Game.ScaleAllEntities();
 		}, false);
-
+		
 		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
 			if (Game.ActiveMenu !== null) {
@@ -161,13 +163,31 @@ Game = {
 			//Test for Room Menu
 			var room = World.Rooms.findRoom(Math.floor(gamePos.X / (World.Rooms.roomSize * Game.Scale)), Math.floor(gamePos.Y / (World.Rooms.roomSize * Game.Scale)));
 			if (typeof room !== 'undefined') {
+				if(Game.TutorialProgress === 0 && !(room.type instanceof EmptyRoom))
+					return true;
+				
 				UI.RoomMenu.Target = room;
 				if (room.type instanceof EmptyRoom)
 					UI.RoomMenu.NodeChange.Element.innerHTML = "Add Node &raquo;";
 				else
 					UI.RoomMenu.NodeChange.Element.innerHTML = "Change Node &raquo;";
+				
+				if(room.type instanceof TreasureRoom || room.type instanceof EntranceRoom)
+					UI.RoomMenu.NodeOption.Show = false;
+				else
+					UI.RoomMenu.NodeOption.Show = true;
+				
+				if(room.type instanceof EmptyRoom || room.type instanceof TreasureRoom || room.type instanceof EntranceRoom)
+					UI.RoomMenu.RemoveNodeOption.Show = false;
+				else
+					UI.RoomMenu.RemoveNodeOption.Show = true;
+				
 				UI.RoomMenu.Name = "Room #" + room.id;
 				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
+				if(Game.TutorialProgress === 0){
+					tutorialAboutNodes.savePos(pMousePosition.X, pMousePosition.Y);
+					tutorialAboutNodes.Show();
+				}
 				return true;
 			}
 		});
