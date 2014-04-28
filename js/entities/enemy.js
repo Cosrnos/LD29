@@ -199,7 +199,6 @@ var GiantSpider = function() {
 	//this.Color = 0xffffff;
 	this.entityScaleMultiplier = 1.5;
 	this.image = Lynx.AM.Get("spider-giant").Asset;
-	debugger;
 
 	this.Brain = function() {
 		var thinking = true;
@@ -283,7 +282,7 @@ var BlobMan = function() {
 					if (this.blobSize + otherBlobSize <= 4 && otherBlobInRoom.isBlobbing === false) {
 						console.log("Blobbing!")
 						this.isBlobbing = true;
-						debugger;
+
 						this.blobSize += otherBlobSize;
 						this.Level += otherBlobSize;
 						this.Exp += otherBlobSize * 12;
