@@ -218,8 +218,7 @@ World.Entities = {
 		if (delEntity instanceof Enemy) {
 			World.Stats.mobsDied++;
 		} else if (delEntity instanceof Hero) {
-			if (delEntity.expGainedInDungeon > 0)
-				World.Stats.doma++;
+			World.Stats.doma++;
 
 			World.Stats.heroesDied++;
 		}

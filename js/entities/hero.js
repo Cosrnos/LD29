@@ -58,7 +58,8 @@ var Hero = function (pName) {
 
 	this.Kill = function () {
 		Lynx.Log("Hero " + this.Name + " has been killed!");
-		Lynx.AM.Get("soundDeath").Asset.play();
+		if (!Game.Muted)
+			Lynx.AM.Get("soundDeath").Asset.play();
 
 		//Get all entities that are attacking this hero and notifiy them of it's death.
 		var self = this;

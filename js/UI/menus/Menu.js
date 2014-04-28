@@ -70,7 +70,8 @@ var Menu = function (pName, pClose) {
 		};
 
 		that.Element.onclick = function (e) {
-			Lynx.AM.Get("soundClick").Asset.play();
+			if (!Game.Muted)
+				Lynx.AM.Get("soundClick").Asset.play();
 			if (pClickCallback.call(pParent.Target))
 				pParent.Hide();
 

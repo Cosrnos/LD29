@@ -21,7 +21,8 @@ var Message = function (pHeader, pContent, pCallback) {
 
 		document.getElementById("messageConfirm").innerHTML = this.AcceptButton.Text;
 		document.getElementById("messageConfirm").onclick = (function () {
-			Lynx.AM.Get("soundClick").Asset.play();
+			if (!Game.Muted)
+				Lynx.AM.Get("soundClick").Asset.play();
 			this.AcceptButton.Callback.call(this);
 		}).bind(this);
 
@@ -29,7 +30,8 @@ var Message = function (pHeader, pContent, pCallback) {
 		if (this.DenyButton.Show) {
 			deny.style.visibility = "visible";
 			deny.onclick = (function () {
-				Lynx.AM.Get("soundClick").Asset.play();
+				if (!Game.Muted)
+					Lynx.AM.Get("soundClick").Asset.play();
 				this.DenyButton.Callback.call(this);
 			}).bind(this);
 		} else {

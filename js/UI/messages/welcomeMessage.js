@@ -1,6 +1,11 @@
 var welcomeMessage = new Message("You are the Dungeon!", (([
 	"<p>Welcome to <strong>You are the Dungeon!</strong> In this game you get to dive beneath the surface of a dungeon and actually become the dungeon! As you grow, you'll need to become more challenging to attract more heroes to travel through your corridors and give you resources. Spawn more enemies and become the most notorious dungeon in the land!</p>",
 	"<p>Let's get started by learning how to play! First, move around the map a bit. Use the wasd keys to navigate the map and use the mouse wheel to zoom in and out!</p>"]).join("\r\n")), function () {
+	Lynx.AM.Get("soundBgm").Asset.addEventListener("ended", function () {
+		this.currentTime = 0;
+		this.play();
+	}, false);
+	Lynx.AM.Get("soundBgm").Asset.play();
 	this.Hide();
 });
 

@@ -4,6 +4,7 @@ Game = {
 	ActiveMenu: null,
 	Scale: 1,
 	TutorialProgress: 0,
+	Muted: false,
 
 	Start: function () {
 		this.Initialize();
@@ -18,11 +19,11 @@ Game = {
 	Initialize: function () {
 		//Set Globals here
 		//Open preloader if needed
+		loadingMessage.Show();
 	},
 
 	LoadAssets: function (pCallback) {
 		//Queue assets here
-
 		Lynx.AM.QueueImage('warrior', 'assets/warrior.png');
 		Lynx.AM.QueueImage('mage', 'assets/mage.png');
 		Lynx.AM.QueueImage('scout', 'assets/scout.png');
@@ -72,6 +73,7 @@ Game = {
 		Lynx.AM.QueueAudio("soundClick", "assets/sounds/click.wav");
 		Lynx.AM.QueueAudio("soundAscent", "assets/sounds/ascent.wav");
 		Lynx.AM.QueueAudio("soundDeath", "assets/sounds/death.wav");
+		Lynx.AM.QueueAudio("soundBgm", "assets/sounds/bgm.mp3");
 
 		Lynx.AM.LoadQueue(pCallback);
 	},
@@ -120,6 +122,16 @@ Game = {
 			Game.CameraVX = 0;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
+		});
+
+		Lynx.Scene.On("Keyboard.Press.M", function () {
+			if (Game.Muted) {
+				Lynx.AM.Get("soundBgm").Asset.volume = 1;
+			} else {
+				Lynx.AM.Get("soundBgm").Asset.volume = 0;
+			}
+
+			Game.Muted = !Game.Muted;
 		});
 
 		Lynx.Scene.On("Update", function () {
@@ -270,7 +282,8 @@ Game = {
 
 				UI.RoomMenu.Name = "Room #" + room.id;
 				UI.RoomMenu.ShowAt(pMousePosition.X, pMousePosition.Y);
-				Lynx.AM.Get("soundClick").Asset.play();
+				if (!Game.Muted)
+					Lynx.AM.Get("soundClick").Asset.play();
 				if (Game.TutorialProgress === 1) {
 					tutorialAboutNodes.savePos(pMousePosition.X, pMousePosition.Y);
 					tutorialAboutNodes.Show();

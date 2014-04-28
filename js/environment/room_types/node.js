@@ -114,5 +114,5 @@ var GoblinRoom = function (parent) {
 	this.canSpawnEntities = [Goblin];
 	this.spawnCooldown = 10000;
 
-	this.timer = setInterval(this.Spawner.bind(this, Bat, 1), 10000);
+	this.timer = setInterval(this.Spawner.bind(this, Goblin, 1), 10000);
 };
