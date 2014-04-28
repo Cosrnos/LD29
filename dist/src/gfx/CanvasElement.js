@@ -13,7 +13,12 @@
 
 Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 	var that = new Lynx.Object();
-
+	var scale = 1;
+	var x = pX;
+	var y = pY;
+	var width = pWidth;
+	var height = pHeight;
+	
 	var objectColor = {
 		Hex: -1,
 		R: -1,
@@ -24,10 +29,47 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 	var objectTexture = null;
 	var currentFrame = -1;
 	var frameInterval = 4;
+	
+	Object.defineProperty(this, "X", {
+		get: function () {
+			return x * this.Scale;
+		},
+		set: function (pX) {
+			if (isNaN(pX)) {
+				return;
+			}
 
-	that.X = pX;
-	that.Y = pY;
-	that.Width = pWidth;
+			x = pX;
+		}
+	});
+
+	Object.defineProperty(this, "Y", {
+		get: function () {
+			return y * this.Scale;
+		},
+		set: function (pY) {
+			y = pY;
+		}
+	});
+
+	Object.defineProperty(this, "Width", {
+		get: function () {
+			return width * this.Scale;
+		},
+		set: function (pWidth) {
+			width = pWidth;
+		}
+	});
+
+	Object.defineProperty(this, "Height", {
+		get: function () {
+			return height * this.Scale;
+		},
+		set: function (pHeight) {
+			height = pHeight;
+		}
+	});	
+	
 	that.Height = pHeight;
 	that.Type = pElementType;
 	that.Layer = 0;
@@ -82,7 +124,18 @@ Lynx.CanvasElement = function (pX, pY, pWidth, pHeight, pElementType) {
 			}
 		}
 	});
-
+	
+	Object.defineProperty(this, "Scale",{
+		get: function(){ return scale; },
+		set:(function(pFactor){
+		scale = pFactor;
+		this.Height = height;
+		this.Width = width;
+		this.X = x;
+		this.Y = y;
+	}).bind(this)
+	});
+		
 	/**
 	 * Description: A property for the objects texture. Returns false if not set.
 	 *
