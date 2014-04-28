@@ -23,7 +23,7 @@ var tutorialAfterSpawnTrog = new Message("Heroes", (([
 
 var tutorialLevelUp = new Message("Ding!", (([
 	"<p>Congratulations! You are now Level 2!</p>",
-	"<p>You've grown a bit and now have 2 more rooms than before! You can use these rooms to spawn more nodes to make your dungeon more challenging for the players that enter! As you level up, more heroes will hear of your trials and tribulations and come to investigate for themselves. Make sure you give them a challenge by having plenty of different monsters for your heroes to destroy or be destroyed by!</p>"
+	"<p>You've grown a bit and now have 1 more room than before! You can use new rooms to spawn more nodes to make your dungeon more challenging for the players that enter! As you level up, more heroes will hear of your trials and tribulations and come to investigate for themselves. Make sure you give them a challenge by having plenty of different monsters for your heroes to destroy or be destroyed by!</p>"
 ]).join("\r\n")), function () {
 	Game.TutorialProgress++;
 	this.Hide();

@@ -34,13 +34,13 @@ UI.AddNodeMenu.AddOption("Bats (6 Lira)", function () {
 	return true;
 });
 
-UI.AddNodeMenu.AddOption("Goblin (4 Lira, 6 Doma)", function () {
-	if (World.Stats.lira < 4 || World.Stats.doma < 6) {
+UI.AddNodeMenu.AddOption("Goblin (4 Lira, 4 Doma)", function () {
+	if (World.Stats.lira < 4 || World.Stats.doma < 4) {
 		Lynx.Log("You don't have enough Resources for that action!");
 		return true;
 	}
 	World.Stats.lira -= 4;
-	World.Stats.doma -= 6;
+	World.Stats.doma -= 4;
 	this.type = new GoblinRoom(this);
 	return true;
 });

@@ -1,6 +1,6 @@
 var MoveAction = new Action("Move", 2000);
 
-MoveAction.Use = function(pEntity) {
+MoveAction.Use = function (pEntity) {
 
 	if (Math.random() > 0.6) {
 		var currentRoom = pEntity.GetRoom();
@@ -11,9 +11,9 @@ MoveAction.Use = function(pEntity) {
 
 
 var HeroMoveAction = new Action("HeroMove", 2000);
-HeroMoveAction.Use = function(pEntity) {
+HeroMoveAction.Use = function (pEntity) {
 	var lastMoveDirection = pEntity.lastMoveDirection;
-	if (Math.random() > 0.6) {
+	if (Math.random() > 0.4) {
 		var currentRoom = pEntity.GetRoom();
 		var directions = currentRoom.getMovableDirs();
 		if (directions.length > 1 && lastMoveDirection) {
@@ -28,7 +28,7 @@ HeroMoveAction.Use = function(pEntity) {
 				remove = 'e'
 			}
 
-			_.remove(directions, function(dir) {
+			_.remove(directions, function (dir) {
 				return dir === remove;
 			});
 		}
@@ -39,7 +39,7 @@ HeroMoveAction.Use = function(pEntity) {
 //The scout move is very fast, and heals the scout 1 HP
 //for every move;
 var ScoutMoveAction = new Action("ScoutMoveAction", 250);
-ScoutMoveAction.Use = function(pEntity) {
+ScoutMoveAction.Use = function (pEntity) {
 	var lastMoveDirection = pEntity.lastMoveDirection;
 	if (Math.random() > 0.6) {
 		var currentRoom = pEntity.GetRoom();
@@ -56,7 +56,7 @@ ScoutMoveAction.Use = function(pEntity) {
 				remove = 'e'
 			}
 
-			_.remove(directions, function(dir) {
+			_.remove(directions, function (dir) {
 				return dir === remove;
 			});
 		}

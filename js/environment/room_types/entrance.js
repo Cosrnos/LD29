@@ -45,7 +45,7 @@ var EntranceRoom = function (parent) {
 
 		//Now that we've determined what to spawn, let's see if we should.
 		if (entityToSpawn && entityToSpawn.prototype instanceof Entity) {
-			if (mobCount < maxSpawn) {
+			if (mobCount < Math.floor(maxSpawn / 2 + World.Rooms.content.length / 3) + 1) {
 				var newEntity = World.Entities.createEntity(entityToSpawn);
 				newEntity.SetRoom(this.parent);
 				newEntity.spawnedRoom = this;
@@ -68,11 +68,11 @@ var EntranceRoom = function (parent) {
 
 	this.timers.push({
 		name: 'Warrior',
-		timer: setInterval(this.HeroSpawner.bind(this, Warrior, 3), 25000)
+		timer: setInterval(this.HeroSpawner.bind(this, Warrior, 3), 12000)
 	});
 
 	this.timers.push({
 		name: 'Mage',
-		timer: setInterval(this.HeroSpawner.bind(this, Mage, 2), 30000)
+		timer: setInterval(this.HeroSpawner.bind(this, Mage, 2), 17500)
 	});
 };

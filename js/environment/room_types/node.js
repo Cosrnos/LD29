@@ -79,7 +79,7 @@ var SpiderRoom = function(parent) {
 	this.canSpawnEntities = [Spider, GiantSpider];
 	this.spawnCooldown = 10000;
 
-	this.timer = setInterval(this.Spawner.bind(this, GiantSpider, 1), 10000);
+	this.timer = setInterval(this.Spawner.bind(this, GiantSpider, 1), 120000);
 	this.timer2 = setInterval(this.Spawner.bind(this, Spider, 5), 5000);
 };
 
