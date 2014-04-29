@@ -6,23 +6,23 @@ Game = {
 	TutorialProgress: 0,
 	Muted: false,
 
-	Start: function() {
+	Start: function () {
 		this.Initialize();
-		this.LoadAssets((function() {
-			this.LoadComponents((function() {
+		this.LoadAssets((function () {
+			this.LoadComponents((function () {
 				this.SetupScene();
 				this.Ready();
 			}).bind(this));
 		}).bind(this));
 	},
 
-	Initialize: function() {
+	Initialize: function () {
 		//Set Globals here
 		//Open preloader if needed
 		loadingMessage.Show();
 	},
 
-	LoadAssets: function(pCallback) {
+	LoadAssets: function (pCallback) {
 		//Queue assets here
 		Lynx.AM.QueueImage('warrior', 'assets/warrior.png');
 		Lynx.AM.QueueImage('mage', 'assets/mage.png');
@@ -84,53 +84,53 @@ Game = {
 		Lynx.AM.LoadQueue(pCallback);
 	},
 
-	LoadComponents: function(pCallback) {
+	LoadComponents: function (pCallback) {
 		Lynx.CM.Load("Timer", "KeyboardEvents", "MouseEvents");
 		Lynx.CM.On("ComponentManager.Ready", pCallback);
 	},
 
-	SetupScene: function() {
-		Lynx.Scene.On("Keyboard.Press.W", function() {
+	SetupScene: function () {
+		Lynx.Scene.On("Keyboard.Press.W", function () {
 			Game.CameraVY -= 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.W", function() {
+		Lynx.Scene.On("Keyboard.Release.W", function () {
 			Game.CameraVY = 0;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Keyboard.Press.S", function() {
+		Lynx.Scene.On("Keyboard.Press.S", function () {
 			Game.CameraVY += 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.S", function() {
+		Lynx.Scene.On("Keyboard.Release.S", function () {
 			Game.CameraVY -= 1;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Keyboard.Press.A", function() {
+		Lynx.Scene.On("Keyboard.Press.A", function () {
 			Game.CameraVX -= 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.A", function() {
+		Lynx.Scene.On("Keyboard.Release.A", function () {
 			Game.CameraVX = 0;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Keyboard.Press.D", function() {
+		Lynx.Scene.On("Keyboard.Press.D", function () {
 			Game.CameraVX += 1;
 		});
 
-		Lynx.Scene.On("Keyboard.Release.D", function() {
+		Lynx.Scene.On("Keyboard.Release.D", function () {
 			Game.CameraVX = 0;
 			if (Game.TutorialProgress === 0)
 				tutorialFirstScreen.Show();
 		});
 
-		Lynx.Scene.On("Keyboard.Press.M", function() {
+		Lynx.Scene.On("Keyboard.Press.M", function () {
 			if (Game.Muted) {
 				Lynx.AM.Get("soundBgm").Asset.volume = 0.75;
 			} else {
@@ -140,7 +140,7 @@ Game = {
 			Game.Muted = !Game.Muted;
 		});
 
-		Lynx.Scene.On("Update", function() {
+		Lynx.Scene.On("Update", function () {
 			Lynx.Scene.Camera.X += Math.floor(Game.CameraVX * (Lynx.Main.Delta / 2));
 			Lynx.Scene.Camera.Y += Math.floor(Game.CameraVY * (Lynx.Main.Delta / 2));
 			if (Game.ActiveMenu === UI.RoomMenu) {
@@ -151,22 +151,22 @@ Game = {
 
 		Lynx.Start();
 	},
-	ScaleEntity: function(entity) {
+	ScaleEntity: function (entity) {
 		entity.Scale = Game.Scale;
 	},
-	ScaleAllEntities: function() {
+	ScaleAllEntities: function () {
 		for (var i = 0; i < Lynx.Scene.Entities.length; i++) {
 			var e = Lynx.Scene.Entities[i];
 			e.Scale = Game.Scale;
 		}
 
-		_.each(Lynx.Scene.Layers, function(layer) {
-			_.each(layer.Elements, function(element) {
+		_.each(Lynx.Scene.Layers, function (layer) {
+			_.each(layer.Elements, function (element) {
 				element.Scale = Game.Scale;
 			});
 		});
 	},
-	Ready: function() {
+	Ready: function () {
 
 		Lynx.Scene.AddLayer();
 		Lynx.Scene.AddLayer();
@@ -202,8 +202,8 @@ Game = {
 */
 
 		john.BaseSpeed = 2;
-		Lynx.Scene.On("Update", function() {
-			_.each(World.Entities.content, function(entity) {
+		Lynx.Scene.On("Update", function () {
+			_.each(World.Entities.content, function (entity) {
 				if (entity) {
 					entity.Think();
 					if (entity.Draw) {
@@ -214,7 +214,7 @@ Game = {
 			return true;
 		});
 
-		window.addEventListener("mousewheel", function(event) {
+		window.addEventListener("mousewheel", function (event) {
 			if (Game.ActiveMenu !== null) {
 				return;
 			}
@@ -235,6 +235,30 @@ Game = {
 
 			Game.ScaleAllEntities();
 		}, false);
+
+		window.addEventListener("DOMMouseScroll", function (e) {
+			if (Game.ActiveMenu !== null) {
+				return;
+			}
+
+			if (e.detail < 0) {
+				Game.Scale += (e.detail * 0.1);
+			} else {
+				Game.Scale -= (e.detail * -0.1);
+			}
+
+			if (Game.Scale > 5)
+				Game.Scale = 5;
+			if (Game.Scale < 0.5)
+				Game.Scale = 0.5;
+
+			if (Game.ActiveMenu === UI.RoomMenu) {
+				//				Game.ActiveMenu.Scale = Game.Scale;
+			}
+
+			Game.ScaleAllEntities();
+		}, false);
+
 		var cursor = "auto";
 		Lynx.Scene.On("MouseEvents.Move", function (pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
@@ -253,7 +277,7 @@ Game = {
 
 		});
 
-		Lynx.Scene.On("MouseEvents.Click", function(pMousePosition) {
+		Lynx.Scene.On("MouseEvents.Click", function (pMousePosition) {
 			var gamePos = Viewport.ParseMousePosition(pMousePosition.X, pMousePosition.Y);
 			if (Game.TutorialProgress === 0)
 				return true;
@@ -305,7 +329,6 @@ Game = {
 		welcomeMessage.Show();
 	}
 };
-
 Actions = [];
 
 var Action = function(pName, pCooldown) {
@@ -1458,7 +1481,7 @@ var Bat = function() {
 	this.Level = 5;
 	this.Exp = 50;
 	this.Gold = 25;
-	this.BaseAttack = 4;
+	this.BaseAttack = 3;
 	this.BaseDefense = 2;
 	this.Health = 17;
 	this.Mana = 0;
@@ -1553,8 +1576,8 @@ var DarkKnight = function() {
 	this.Exp = 250;
 	this.Gold = 200;
 	this.BaseAttack = 5;
-	this.BaseDefense = 3;
-	this.Health = 28;
+	this.BaseDefense = 4;
+	this.Health = 35;
 	this.AddDrop(new HP10Potion(), 100);
 	//	this.image = Lynx.AM.Get("").Assets;
 	this.GiveAction("DeathRay");
@@ -1652,7 +1675,7 @@ var BlobMan = function() {
 						this.Gold += otherBlobSize * 7;
 						this.BaseAttack += otherBlobSize;
 						this.Health += otherBlobSize * 4;
-						this.entityScaleMultiplier = (1 + (this.blobSize * 0.1));
+						this.entityScaleMultiplier = (1 + (this.blobSize * 0.2));
 						Lynx.Scene.Layers[2].RemoveEntity(otherBlobInRoom.entity);
 						otherBlobInRoom.RemoveFromGame();
 						this.isBlobbing = false;
