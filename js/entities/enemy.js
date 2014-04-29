@@ -189,7 +189,7 @@ var GiantSpider = function () {
 	Enemy.apply(this);
 	this.Species = "Giant Spider";
 	this.Level = 10;
-	this.BaseAttack = 5;
+	this.BaseAttack = 3;
 	this.BaseDefense = 3;
 	this.Exp = 100;
 	this.Health = 23;
