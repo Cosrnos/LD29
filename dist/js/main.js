@@ -1520,7 +1520,7 @@ var GiantSpider = function() {
 	Enemy.apply(this);
 	this.Species = "Giant Spider";
 	this.Level = 10;
-	this.BaseAttack = 5;
+	this.BaseAttack = 3;
 	this.BaseDefense = 3;
 	this.Exp = 100;
 	this.Health = 23;
@@ -1577,7 +1577,7 @@ var DarkKnight = function() {
 	this.Gold = 200;
 	this.BaseAttack = 5;
 	this.BaseDefense = 4;
-	this.Health = 35;
+	this.Health = 30;
 	this.AddDrop(new HP10Potion(), 100);
 	//	this.image = Lynx.AM.Get("").Assets;
 	this.GiveAction("DeathRay");
@@ -2455,9 +2455,9 @@ var BatRoom = function (parent) {
 	};
 
 	this.Texture = Lynx.AM.Get("batNode").Asset;
-	this.maxSpawnedEntities = 5;
+	this.maxSpawnedEntities = 4;
 	this.canSpawnEntities = [Bat];
-	this.spawnCooldown = 6000;
+	this.spawnCooldown = 8000;
 
 	this.timer = setInterval(this.Spawner.bind(this, Bat, 5), 4500);
 };
