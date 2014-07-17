@@ -231,6 +231,7 @@ var Room = function(x, y) {
 walk = function(room, maxGain) {
 	var gained = 0;
 
+	//
 	var createRooms = function(room, depth) {
 		if (!room || gained >= maxGain) {
 			return;
@@ -242,6 +243,8 @@ walk = function(room, maxGain) {
 			if (room.addRoom(dir)) {
 				gained++;
 
+				//if we created a room in the specified direction, move to that room and try
+				//creating a new room from a random direction in there.
 				if (dir === 'n') {
 					createRooms(room.North, depth + 1);
 				} else if (dir === 's') {
@@ -257,9 +260,13 @@ walk = function(room, maxGain) {
 
 	//var initialRoomNum = World.Rooms.content.length;
 	createRooms(room, 0);
+	//If the initial createRooms() call failed to create enough new rooms, call
+	//createRooms() again.
 	while (gained < maxGain) {
 		createRooms(room, 0);
 
+		//if it still failed, move to an adjacent room and try again there.
+		//(This will happen if you try to create more rooms from a room that already has 4 adjacent rooms.)
 		var randRoom = room.randomExit();
 		if (randRoom) {
 			room = randRoom;

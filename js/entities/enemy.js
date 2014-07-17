@@ -335,16 +335,17 @@ var BlobMan = function() {
 					//Don't combine if they will get too large.
 
 					var otherBlobSize = otherBlobInRoom.blobSize;
-					if (this.blobSize + otherBlobSize <= 4 && otherBlobInRoom.isBlobbing === false) {
+					if (this.blobSize + otherBlobSize <= World.Stats.level - 1 && otherBlobInRoom.isBlobbing === false) {
 						this.isBlobbing = true;
-
+						//Combine the blobs
 						this.blobSize += otherBlobSize;
 						this.Level += otherBlobSize;
 						this.Exp += otherBlobSize * 12;
 						this.Gold += otherBlobSize * 7;
-						this.BaseAttack += otherBlobSize;
+						this.BaseAttack += otherBlobSize / 2;
 						this.Health += otherBlobSize * 4;
 						this.entityScaleMultiplier = (1 + (this.blobSize * 0.2));
+
 						Lynx.Scene.Layers[2].RemoveEntity(otherBlobInRoom.entity);
 						otherBlobInRoom.RemoveFromGame();
 						this.isBlobbing = false;
